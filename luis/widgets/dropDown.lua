@@ -10,10 +10,10 @@ function dropDown.setluis(luisObj)
 end
 
 -- dropDown
-function dropDown.new(items, selectedIndex, width, height, onChange, row, col, customTheme)
+function dropDown.new(items, selectedIndex, width, height, onChange, row, col, maxVisibleItems, customTheme)
     local dropdownTheme = customTheme or luis.theme.dropdown
     
-    local maxVisibleItems = 5  -- Maximum number of visible items when dropDown is open
+    local maxVisibleItems = maxVisibleItems or 5  -- Maximum number of visible items when dropDown is open
     
     return {
         type = "DropDown",
@@ -94,7 +94,7 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, c
             end
         end,
         
-        click = function(self, x, y)
+        click = function(self, x, y, button, istouch)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.isOpen = not self.isOpen
                 return true
