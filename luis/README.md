@@ -21,16 +21,17 @@
 
 Create a flexible container housing two buttons and a slider, which can be easily moved or resized using the mouse. The widgets within the container automatically rearrange themselves to fit the new layout.
 
+main.lua
 ```lua
 local LUIS = require("luis")
 
 function love.load()
 	-- Create a FlexContainer
-	local container = LUIS.newFlexContainer(30, 30, 10, 10)
+	local container = LUIS.newFlexContainer(20, 20, 10, 10)
 
 	-- Add some widgets to the container
-	local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, 5, 2)
-	local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, 5, 2)
+	local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
+	local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
 	local slider = LUIS.newSlider(0, 100, 50, 10, 2, function(value)
 		print('change Slider')
 	end, 10, 2)

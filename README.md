@@ -14,13 +14,12 @@
 
 | Feature | Description |
 |---------|-------------|
-| Flexible Layout | Uses a grid-based system and FlexContainers for easy UI arrangement |
-| Customizable Theming | Easily change the look and feel of your UI elements |
+| Flexible Layout | Uses a grid-based system and FlexContainers for easy UI layout |
 | Layer Management | Support for multiple UI layers with show/hide functionality |
-| Responsive Design | Automatically scales UI elements and Interaction based on  screen dimensions |
-| Rendering | Efficient drawing system and proper z-ordering based on layers |
+| Customizable Theming | Easily change the look and feel of your UI elements |
 | Widget Library | Includes buttons, sliders, switches, checkboxes, dropdown, textinput and more |
 | Event Handling | Built-in support for mouse, touch and keyboard interactions |
+| Responsive Design | Automatically scales UI elements and Interaction based on screen dimensions |
 | State Management | Tracks and persists element states to save and load configurations |
 | Animation | Integration with Flux library for smooth animations and transitions |
 | Extensibility | Modular design allowing easy addition of new widgets |
@@ -40,8 +39,8 @@ LUIS provides a variety of built-in widgets to create rich user interfaces:
 8. **ProgressBar**: Display progress or loading status
 9. **Label**: Display a text label
 10. **Icon**: Display graphical icons
-11. **Custom**: add your own custom draw function (can be used as game view)
-12. **FlexContainer**: Special container for flexible layouts
+11. **FlexContainer**: Special container for flexible layouts
+12. **Custom**: add your own custom draw function (can be used as game view)
 
 ### FlexContainer
 
@@ -56,8 +55,8 @@ Example usage:
 
 ```lua
 local container = LUIS.newFlexContainer(30, 30, 10, 10)
-local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, 5, 2)
-local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, 5, 2)
+local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
+local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
 
 container:addChild(button1)
 container:addChild(button2)
@@ -135,11 +134,11 @@ local LUIS = require("luis")
 
 function love.load()
 	-- Create a FlexContainer
-	local container = LUIS.newFlexContainer(30, 30, 10, 10)
+	local container = LUIS.newFlexContainer(20, 20, 10, 10)
 
 	-- Add some widgets to the container
-	local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, 5, 2)
-	local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, 5, 2)
+	local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
+	local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
 	local slider = LUIS.newSlider(0, 100, 50, 10, 2, function(value)
 		print('change Slider')
 	end, 10, 2)
@@ -196,6 +195,12 @@ end
 - Löve2D: The game framework used for rendering and managing game objects.
 - flux (included in the `3rdparty` folder)
 - json (included in the `3rdparty` folder)
+
+## known Problems
+
+- DropDownBox: when selecting, the an underlying ui element is also executed (Button i.e.) 
+- InputText: when adding a character in the middle of a text, the text behind is removed
+- FlexContainer: the initial width or height limits the arrangement of child widgets
 
 ## License
 
