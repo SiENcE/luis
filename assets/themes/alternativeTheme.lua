@@ -78,7 +78,7 @@ local alternativeTheme = {
         scrollBarWidth = 10
     },
 	textinput = {
-		backgroundColor = altColors.burgundy,
+		backgroundColor = altColors.navy,
 		textColor = altColors.beige,
 		cursorColor = altColors.beige,
 		selectionColor = altColors.rust,

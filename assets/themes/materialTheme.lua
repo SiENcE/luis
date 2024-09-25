@@ -39,25 +39,25 @@ local materialTheme = {
         dotColor = {0.2, 0.6, 0.9},
     },
     progressbar = {
-        backgroundColor = {0.25, 0.65, 0.95, 0.5},
+        backgroundColor = {0.2, 0.6, 0.9, 1},
         fillColor = {0.25, 0.65, 0.95, 1},
     },
     dropdown = {
-        backgroundColor = {0.2, 0.6, 0.9, 0.2},
+        backgroundColor = {0.2, 0.6, 0.9, 1},
         textColor = {1, 1, 1, 1},
 		align = "center",
         hoverColor = {0.25, 0.65, 0.95, 1},
-        borderColor = {0.25, 0.65, 0.95, 0.5},
-        arrowColor = {0.15, 0.55, 0.85, 1},
+        borderColor = {0.15, 0.55, 0.85, 1},
+        arrowColor = {1, 1, 1, 1},
         scrollBarColor = {0.5, 0.5, 0.5},
         scrollBarWidth = 10
     },
 	textinput = {
 		backgroundColor = {0.2, 0.6, 0.9, 1},
 		textColor = {1, 1, 1, 1},
-		cursorColor = {0.15, 0.55, 0.85, 1},
+		cursorColor = {1, 1, 1, 1},
 		selectionColor = {0.25, 0.65, 0.95, 1},
-		borderColor = {0.25, 0.65, 0.95, 0.5},
+		borderColor = {0.15, 0.55, 0.85, 1},
 		borderWidth = 2,
 		padding = 5
 	},

@@ -9,14 +9,6 @@ local function hexToRGB(hex)
 end
 
 -- Custom color palette
-local colors3 = {
-    purple = hexToRGB("995d81"),
-    orange = hexToRGB("eb8258"),
-    yellow = hexToRGB("f6f740"),
-    lime = hexToRGB("d8dc6a"),
-    blue = hexToRGB("6689a1")
-}
-
 local colors = {
     purple = hexToRGB("023047"),
     orange = hexToRGB("8ECAE6"),
@@ -86,10 +78,10 @@ local customTheme = {
         scrollBarWidth = 10
     },
 	textinput = {
-		backgroundColor = colors.blue,
+		backgroundColor = colors.orange,
 		textColor = colors.yellow,
 		cursorColor = colors.yellow,
-		selectionColor = colors.orange,
+		selectionColor = colors.blue,
 		borderColor = colors.lime,
 		borderWidth = 2,
 		padding = 5
