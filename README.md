@@ -39,9 +39,9 @@ LUIS provides a variety of built-in widgets to create rich user interfaces:
 7. **TextInput**: User text entry field
 8. **ProgressBar**: Display progress or loading status
 9. **Label**: Display a text label
-9. **Icon**: Display graphical icons
-9. **Custom**: add your own custom draw function (can be used as game view)
-10. **FlexContainer**: Special container for flexible layouts
+10. **Icon**: Display graphical icons
+11. **Custom**: add your own custom draw function (can be used as game view)
+12. **FlexContainer**: Special container for flexible layouts
 
 ### FlexContainer
 
