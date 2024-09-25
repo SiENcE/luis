@@ -23,7 +23,7 @@ local function drawElevatedRectangle(x, y, width, height, color, elevation, corn
 end
 
 -- Button
-function button.new(text, width, height, onClick, row, col, customTheme)
+function button.new(text, width, height, onClick, onRelease, row, col, customTheme)
     local buttonTheme = customTheme or luis.theme.button
     local button = {
         type = "Button",
@@ -31,6 +31,7 @@ function button.new(text, width, height, onClick, row, col, customTheme)
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         onClick = onClick,
+		onRelease = onRelease,
         hover = false,
         pressed = false,
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
@@ -71,7 +72,7 @@ function button.new(text, width, height, onClick, row, col, customTheme)
             love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width, buttonTheme.align)
         end,
         
-        click = function(self, x, y)
+        click = function(self, x, y, button, istouch)
             if self.hover then
                 self.pressed = true
                 luis.flux.to(self, buttonTheme.transitionDuration, {
@@ -90,7 +91,7 @@ function button.new(text, width, height, onClick, row, col, customTheme)
             return false
         end,
         
-        release = function(self)
+        release = function(self, x, y, button, istouch)
             if self.pressed then
                 self.pressed = false
                 local targetColor = self.hover and buttonTheme.hoverColor or buttonTheme.color
@@ -101,7 +102,12 @@ function button.new(text, width, height, onClick, row, col, customTheme)
                     colorB = targetColor[3],
                     colorA = targetColor[4]
                 })
+                if self.onRelease then
+                    self.onRelease()
+                end
+                return true
             end
+            return false
         end
     }
     

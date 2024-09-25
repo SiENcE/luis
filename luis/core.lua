@@ -181,11 +181,6 @@ function luis.loadConfig(filename)
                         
                         -- Update element state
                         luis.setElementState(layerName, i, elementConfig.value)
-                        
-                        -- Call onChange handler if it exists
-                        --if element.onChange then
-                        --    element:onChange(elementConfig.value)
-                        --end
                     end
                 end
             end
@@ -478,7 +473,7 @@ function luis.mousepressed(x, y, button, istouch)
         for layerName, enabled in pairs(luis.enabledLayers) do
             if enabled and luis.elements[layerName] then
                 for _, element in ipairs(luis.elements[layerName]) do
-                    if element.click and element:click(x, y) then
+                    if element.click and element:click(x, y, button, istouch) then
                         return
                     end
                 end
@@ -494,7 +489,7 @@ function luis.mousereleased(x, y, button, istouch)
             if enabled and luis.elements[layerName] then
                 for _, element in ipairs(luis.elements[layerName]) do
                     if element.release then
-                        element:release(x, y)
+                        element:release(x, y, button, istouch)
                     end
                 end
             end

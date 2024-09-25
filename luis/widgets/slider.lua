@@ -48,7 +48,7 @@ function slider.new(min, max, value, width, height, onChange, row, col, sliderTh
             love.graphics.circle("fill", knobX, self.position.y + self.height / 2, self.knob.currentRadius or self.knob.radius)
         end,
         
-        click = function(self, x, y)
+        click = function(self, x, y, button, istouch)
             local knobX = self.position.x + (self.value - self.min) / (self.max - self.min) * self.width
             if pointInRect(x, y, knobX - self.knob.radius, self.position.y, self.knob.radius * 2, self.height) then
                 self.dragging = true

@@ -29,7 +29,7 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
             love.graphics.circle("fill", knobX, self.position.y + self.height / 2, self.height / 2 - 2)
         end,
         
-        click = function(self, x, y)
+        click = function(self, x, y, button, istouch)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.value = not self.value
                 if self.onChange then

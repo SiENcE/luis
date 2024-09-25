@@ -12,7 +12,7 @@ function textInput.setluis(luisObj)
 end
 
 -- TextInput
-function textInput.new(width, height, placeholder, row, col, customTheme)
+function textInput.new(width, height, placeholder, onChange, row, col, customTheme)
     local textInputTheme = customTheme or luis.theme.textinput
     local input = {
         type = "TextInput",
@@ -20,6 +20,7 @@ function textInput.new(width, height, placeholder, row, col, customTheme)
         placeholder = placeholder or "",
         width = width * luis.gridSize,
         height = height * luis.gridSize,
+		onChange = onChange,
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
         cursorPos = 0,
         active = false,
@@ -61,7 +62,7 @@ function textInput.new(width, height, placeholder, row, col, customTheme)
             end
         end,
 
-        click = function(self, x, y)
+        click = function(self, x, y, button, istouch)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
                 local clickX = x - self.position.x - textInputTheme.padding
@@ -91,7 +92,11 @@ function textInput.new(width, height, placeholder, row, col, customTheme)
 
         keypressed = function(self, key)
             if self.active then
-                if key == "backspace" then
+				if key == "return" then
+					if self.onChange then
+						self.onChange(self.text)
+					end
+                elseif key == "backspace" then
                     if self.cursorPos > 0 then
                         local byteoffset = utf8.offset(self.text, -1, utf8.offset(self.text, self.cursorPos + 1))
                         self.text = string.sub(self.text, 1, byteoffset - 1) .. string.sub(self.text, utf8.offset(self.text, self.cursorPos + 1))
