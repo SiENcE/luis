@@ -1,6 +1,14 @@
-# **LUIS** (LUIS User Interface System)
+# LUIS: LUIS User Interface System
 
-LUIS (LUIS User Interface System for Löve2D) is a flexible and feature-rich UI system for the LÖVE (Löve2D) framework. It provides an easy-to-use set of widgets and containers for creating interactive user interfaces in your Löve2D games and applications.
+**LUIS** (LUIS User Interface System) is a lightweight and flexible graphical user interface (GUI) framework built on top of the [Löve2D](https://love2d.org/) game engine. Designed for ease of use, LUIS provides developers with the tools to create dynamic, grid centric, layered user interfaces for games and applications.
+
+## Overview
+
+- **Löve2D Integration**: Seamlessly integrates with the Löve2D framework
+- **Flexible Containers**: Use FlexContainers for dynamic and responsive layouts
+- **Theming**: Add/Modify themes and individual widget properties during runtime
+- **Lightweight**: Minimal external dependencies for easy integration into your project
+- **Extensible**: Create custom widgets to suit your specific needs
 
 ## Features
 
@@ -8,19 +16,15 @@ LUIS (LUIS User Interface System for Löve2D) is a flexible and feature-rich UI 
 |---------|-------------|
 | Flexible Layout | Uses a grid-based system and FlexContainers for easy UI arrangement |
 | Customizable Theming | Easily change the look and feel of your UI elements |
-| Multiple Layers | Support for multiple UI layers with enable/disable functionality |
-| Responsive Design | Automatically scales UI elements based on window size |
-| Widget Library | Includes buttons, sliders, switches, checkboxes, and more |
-| Event Handling | Built-in support for mouse and keyboard interactions |
+| Layer Management | Support for multiple UI layers with show/hide functionality |
+| Responsive Design | Automatically scales UI elements and Interaction based on  screen dimensions |
+| Rendering | Efficient drawing system and proper z-ordering based on layers |
+| Widget Library | Includes buttons, sliders, switches, checkboxes, dropdown, textinput and more |
+| Event Handling | Built-in support for mouse, touch and keyboard interactions |
+| State Management | Tracks and persists element states to save and load configurations |
+| Animation | Integration with Flux library for smooth animations and transitions |
+| Extensibility | Modular design allowing easy addition of new widgets |
 | Debug Mode | Toggle grid and element outlines for easy development |
-
-## Unique Selling Points
-
-- **Löve2D Integration**: Seamlessly integrates with the Löve2D framework
-- **Flexible Containers**: Use FlexContainers for dynamic and responsive layouts
-- **Easy Customization**: Modify themes and individual widget properties during runtime
-- **Lightweight**: Minimal external dependencies for easy integration into your project
-- **Extensible**: Create custom widgets to suit your specific needs
 
 ## Widget Types
 
@@ -34,7 +38,9 @@ LUIS provides a variety of built-in widgets to create rich user interfaces:
 6. **DropDown**: Select from a list of options
 7. **TextInput**: User text entry field
 8. **ProgressBar**: Display progress or loading status
+9. **Label**: Display a text label
 9. **Icon**: Display graphical icons
+9. **Custom**: add your own custom draw function (can be used as game view)
 10. **FlexContainer**: Special container for flexible layouts
 
 ### FlexContainer
@@ -103,42 +109,62 @@ end
 return customWidget
 ```
 
-## Installation
+## Getting Started
 
-1. Copy the `luis` folder into your Löve2D project directory.
-2. Require the library in your `main.lua` file:
+1. **Install Löve2D**: You can download Löve2D from [here](https://love2d.org/).
+2. **Clone the LUIS Library**:
+    ```bash
+    git clone https://github.com/SiENCE/LUIS.git
+    ```
+3. **Include LUIS in Your Löve2D Project**:
+    ```lua
+    local LUIS = require("luis")
+    ```
 
-```lua
-local LUIS = require("luis")
-```
+4. **Create and Manage UI Elements**:
+    Use LUIS functions to define layers, add UI elements, and manage their states.
 
-## Quick Start
 
-Here's a simple example to get you started:
+## Example
 
+Here's a simple example to create a flexContainer with two buttons and a slider (press 'TAB' for debug view):
+
+main.lua
 ```lua
 local LUIS = require("luis")
 
 function love.load()
-    -- Create a new layer
-    LUIS.newLayer("main")
-    LUIS.setCurrentLayer("main")
+	-- Create a FlexContainer
+	local container = LUIS.newFlexContainer(30, 30, 10, 10)
 
-    -- Create a button
-    local button = LUIS.newButton("Click me!", 10, 3, function()
-        print("Button clicked!")
-    end, 5, 2)
+	-- Add some widgets to the container
+	local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, 5, 2)
+	local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, 5, 2)
+	local slider = LUIS.newSlider(0, 100, 50, 10, 2, function(value)
+		print('change Slider')
+	end, 10, 2)
 
-    -- Add the button to the current layer
-    LUIS.createElement(LUIS.currentLayer, "Button", button)
+	container:addChild(button1)
+	container:addChild(button2)
+	container:addChild(slider)
+
+	LUIS.newLayer("main", 96, 54)
+	LUIS.setCurrentLayer("main")
+	
+	-- Add the container to your LUIS layer
+	LUIS.createElement(LUIS.currentLayer, "FlexContainer", container)
+
+	love.window.setMode(1280, 1024)
 end
 
+-- In your main update function
 function love.update(dt)
-    LUIS.update(dt)
+	LUIS.update(dt)
 end
 
+-- In your main draw function
 function love.draw()
-    LUIS.draw()
+	LUIS.draw()
 end
 
 -- Input handling
@@ -151,17 +177,23 @@ function love.mousereleased(x, y, button, istouch)
 end
 
 function love.keypressed(key)
-    LUIS.keypressed(key)
+    if key == "escape" then
+        if LUIS.currentLayer == "main" then
+            love.event.quit()
+        end
+    elseif key == "tab" then -- Debug View
+        LUIS.keypressed(key)
+    end
 end
 ```
 
 ## Documentation
 
-(Include links or brief descriptions of where to find more detailed documentation)
+(Include links to /luis/README.MD)
 
 ## Dependencies
 
-- LÖVE (Löve2D) framework
+- Löve2D: The game framework used for rendering and managing game objects.
 - flux (included in the `3rdparty` folder)
 - json (included in the `3rdparty` folder)
 
@@ -172,9 +204,3 @@ This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-## Acknowledgments
-
-- Thanks to the Löve2D community for inspiration and support
-- flux library by rxi (https://github.com/rxi/flux)
-
