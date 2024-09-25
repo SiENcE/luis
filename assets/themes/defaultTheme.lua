@@ -5,7 +5,7 @@ local defaultTheme = {
     },
     text = {
         color = {1, 1, 1},
-        font = love.graphics.newFont("assets/fonts/cstrike.ttf", 32),
+        font = love.graphics.newFont(32, "normal"),
         align = "left",
     },
     button = {
@@ -13,6 +13,7 @@ local defaultTheme = {
         hoverColor = {0.25, 0.25, 0.25, 1},
         pressedColor = {0.15, 0.15, 0.15, 1},
         textColor = {1, 1, 1, 1},
+		align = "center",
         cornerRadius = 4,
         elevation = 4,
         elevationHover = 8,
@@ -47,15 +48,15 @@ local defaultTheme = {
         borderColor = {0.25, 0.25, 0.25, 1},
     },
     icon = {
-        color = {1, 1, 1},
+        color = {1, 1, 1, 1},
     },
     dropdown = {
         backgroundColor = {0.2, 0.2, 0.2, 1},
         textColor = {1, 1, 1},
+		align = "left",
         hoverColor = {0.25, 0.25, 0.25, 1},
         borderColor = {0.15, 0.15, 0.15, 1},
         arrowColor = {1, 1, 1},
-
         scrollBarColor = {0.5, 0.5, 0.5},
         scrollBarWidth = 10
     },

@@ -136,17 +136,18 @@ function flexContainer.new(width, height, row, col, customTheme)
             for _, child in ipairs(self.children) do
                 if child.textinput then
                     child:textinput(text)
+					return
                 end
             end
         end,
 
         keypressed = function(self, key)
-			print(key)
             self.isDragging = false
             self.isResizing = false
             for _, child in ipairs(self.children) do
                 if child.keypressed then
                     child:keypressed(key)
+					return
                 end
             end
         end,

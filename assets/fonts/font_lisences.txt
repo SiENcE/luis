@@ -1,0 +1,15 @@
+DungeonFont.ttf
+Alphabets: English, Turkish
+Licence: CC0
+https://creativecommons.org/public-domain/cc0/
+Link: https://vrtxrry.itch.io/dungeonfont
+
+Monocraft.ttf
+Licence: SIL Open Font License 1.1
+https://github.com/IdreesInc/Monocraft/blob/main/LICENSE
+Link: https://github.com/IdreesInc/Monocraft/releases
+
+Roboto-Regular.ttf
+Licence: Apache License Version 2.0
+https://github.com/openmaptiles/fonts/blob/master/roboto/LICENSE.txt
+Link: https://github.com/openmaptiles/fonts
