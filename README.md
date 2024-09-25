@@ -1,6 +1,6 @@
-# **LUIS** (LUIS User Interface System - Sample Application)
+# **LUIS** (LUIS User Interface System)
 
-LUIS is a flexible and feature-rich UI system for the LÖVE (Love2D) framework. It provides an easy-to-use set of widgets and containers for creating interactive user interfaces in your Love2D games and applications.
+LUIS (LUIS User Interface System for Löve2D) is a flexible and feature-rich UI system for the LÖVE (Löve2D) framework. It provides an easy-to-use set of widgets and containers for creating interactive user interfaces in your Löve2D games and applications.
 
 ## Features
 
@@ -16,7 +16,7 @@ LUIS is a flexible and feature-rich UI system for the LÖVE (Love2D) framework. 
 
 ## Unique Selling Points
 
-- **Love2D Integration**: Seamlessly integrates with the Love2D framework
+- **Löve2D Integration**: Seamlessly integrates with the Löve2D framework
 - **Flexible Containers**: Use FlexContainers for dynamic and responsive layouts
 - **Easy Customization**: Modify themes and individual widget properties during runtime
 - **Lightweight**: Minimal external dependencies for easy integration into your project
@@ -105,7 +105,7 @@ return customWidget
 
 ## Installation
 
-1. Copy the `luis` folder into your Love2D project directory.
+1. Copy the `luis` folder into your Löve2D project directory.
 2. Require the library in your `main.lua` file:
 
 ```lua
@@ -161,7 +161,7 @@ end
 
 ## Dependencies
 
-- LÖVE (Love2D) framework
+- LÖVE (Löve2D) framework
 - flux (included in the `3rdparty` folder)
 - json (included in the `3rdparty` folder)
 
@@ -175,6 +175,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Acknowledgments
 
-- Thanks to the Love2D community for inspiration and support
+- Thanks to the Löve2D community for inspiration and support
 - flux library by rxi (https://github.com/rxi/flux)
 
