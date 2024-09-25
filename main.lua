@@ -1,9 +1,3 @@
--- Problems:
--- 			DropDownBox: when selecting, the an underlying ui element is also executed (Button i.e.) 
---			InputText: when adding a character in the middle of a text, the text behind is removed
--- > implement align to all widgets with text
--- > make funny effects with the grid
-
 local luis = require("luis")
 local defaultTheme = require("assets.themes.defaultTheme")
 local customTheme = require("assets.themes.customTheme")
@@ -104,7 +98,7 @@ local function createMainMenu()
     luis.createElement("main", "Label", "Main Menu", 96, 4, 4, 44)
     local menuItems = {"Start Game", "Settings", "Highscore", "Quit"}
     for i, item in ipairs(menuItems) do
-        luis.createElement("main", "Button", item, 15, 3, function() handleMainMenuSelection(item) end, 25 + i * 5, 41)
+        luis.createElement("main", "Button", item, 15, 3, function() handleMainMenuSelection(item) end, function() end, 25 + i * 5, 41)
     end
 end
 
@@ -112,7 +106,7 @@ local function createSettingsMenu()
     luis.createElement("settings", "Label", "Settings", 96, 4, 4, 45)
     local settingsItems = {"Video", "Audio", "Gameplay", "Controls", "Back"}
     for i, item in ipairs(settingsItems) do
-        luis.createElement("settings", "Button", item, 15, 3, function() handleSettingsMenuSelection(item) end, 20 + i * 5, 41)
+        luis.createElement("settings", "Button", item, 15, 3, function() handleSettingsMenuSelection(item) end, function() end, 20 + i * 5, 41)
     end
 end
 
@@ -153,7 +147,7 @@ local function createVideoMenu()
         love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {highdpi = value})
     end, 40, 50)
 
-    luis.createElement("video", "Button", "Back", 15, 3, popMenu, 45, 41)
+    luis.createElement("video", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 
 	-- add Dropdown at last
 
@@ -181,7 +175,7 @@ local function createVideoMenu()
 			highdpi = gameSettings.highDpi
 		})
 		luis.updateScale()
-	end, 25, 50)
+	end, 25, 50, 6)
 end
 
 local function createAudioMenu()
@@ -199,7 +193,7 @@ local function createAudioMenu()
         -- Update actual SFX volume here
     end, 30, 45)
     
-    luis.createElement("audio", "Button", "Back", 15, 3, popMenu, 45, 41)
+    luis.createElement("audio", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 end
 
 local function createGameplayMenu()
@@ -217,9 +211,10 @@ local function createGameplayMenu()
         luis.createElement("gameplay", "Label", diff, 10, 3, 20, 31 + i * 10)
     end
 
-    luis.createElement("gameplay", "Button", "Back", 15, 3, popMenu, 45, 41)
+    luis.createElement("gameplay", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 end
 
+local textInput_widget
 local function createControlsMenu()
     luis.createElement("controls", "Label", "Control Settings", 96, 4, 4, 42)
 
@@ -263,9 +258,9 @@ local function createControlsMenu()
 		elevationPressed = 10,
 		transitionDuration = 1.5,
 	}
-	local button_widget  = luis.newButton( "Toggle Theme", 15, 3, toggleTheme, 40, 41, customButtonTheme)
+	local button_widget  = luis.newButton( "Toggle Theme", 15, 3, toggleTheme, function() end, 40, 41, customButtonTheme)
 	local dropdown = luis.newDropDown(  {"Option 1", "Option 2", "Option 3"}, 3, 10, 2, function(item, index) print("Selected: " .. item) end, 35, 43)
-	local textInput_widget = luis.newTextInput( 20, 3, "Enter text here...", 45, 38)
+	textInput_widget = luis.newTextInput( 20, 3, "Enter text here...", function(text) print(text) textInput_widget:setText("") end, 45, 38)
 	container:addChild(button_widget)
 	container:addChild(textInput_widget)
 	container:addChild(dropdown)
@@ -277,7 +272,7 @@ local function createControlsMenu()
 	luis.createElement("controls", "FlexContainer", container)
 	----------------------------------------------------------------
 
-	luis.createElement("controls", "Button", "Back", 15, 3, popMenu, 50, 41)
+	luis.createElement("controls", "Button", "Back", 15, 3, popMenu, function() end, 50, 41)
 end
 
 function love.load()
