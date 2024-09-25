@@ -2,7 +2,7 @@ local utils = require("luis.utils")
 
 local flexContainer = {}
 
-local luis  -- This will store the reference to the core library
+local luis  -- This stores the reference to the core library
 function flexContainer.setluis(luisObj)
     luis = luisObj
 end
@@ -25,6 +25,7 @@ function flexContainer.new(width, height, row, col, customTheme)
         addChild = function(self, child)
             table.insert(self.children, child)
             self:arrangeChildren()
+            self:updateMinimumSize()
         end,
         
         removeChild = function(self, child)
@@ -35,8 +36,9 @@ function flexContainer.new(width, height, row, col, customTheme)
                 end
             end
             self:arrangeChildren()
+            self:updateMinimumSize()
         end,
-        
+
         arrangeChildren = function(self)
             local x = self.position.x + self.padding
             local y = self.position.y + self.padding
@@ -57,11 +59,41 @@ function flexContainer.new(width, height, row, col, customTheme)
                 maxHeight = math.max(maxHeight, child.height)
             end
         end,
-        
+
+        updateMinimumSize = function(self)
+            local minWidth = 0
+            local minHeight = self.padding * 2  -- Start with padding for top and bottom
+            local currentRowWidth = self.padding
+            local currentRowHeight = 0
+            
+            for _, child in ipairs(self.children) do
+                if currentRowWidth + child.width + self.padding > self.width then
+                    -- Move to next row
+                    minWidth = math.max(minWidth, currentRowWidth)
+                    minHeight = minHeight + currentRowHeight + self.padding
+                    currentRowWidth = self.padding + child.width
+                    currentRowHeight = child.height
+                else
+                    currentRowWidth = currentRowWidth + child.width + self.padding
+                    currentRowHeight = math.max(currentRowHeight, child.height)
+                end
+            end
+            -- Add the last row
+            minWidth = math.max(minWidth, currentRowWidth)
+            minHeight = minHeight + currentRowHeight
+            
+            -- Add padding for left and right sides
+            minWidth = minWidth + self.padding
+            
+            self.minWidth = math.max(minWidth, containerTheme.handleSize * 2)
+            self.minHeight = math.max(minHeight, containerTheme.handleSize * 2)
+        end,
+
         resize = function(self, newWidth, newHeight)
-            self.width = newWidth
-            self.height = newHeight
+            self.width = math.max(self.minWidth, newWidth)
+            self.height = math.max(self.minHeight, newHeight)
             self:arrangeChildren()
+            self:updateMinimumSize()  -- Recalculate minimum size after resizing
         end,
         
         update = function(self, mx, my)
@@ -70,8 +102,8 @@ function flexContainer.new(width, height, row, col, customTheme)
                 self.position.y = my - self.dragOffset.y
                 self:arrangeChildren()
             elseif self.isResizing then
-                self.width = math.max(containerTheme.handleSize * 2, mx - self.position.x)
-                self.height = math.max(containerTheme.handleSize * 2, my - self.position.y)
+                self.width = math.max(self.minWidth, mx - self.position.x)
+                self.height = math.max(self.minHeight, my - self.position.y)
                 self:arrangeChildren()
             end
 
@@ -102,13 +134,13 @@ function flexContainer.new(width, height, row, col, customTheme)
             end
         end,
         
-        click = function(self, x, y)
+        click = function(self, x, y, button, istouch)
             if self:isInResizeHandle(x, y) then
                 self.isResizing = true
                 return true
             elseif self:isInContainer(x, y) then
                 for _, child in ipairs(self.children) do
-                    if child.click and child:click(x, y) then
+                    if child.click and child:click(x, y, button, istouch) then
                         return true
                     end
                 end
@@ -120,12 +152,12 @@ function flexContainer.new(width, height, row, col, customTheme)
             return false
         end,
         
-        release = function(self, x, y)
+        release = function(self, x, y, button, istouch)
             self.isDragging = false
             self.isResizing = false
             for _, child in ipairs(self.children) do
                 if child.release then
-                    child:release(x, y)
+                    child:release(x, y, button, istouch)
                 end
             end
         end,
@@ -136,7 +168,7 @@ function flexContainer.new(width, height, row, col, customTheme)
             for _, child in ipairs(self.children) do
                 if child.textinput then
                     child:textinput(text)
-					return
+                    return
                 end
             end
         end,
@@ -147,7 +179,7 @@ function flexContainer.new(width, height, row, col, customTheme)
             for _, child in ipairs(self.children) do
                 if child.keypressed then
                     child:keypressed(key)
-					return
+                    return
                 end
             end
         end,
@@ -175,6 +207,7 @@ function flexContainer.new(width, height, row, col, customTheme)
         end
     }
     
+    container:updateMinimumSize()
     return container
 end
 
