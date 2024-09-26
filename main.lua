@@ -77,10 +77,10 @@ local customView = luis.createElement("custom", "Custom", function()
     love.graphics.rectangle("line", 0, 0, 200, 200)
     for y = 1, 200 - 1 do
         for x = 1, 200 - 1 do
-            local value = math.sin(x / 16.0)
-                        + math.sin(y / 8.0)
-                        + math.sin((x + y) / 16.0)
-                        + math.sin(math.sqrt(x * x + y * y) / 8.0)
+            local value = math.sin(x / 26.0)
+                        + math.sin(y / 18.0)
+                        + math.sin((x + y) / 26.0)
+                        + math.sin(math.sqrt(x * x + y * y) / 18.0)
             
             value = math.abs(math.sin(value * math.pi + time))
             
