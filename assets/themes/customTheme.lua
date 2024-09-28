@@ -32,6 +32,7 @@ local customTheme = {
         hoverColor = colors.orange,
         pressedColor = {colors.orange[1]*0.8, colors.orange[2]*0.8, colors.orange[3]*0.8, 1},
         textColor = colors.yellow,
+		align = "center",
         cornerRadius = 1,
         elevation = 0,
         elevationHover = 0,
@@ -52,6 +53,7 @@ local customTheme = {
     checkbox = {
         boxColor = colors.blue,
         checkColor = colors.orange,
+        cornerRadius = 1,
     },
     radiobutton = {
         circleColor = colors.blue,
@@ -66,11 +68,12 @@ local customTheme = {
         borderColor = colors.yellow,
     },
     icon = {
-        color = colors.yellow,
+        color = {1,1,1,1},
     },
     dropdown = {
         backgroundColor = colors.blue,
         textColor = colors.yellow,
+		align = "left",
         hoverColor = colors.orange,
         borderColor = colors.lime,
         arrowColor = colors.yellow,

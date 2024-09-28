@@ -34,6 +34,7 @@ local defaultTheme = {
     checkbox = {
         boxColor = {0.4, 0.4, 0.4},
         checkColor = {0, 0.7, 0},
+        cornerRadius = 4,
     },
     radiobutton = {
         circleColor = {0.4, 0.4, 0.4},
