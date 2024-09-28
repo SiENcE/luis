@@ -1,4 +1,5 @@
 local utils = require("luis.utils")
+
 local pointInRect = utils.pointInRect
 
 local slider = {}
@@ -8,15 +9,13 @@ function slider.setluis(luisObj)
     luis = luisObj
 end
 
--- Slider
-function slider.new(min, max, value, width, height, onChange, row, col, sliderTheme)
-    local sliderTheme = sliderTheme or luis.theme.slider
+function slider.new(min, max, value, width, height, onChange, row, col, customTheme)
+    local sliderTheme = customTheme or luis.theme.slider
     local knob = {
         radius = sliderTheme.knobRadius,
 		currentRadius = sliderTheme.knobRadius,
         grabRadius = sliderTheme.knobRadius * 1.5,  -- Increased size when grabbed
     }
-    
     return {
         type = "Slider",
         min = min,
@@ -25,51 +24,110 @@ function slider.new(min, max, value, width, height, onChange, row, col, sliderTh
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         onChange = onChange,
-        dragging = false,
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
         knob = knob,
-        
+        hover = false,
+        pressed = false,
+        focused = false,
+        focusable = true,
+
         update = function(self, mx, my)
-            if self.dragging then
-                local percentage = (mx - self.position.x) / self.width
-                self.value = self.min + (self.max - self.min) * math.max(0, math.min(1, percentage))
+            local wasHovered = self.hover
+            self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
+            
+            -- Update focus state
+            self.focused = (luis.currentFocus == self)
+            
+            -- Handle mouse input
+            if love.mouse.isDown(1) and self.hover then
+                self:setValue(self:getValueFromPosition(mx - self.position.x))
+            end
+            
+            -- Handle joystick/gamepad input when focused
+            if self.focused then
+                local jx = luis.getJoystickAxis('leftx')
+                if math.abs(jx) > luis.deadzone then
+                    local delta = jx * (self.max - self.min) * 0.01  -- Adjust sensitivity as needed
+                    self:setValue(self.value + delta)
+                end
+                
+                -- Handle gamepad button input for more precise control
+                if luis.isJoystickPressed('dpright') then
+                    self:setValue(self.value + (self.max - self.min) * 0.01)
+                elseif luis.isJoystickPressed('dpleft') then
+                    self:setValue(self.value - (self.max - self.min) * 0.01)
+                end
+            end
+        end,
+        
+        draw = function(self)
+            -- Draw track
+            love.graphics.setColor(sliderTheme.trackColor)
+            love.graphics.rectangle("fill", self.position.x, self.position.y + self.height / 2 - 2, self.width, 4)
+            
+            -- Draw knob
+            local knobX = self.position.x + (self.value - self.min) / (self.max - self.min) * self.width
+            love.graphics.setColor(self.hover and sliderTheme.grabColor or sliderTheme.knobColor)
+            love.graphics.circle("fill", knobX, self.position.y + self.height / 2, self.knob.currentRadius or self.knob.radius)
+            
+            -- Draw focus indicator
+            if self.focused then
+                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, 4)
+            end
+        end,
+        
+        click = function(self, x, y, button, istouch)
+            if self.hover and button == 1 then
+                self.pressed = true
+                self:setValue(self:getValueFromPosition(x - self.position.x))
+
+                -- Animate knob enlargement
+                luis.flux.to(self.knob, 0.1, { currentRadius = self.knob.grabRadius })
+                    :ease("quadout")
+
+                return true
+            end
+            return false
+        end,
+        
+        release = function(self, x, y, button, istouch)
+            if self.pressed and button == 1 then
+                self.pressed = false
+                self:setValue(self:getValueFromPosition(x - self.position.x))
+
+                -- Animate knob shrinking with a slight bounce
+                luis.flux.to(self.knob, 0.1, { currentRadius = self.knob.radius })
+                    :ease("bounceout")
+
+                return true
+            end
+            return false
+        end,
+        
+        setValue = function(self, newValue)
+            newValue = math.max(self.min, math.min(self.max, newValue))
+            if newValue ~= self.value then
+                self.value = newValue
                 if self.onChange then
                     self.onChange(self.value)
                 end
             end
         end,
         
-        draw = function(self)
-            love.graphics.setColor(sliderTheme.trackColor)
-            love.graphics.rectangle("fill", self.position.x, self.position.y + self.height / 2 - 2, self.width, 4)
-            
-            local knobX = self.position.x + (self.value - self.min) / (self.max - self.min) * self.width
-            love.graphics.setColor(self.dragging and sliderTheme.grabColor or sliderTheme.knobColor)
-            love.graphics.circle("fill", knobX, self.position.y + self.height / 2, self.knob.currentRadius or self.knob.radius)
+        getValue = function(self)
+            return self.value
         end,
         
-        click = function(self, x, y, button, istouch)
-            local knobX = self.position.x + (self.value - self.min) / (self.max - self.min) * self.width
-            if pointInRect(x, y, knobX - self.knob.radius, self.position.y, self.knob.radius * 2, self.height) then
-                self.dragging = true
-                self:update(x, y)
-                
-                -- Animate knob enlargement
-                luis.flux.to(self.knob, 0.1, { currentRadius = self.knob.grabRadius })
-                    :ease("quadout")
-                
-                return true
-            end
-            return false
+        getValueFromPosition = function(self, x)
+            return self.min + (x / self.width) * (self.max - self.min)
         end,
         
-        release = function(self)
-            if self.dragging then
-                self.dragging = false
-                
-                -- Animate knob shrinking with a slight bounce
-                luis.flux.to(self.knob, 0.1, { currentRadius = self.knob.radius })
-                    :ease("bounceout")
+        updateFocus = function(self, jx, jy)
+            -- Handle continuous joystick input for smoother control
+            if math.abs(jx) > luis.deadzone then
+                local delta = jx * (self.max - self.min) * 0.005  -- Adjust sensitivity as needed
+                self:setValue(self.value + delta)
             end
         end
     }

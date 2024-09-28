@@ -10,7 +10,7 @@ function dropDown.setluis(luisObj)
 end
 
 -- dropDown
-function dropDown.new(items, selectedIndex, width, height, onChange, row, col, maxVisibleItems, customTheme)
+function dropDown.new(items, value, width, height, onChange, row, col, maxVisibleItems, customTheme)
     local dropdownTheme = customTheme or luis.theme.dropdown
     
     local maxVisibleItems = maxVisibleItems or 5  -- Maximum number of visible items when dropDown is open
@@ -18,7 +18,7 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
     return {
         type = "DropDown",
         items = items,
-        selectedIndex = selectedIndex or 1,
+        value = value or 1,
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         onChange = onChange,
@@ -27,7 +27,33 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
         hoverIndex = nil,
         scrollOffset = 0,
         maxScrollOffset = math.max(0, #items - maxVisibleItems),
-        
+        focusable = true,  -- Make the dropdown focusable
+        focused = false,   -- Track focus state
+
+        update = function(self, mx, my)
+            -- Update focus state
+            self.focused = (luis.currentFocus == self)
+
+            -- Check for joystick/gamepad input when focused
+            if self.focused then
+                if luis.joystickJustPressed('a') or luis.joystickJustPressed('dpright') then
+                    self:joystickpress('a')
+                end
+            end
+
+            if self.isOpen then
+                local listHeight = math.min(#self.items, maxVisibleItems) * self.height
+                self.hoverIndex = nil
+                for i = 1, math.min(#self.items, maxVisibleItems) do
+                    local itemY = self.position.y + self.height * i
+                    if pointInRect(mx, my, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
+                        self.hoverIndex = i + math.floor(self.scrollOffset)
+                        break
+                    end
+                end
+            end
+        end,
+
         draw = function(self)
             -- Draw main button
             love.graphics.setColor(dropdownTheme.backgroundColor)
@@ -37,7 +63,7 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
             
             -- Draw selected text
             love.graphics.setColor(dropdownTheme.textColor)
-            love.graphics.printf(self.items[self.selectedIndex], self.position.x + luis.gridSize, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width - self.height, dropdownTheme.align)
+            love.graphics.printf(self.items[self.value], self.position.x + luis.gridSize, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width - self.height, dropdownTheme.align)
             
             -- Draw arrow
             love.graphics.setColor(dropdownTheme.arrowColor)
@@ -50,10 +76,15 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
                 arrowX, arrowY + arrowSize / 2
             )
             
+            -- Draw focus indicator
+            if self.focused then
+                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4)
+            end
+            
             -- Draw dropDown list if open
             if self.isOpen then
                 local listHeight = math.min(#self.items, maxVisibleItems) * self.height
-                --love.graphics.setScissor(self.position.x, self.position.y + self.height, self.width, listHeight)
                 love.graphics.setScissor(self.position.x*luis.scale, self.position.y*luis.scale + self.height*luis.scale, self.width*luis.scale, listHeight*luis.scale)
 
                 for i = 1, #self.items do
@@ -80,20 +111,6 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
             end
         end,
         
-        update = function(self, mx, my)
-            if self.isOpen then
-                local listHeight = math.min(#self.items, maxVisibleItems) * self.height
-                self.hoverIndex = nil
-                for i = 1, math.min(#self.items, maxVisibleItems) do
-                    local itemY = self.position.y + self.height * i
-                    if pointInRect(mx, my, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
-                        self.hoverIndex = i + math.floor(self.scrollOffset)
-                        break
-                    end
-                end
-            end
-        end,
-        
         click = function(self, x, y, button, istouch)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.isOpen = not self.isOpen
@@ -103,10 +120,10 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
                 for i = 1, math.min(#self.items, maxVisibleItems) do
                     local itemY = self.position.y + self.height * i
                     if pointInRect(x, y, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
-                        self.selectedIndex = i + math.floor(self.scrollOffset)
+                        self.value = i + math.floor(self.scrollOffset)
                         self.isOpen = false
                         if self.onChange then
-                            self.onChange(self.items[self.selectedIndex], self.selectedIndex)
+                            self.onChange(self.items[self.value], self.value)
                         end
                         return true
                     end
@@ -131,16 +148,58 @@ function dropDown.new(items, selectedIndex, width, height, onChange, row, col, m
         setItems = function(self, newItems)
             self.items = newItems
             self.maxScrollOffset = math.max(0, #newItems - maxVisibleItems)
-            self.selectedIndex = math.min(self.selectedIndex, #newItems)
+            self.value = math.min(self.value, #newItems)
         end,
         
-        setSelectedIndex = function(self, newIndex)
+        setValue = function(self, newIndex)
             if newIndex >= 1 and newIndex <= #self.items then
-                self.selectedIndex = newIndex
+                self.value = newIndex
                 if self.onChange then
-                    self.onChange(self.items[self.selectedIndex], self.selectedIndex)
+                    self.onChange(self.items[self.value], self.value)
                 end
             end
+        end,
+
+        -- Function for handling gamepad input
+        updateFocus = function(self, jx, jy)
+            if not self.isOpen then
+                if jy > luis.deadzone then
+                    self.isOpen = true
+                    self.hoverIndex = self.value
+                end
+            else
+                if jy > luis.deadzone then
+                    self.hoverIndex = math.min(#self.items, (self.hoverIndex or self.value) + 1)
+                    self.scrollOffset = math.max(0, math.min(self.maxScrollOffset, self.hoverIndex - maxVisibleItems))
+                elseif jy < -luis.deadzone then
+                    self.hoverIndex = math.max(1, (self.hoverIndex or self.value) - 1)
+                    self.scrollOffset = math.max(0, math.min(self.maxScrollOffset, self.hoverIndex - 1))
+                end
+            end
+        end,
+
+        -- Function for handling gamepad button press
+        joystickpress = function(self, button)
+			print("dropdown.joystickpress = function", button)
+            if button == "a" or button == "start" then
+                if not self.isOpen then
+                    self.isOpen = true
+                    self.hoverIndex = self.value
+                else
+                    if self.hoverIndex then
+                        self.value = self.hoverIndex
+                        self.isOpen = false
+                        if self.onChange then
+                            self.onChange(self.items[self.value], self.value)
+                        end
+                    end
+                end
+                return true
+            elseif button == "b" and self.isOpen then
+                self.isOpen = false
+                return true
+            end
+            return false
         end
     }
 end

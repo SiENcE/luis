@@ -3,12 +3,13 @@ local json = require("luis.3rdparty.json")
 local luis = {}
 
 -- UI elements storage
-luis.layers = {}
+luis.layers = {}	-- Store all created layers
 luis.elements = {}  -- Store all created elements
 luis.elementStates = {}  -- Store states of stateful elements
-luis.currentLayer = nil
-luis.layerStack = {}
+luis.currentLayer = nil	-- current Layer (deprecaded - use enable or disable layer!)
+luis.layerStack = {}	-- Layer stack (don't touch)
 luis.enabledLayers = {}  -- Store enabled layers
+luis.lastFocusedWidget = {} -- Table to store the last focused widget for each layer
 
 -- Scaling
 luis.baseWidth, luis.baseHeight = 1920, 1080
@@ -20,6 +21,16 @@ luis.showGrid = false
 luis.showElementOutlines = false
 luis.showLayerNames = false
 
+-- Variables for joystick and gamepad support
+luis.joysticks = {}
+luis.activeJoystick = nil
+luis.deadzone = 0.2
+luis.dpadSpeed = 300
+-- Variables for joystick navigation
+luis.currentFocus = nil
+luis.focusableElements = {}
+luis.joystickButtonStates = {}
+
 --[[
 love.graphics.newFont(fontsize, hinting mode)
 
@@ -29,7 +40,9 @@ mono - Results in aliased / unsmoothed text with either full opacity or complete
 none - Disables hinting for the font. Results in fuzzier text.
 ]]--
 
+--==============================================
 -- Default theme
+--==============================================
 luis.theme = {
     background = {
         color = {0.1, 0.1, 0.1},
@@ -65,6 +78,7 @@ luis.theme = {
     checkbox = {
         boxColor = {0.4, 0.4, 0.4},
         checkColor = {0, 0.7, 0},
+        cornerRadius = 4,
     },
     radiobutton = {
         circleColor = {0.4, 0.4, 0.4},
@@ -110,109 +124,9 @@ luis.theme = {
 	},
 }
 
--- Helper function to convert all keys to strings
-local function deepCopyWithStringKeys(t)
-    if type(t) ~= 'table' then return t end
-    local res = {}
-    for k, v in pairs(t) do
-        if type(v) == 'table' then
-            v = deepCopyWithStringKeys(v)
-        end
-        res[tostring(k)] = v
-    end
-    return res
-end
-
--- configuration
-function luis.saveConfig(filename)
-    local config = {}
-    for layerName, elements in pairs(luis.elements) do
-        config[layerName] = {}
-        for i, element in ipairs(elements) do
-            if element.type == "Slider" or
-               element.type == "Switch" or
-               element.type == "CheckBox" or
-               element.type == "RadioButton" or
-               element.type == "DropDown" or
-               element.type == "TextInput" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = element.value or element.selectedIndex or element.text
-                }
-            end
-        end
-    end
-
-    -- Convert elementStates to a new table with string keys
-    local config = deepCopyWithStringKeys(config)
-
-    local jsonString = json.encode(config)
-    love.filesystem.write(filename, jsonString)
-end
-
--- load configuration
-function luis.loadConfig(filename)
-    if love.filesystem.getInfo(filename) then
-        local jsonString = love.filesystem.read(filename)
-        local config = json.decode(jsonString)
-        
-        for layerName, elements in pairs(config) do
-            if luis.elements[layerName] then
-                for i, elementConfig in pairs(elements) do
-                    local element = luis.elements[layerName][tonumber(i)]
-                    if element and element.type == elementConfig.type then
-                        if element.type == "Slider" then
-                            element.value = elementConfig.value
-                        elseif element.type == "Switch" or element.type == "CheckBox" then
-                            element.value = elementConfig.value
-                        elseif element.type == "RadioButton" then
-                            element.value = elementConfig.value
-                            -- Deselect other radio buttons in the same group
-                            for _, otherElement in ipairs(luis.elements[layerName]) do
-                                if otherElement.type == "RadioButton" and otherElement.group == element.group and otherElement ~= element then
-                                    otherElement.value = false
-                                end
-                            end
-                        elseif element.type == "DropDown" then
-                            element:setSelectedIndex(tonumber(elementConfig.value))
-                        elseif element.type == "TextInput" then
-                            element:setText(tostring(elementConfig.value))
-                        end
-                        
-                        -- Update element state
-                        luis.setElementState(layerName, i, elementConfig.value)
-                    end
-                end
-            end
-        end
-    end
-end
-
-function luis.updateButtonsTheme(newTheme)
-    for _, layer in pairs(luis.elements) do
-        for _, element in ipairs(layer) do
-            if element.type == "Button" then
-                local buttonTheme = newTheme.button
-				element.colorR = buttonTheme.color[1]
-				element.colorG = buttonTheme.color[2]
-				element.colorB = buttonTheme.color[3]
-				element.colorA = buttonTheme.color[4]
-            end
-        end
-    end
-end
-
--- Set a new theme
-function luis.setTheme(newTheme)
-    for category, styles in pairs(newTheme) do
-        if luis.theme[category] then
-            for property, value in pairs(styles) do
-                luis.theme[category][property] = value
-            end
-        end
-    end
-	luis.updateButtonsTheme(newTheme)
-end
+--==============================================
+-- Layer handling
+--==============================================
 
 -- Create a new layer
 function luis.newLayer(name)
@@ -224,12 +138,15 @@ function luis.newLayer(name)
     if luis.currentLayer == nil then
         luis.currentLayer = name
     end
+	
     return name
 end
 
--- Set currentLayer function
 function luis.setCurrentLayer(layerName)
     if luis.layers[layerName] then
+        -- Store the last focused widget of the current layer before changing
+        luis.updateLastFocusedWidget(luis.currentLayer)
+        
         -- Remove the layer if it's already in the stack
         for i, layer in ipairs(luis.layerStack) do
             if layer == layerName then
@@ -239,10 +156,33 @@ function luis.setCurrentLayer(layerName)
         end
         -- Add the layer to the top of the stack
         table.insert(luis.layerStack, layerName)
+		-- disable currentLayer
+		luis.disableLayer(luis.currentLayer)
+		-- set new CurrentLayer
         luis.currentLayer = layerName
         -- Ensure the current layer is also enabled
-        luis.enabledLayers[layerName] = true
+        luis.enableLayer(layerName)
+        -- Restore focus to the last focused widget of the new current layer
+        luis.restoreFocus(layerName)
     end
+end
+
+function luis.popLayer()
+    if #luis.layerStack > 1 then
+        local poppedLayer = table.remove(luis.layerStack)
+        -- Store the last focused widget of the popped layer
+        luis.updateLastFocusedWidget(poppedLayer)
+		-- disable currentLayer
+        luis.disableLayer(poppedLayer)
+		-- set new CurrentLayer
+        luis.currentLayer = luis.layerStack[#luis.layerStack]
+		-- Ensure the current layer is also enabled
+        luis.enableLayer(luis.currentLayer)
+		-- set focus for gamepad
+		luis.restoreFocus(luis.currentLayer)
+        return luis.currentLayer
+    end
+    return false
 end
 
 -- Enable a layer
@@ -255,7 +195,17 @@ end
 -- Disable a layer
 function luis.disableLayer(layerName)
     if luis.layers[layerName] then
+        -- Store the last focused widget before disabling the layer
+        luis.updateLastFocusedWidget(layerName)
         luis.enabledLayers[layerName] = false
+    end
+end
+
+-- Toggle a layer's enabled state
+function luis.toggleLayer(layerName)
+    if luis.layers[layerName] then
+	print('luis.toggleLayer', layerName)
+        luis.enabledLayers[layerName] = not luis.enabledLayers[layerName]
     end
 end
 
@@ -264,12 +214,10 @@ function luis.isLayerEnabled(layerName)
     return luis.enabledLayers[layerName] == true
 end
 
--- Toggle a layer's enabled state
-function luis.toggleLayer(layerName)
-    if luis.layers[layerName] then
-        luis.enabledLayers[layerName] = not luis.enabledLayers[layerName]
-    end
-end
+
+--==============================================
+-- Widget handling
+--==============================================
 
 function luis.createElement(layerName, elementType, ...)
     if not luis.elements[layerName] then
@@ -293,38 +241,7 @@ function luis.createElement(layerName, elementType, ...)
        elementType == "CheckBox" or
        elementType == "RadioButton" or
        elementType == "DropDown" or
-       elementType == "TextInput" then
-        if not luis.elementStates[layerName] then
-            luis.elementStates[layerName] = {}
-        end
-        luis.elementStates[layerName][#luis.elements[layerName]] = element.value
-    end
-    
-    return element
-end
-
-function luis.createElement(layerName, elementType, ...)
-    if not luis.elements[layerName] then
-        luis.elements[layerName] = {}
-    end
-
-    local element
-    if elementType == "FlexContainer" and type((...)) == "table" and (...).type == "FlexContainer" then
-        -- If it's a pre-existing FlexContainer, use it directly
-        element = (...)
-    else
-        -- Otherwise, create a new element as before
-        element = luis["new" .. elementType](...)
-    end
-
-    table.insert(luis.elements[layerName], element)
-    
-    -- Initialize state for stateful elements (unchanged)
-    if elementType == "Slider" or
-       elementType == "Switch" or
-       elementType == "CheckBox" or
-       elementType == "RadioButton" or
-       elementType == "DropDown" or
+	   elementType == "ProgressBar" or
        elementType == "TextInput" then
         if not luis.elementStates[layerName] then
             luis.elementStates[layerName] = {}
@@ -354,7 +271,54 @@ function luis.getElementState(layerName, index)
     return nil
 end
 
+--==============================================
+-- Theme handling
+--==============================================
+
+function luis.updateElementTheme(theme)
+    for _, layer in pairs(luis.elements) do
+        for _, element in ipairs(layer) do
+            if element.type == "Button" and element ~= luis.currentFocus then
+                local buttonTheme = theme.button
+				element.colorR = buttonTheme.color[1]
+				element.colorG = buttonTheme.color[2]
+				element.colorB = buttonTheme.color[3]
+				element.colorA = buttonTheme.color[4]
+            end
+       end
+    end
+end
+
+-- Set a new theme
+function luis.setTheme(newTheme)
+    for category, styles in pairs(newTheme) do
+        if luis.theme[category] then
+            for property, value in pairs(styles) do
+                luis.theme[category][property] = value
+            end
+        end
+    end
+	luis.updateElementTheme(newTheme)
+end
+
+--==============================================
+-- Core functionality
+--==============================================
+
+function luis.setGridSize(gridSize)
+	if gridSize then
+		luis.gridSize = gridSize
+	end
+end
+
+function luis.updateScale()
+    local w, h = love.graphics.getDimensions()
+    luis.scale = math.min(w / luis.baseWidth, h / luis.baseHeight)
+end
+
 local accumulator = 0
+local mx = luis.baseWidth
+local my = luis.baseHeight
 function luis.update(dt)
     accumulator = accumulator + dt
     if accumulator >= 1/60 then
@@ -365,11 +329,24 @@ function luis.update(dt)
     local mx, my = love.mouse.getPosition()
     mx, my = mx / luis.scale, my / luis.scale
     
+    -- Joystick navigation
+    local jx, jy = luis.getJoystickAxis('leftx'), luis.getJoystickAxis('lefty')
+    if math.abs(jx) > luis.deadzone or math.abs(jy) > luis.deadzone then
+        mx, my = mx + jx * 10, my + jy * 10  -- Adjust speed as needed
+    end
+    
+    -- Check for joystick button presses for focus navigation
+    if luis.joystickJustPressed('dpdown') then
+        luis.moveFocus("next")
+    elseif luis.joystickJustPressed('dpup') then
+        luis.moveFocus("previous")
+    end
+
     for layerName, enabled in pairs(luis.enabledLayers) do
         if enabled and luis.elements[layerName] then
             for i, element in ipairs(luis.elements[layerName]) do
                 if element.update then
-                    element:update(mx, my)
+                    element:update(mx, my, dt)
                 end
                 -- Update state for stateful elements
                 if element.type == "Slider" or
@@ -382,6 +359,13 @@ function luis.update(dt)
                 end
             end
         end
+    end
+
+    -- Update focused element
+	luis.updateFocusableElements()
+	
+    if luis.currentFocus and luis.currentFocus.updateFocus then
+        luis.currentFocus:updateFocus(jx, jy)
     end
 end
 
@@ -446,14 +430,31 @@ function luis.draw()
     love.graphics.pop()
 end
 
-function luis.popLayer()
-    if #luis.layerStack > 1 then
-        table.remove(luis.layerStack)
-        luis.currentLayer = luis.layerStack[#luis.layerStack]
-		luis.toggleLayer(luis.currentLayer)
-        return luis.currentLayer
-    end
-    return false
+--==============================================
+-- Input handling
+--==============================================
+
+------------------------------------------------
+-- Keyboard input handling
+------------------------------------------------
+
+function luis.keypressed(key)
+    if key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+		luis.showLayerNames = not luis.showLayerNames
+    else
+		for layerName, enabled in pairs(luis.enabledLayers) do
+			if enabled and luis.elements[layerName] then
+				for _, element in ipairs(luis.elements[layerName]) do
+					if (element.type == "TextInput" and element.active) or element.type == "FlexContainer" then
+						element:keypressed(key)
+						return
+					end
+				end
+			end
+		end
+	end
 end
 
 function luis.textinput(text)
@@ -466,6 +467,10 @@ function luis.textinput(text)
         end
     end
 end
+
+------------------------------------------------
+-- Mouse input handling
+------------------------------------------------
 
 function luis.mousepressed(x, y, button, istouch)
     if button == 1 then  -- Left mouse button
@@ -511,28 +516,250 @@ function luis.wheelmoved(x, y)
     end
 end
 
-function luis.keypressed(key)
-    if key == "tab" then
-        luis.showGrid = not luis.showGrid
-        luis.showElementOutlines = not luis.showElementOutlines
-		luis.showLayerNames = not luis.showLayerNames
-    else
-		for layerName, enabled in pairs(luis.enabledLayers) do
-			if enabled and luis.elements[layerName] then
-				for _, element in ipairs(luis.elements[layerName]) do
-					if (element.type == "TextInput" and element.active) or element.type == "FlexContainer" then
-						element:keypressed(key)
-						return
-					end
-				end
-			end
-		end
-	end
+------------------------------------------------
+-- Focus handling for Joystick
+------------------------------------------------
+-- Function to update the last focused widget for a layer
+function luis.updateLastFocusedWidget(layerName)
+    if luis.elements[layerName] then
+        for index, element in ipairs(luis.elements[layerName]) do
+            if element.focusable and element.focused then
+                luis.lastFocusedWidget[layerName] = index
+                return
+            end
+        end
+    end
+    -- If no focused widget found, set to nil
+    luis.lastFocusedWidget[layerName] = nil
 end
 
-function luis.updateScale()
-    local w, h = love.graphics.getDimensions()
-    luis.scale = math.min(w / luis.baseWidth, h / luis.baseHeight)
+-- Function to restore focus to the last focused widget of a layer
+function luis.restoreFocus(layerName)
+    local lastFocusedIndex = luis.lastFocusedWidget[layerName]
+    if lastFocusedIndex and luis.elements[layerName][lastFocusedIndex] then
+        local element = luis.elements[layerName][lastFocusedIndex]
+        element.focused = true
+        luis.currentFocus = element
+    else
+        luis.moveFocus() -- Fall back to default focus behavior
+    end
+end
+
+-- Update the list of focusable elements
+function luis.updateFocusableElements()
+	if not luis.activeJoystick then return end
+
+    luis.focusableElements = {}
+    for layerName, enabled in pairs(luis.enabledLayers) do
+        if enabled and luis.elements[layerName] then
+            for _, element in ipairs(luis.elements[layerName]) do
+                if element.focusable then
+                    table.insert(luis.focusableElements, element)
+                end
+            end
+        end
+    end
+    -- Set initial focus if not set
+	if not luis.currentFocus and #luis.focusableElements > 0 then
+		luis.currentFocus = luis.focusableElements[1]
+	end
+	
+	-- after focus change, update all button colors
+	luis.updateElementTheme(luis.theme)
+end
+
+-- Move focus in a direction
+function luis.moveFocus(direction)
+    if #luis.focusableElements == 0 then return end
+
+    -- Clear focus on the current element
+    if luis.currentFocus then
+        luis.currentFocus.focused = false
+    end
+
+    local currentIndex = 1
+    for i, element in ipairs(luis.focusableElements) do
+        if element == luis.currentFocus then
+            currentIndex = i
+            break
+        end
+    end
+    
+    local newIndex
+    if direction == "next" then
+        newIndex = (currentIndex % #luis.focusableElements) + 1
+    elseif direction == "previous" then
+        newIndex = ((currentIndex - 2) % #luis.focusableElements) + 1
+    else
+        newIndex = 1 -- Default to first element if no direction specified
+    end
+
+    luis.currentFocus = luis.focusableElements[newIndex]
+    luis.currentFocus.focused = true
+    
+    -- Update the last focused widget for the current layer
+    luis.updateLastFocusedWidget(luis.currentLayer)
+end
+
+------------------------------------------------
+-- Joystick input handling
+------------------------------------------------
+
+function luis.initJoysticks()
+    luis.joysticks = love.joystick.getJoysticks()
+    if #luis.joysticks > 0 then
+        luis.activeJoystick = luis.joysticks[1]
+    end
+end
+
+-- Set active joystick
+function luis.setActiveJoystick(joystick)
+    luis.activeJoystick = joystick
+end
+
+function luis.joystickJustPressed(button)
+    local isPressed = luis.isJoystickPressed(button)
+    local justPressed = isPressed and not luis.joystickButtonStates[button]
+    luis.joystickButtonStates[button] = isPressed
+    return justPressed
+end
+
+-- Check if a Joystick or Gamepad button is pressed
+function luis.isJoystickPressed(button)
+    return luis.activeJoystick and luis.activeJoystick:isGamepadDown(button)
+end
+
+-- Get Joystick or Gamepad axis value
+function luis.getJoystickAxis(axis)
+    if luis.activeJoystick then
+        local value = luis.activeJoystick:getGamepadAxis(axis)
+        return math.abs(value) > luis.deadzone and value or 0
+    end
+    return 0
+end
+
+function luis.setJoystickPos(x,y)
+	mx=x
+	my=y
+end
+
+function luis.getJoystickPos()
+	return mx, my
+end
+
+-- Function for joystick button press
+function luis.joystickpressed(joystick, button)
+    if joystick == luis.activeJoystick then
+        for layerName, enabled in pairs(luis.enabledLayers) do
+            if enabled and luis.elements[layerName] then
+                for _, element in ipairs(luis.elements[layerName]) do
+					print('luis.joystickpressed 1',joystick, button)
+                    if element.joystickpress and element:joystickpress(button) then
+						print('luis.joystickpressed 2',joystick, button)
+                        return
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Function for joystick button release
+function luis.joystickreleased(joystick, button)
+    if joystick == luis.activeJoystick then
+        for layerName, enabled in pairs(luis.enabledLayers) do
+            if enabled and luis.elements[layerName] then
+                for _, element in ipairs(luis.elements[layerName]) do
+					print('luis.joystickreleased 1',joystick, button)
+                    if element.joystickrelease and element:joystickrelease(button) then
+						print('luis.joystickreleased 2',joystick, button)
+                        return
+                    end
+                end
+            end
+        end
+    end
+end
+
+--==============================================
+-- State Management
+--==============================================
+
+-- Helper function to convert all keys to strings
+local function deepCopyWithStringKeys(t)
+    if type(t) ~= 'table' then return t end
+    local res = {}
+    for k, v in pairs(t) do
+        if type(v) == 'table' then
+            v = deepCopyWithStringKeys(v)
+        end
+        res[tostring(k)] = v
+    end
+    return res
+end
+
+function luis.saveConfig(filename)
+    local config = {}
+    for layerName, elements in pairs(luis.elements) do
+        config[layerName] = {}
+        for i, element in ipairs(elements) do
+            if element.type == "Slider" or
+               element.type == "Switch" or
+               element.type == "CheckBox" or
+               element.type == "RadioButton" or
+               element.type == "DropDown" or
+               element.type == "TextInput" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = element.value or element.selectedIndex or element.text
+                }
+            end
+        end
+    end
+
+    -- Convert elementStates to a new table with string keys
+    local config = deepCopyWithStringKeys(config)
+
+    local jsonString = json.encode(config)
+    love.filesystem.write(filename, jsonString)
+end
+
+-- load configuration
+function luis.loadConfig(filename)
+    if love.filesystem.getInfo(filename) then
+        local jsonString = love.filesystem.read(filename)
+        local config = json.decode(jsonString)
+        
+        for layerName, elements in pairs(config) do
+            if luis.elements[layerName] then
+                for i, elementConfig in pairs(elements) do
+                    local element = luis.elements[layerName][tonumber(i)]
+                    if element and element.type == elementConfig.type then
+                        if element.type == "Slider" then
+                            element.value = elementConfig.value
+                        elseif element.type == "Switch" or element.type == "CheckBox" then
+                            element.value = elementConfig.value
+                        elseif element.type == "RadioButton" then
+                            element.value = elementConfig.value
+                            -- Deselect other radio buttons in the same group
+                            for _, otherElement in ipairs(luis.elements[layerName]) do
+                                if otherElement.type == "RadioButton" and otherElement.group == element.group and otherElement ~= element then
+                                    otherElement.value = false
+                                end
+                            end
+                        elseif element.type == "DropDown" then
+                            element:setSelectedIndex(tonumber(elementConfig.value))
+                        elseif element.type == "TextInput" then
+                            element:setText(tostring(elementConfig.value))
+                        end
+                        
+                        -- Update element state
+                        luis.setElementState(layerName, i, elementConfig.value)
+                    end
+                end
+            end
+        end
+    end
 end
 
 return luis

@@ -119,7 +119,7 @@ local function createVideoMenu()
         gameSettings.fullscreen = value
         love.window.setFullscreen(value)
     end, 10, 50)
-    
+
     -- Show FPS
     luis.createElement("video", "Label", "Show FPS", 10, 3, 15, 40)
     luis.createElement("video", "CheckBox", gameSettings.showFPS, 3, function(value)
@@ -132,32 +132,6 @@ local function createVideoMenu()
         gameSettings.vsync = value
         love.window.setVSync(value and 1 or 0)
     end, 20, 50)
-    
-    -- Resizable
-    luis.createElement("video", "Label", "Resizable", 10, 3, 30, 40)
-    luis.createElement("video", "CheckBox", gameSettings.resizable, 3, function(value)
-        gameSettings.resizable = value
-        love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {resizable = value})
-    end, 30, 50)
-
-    -- High DPI
-    luis.createElement("video", "Label", "High DPI", 10, 3, 40, 40)
-    luis.createElement("video", "CheckBox", gameSettings.highDpi, 3, function(value)
-        gameSettings.highDpi = value
-        love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {highdpi = value})
-    end, 40, 50)
-
-    luis.createElement("video", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
-
-	-- add Dropdown at last
-
-	-- FSAA (Full-Screen Anti-Aliasing)
-	luis.createElement("video", "Label", "FSAA", 10, 3, 35, 40)
-	luis.createElement("video", "DropDown", {"Off", "2x", "4x", "8x"}, gameSettings.fsaa, 10, 3, function(item, index)
-		gameSettings.fsaa = index
-		local fsaaValue = {0, 2, 4, 8}
-		love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {msaa = fsaaValue[index]})
-	end, 35, 50)
 
 	-- Resolution
 	luis.createElement("video", "Label", "Resolution", 10, 3, 25, 40)
@@ -176,6 +150,30 @@ local function createVideoMenu()
 		})
 		luis.updateScale()
 	end, 25, 50, 6)
+
+    -- Resizable
+    luis.createElement("video", "Label", "Resizable", 10, 3, 30, 40)
+    luis.createElement("video", "CheckBox", gameSettings.resizable, 3, function(value)
+        gameSettings.resizable = value
+        love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {resizable = value})
+    end, 30, 50)
+
+	-- FSAA (Full-Screen Anti-Aliasing)
+	luis.createElement("video", "Label", "FSAA", 10, 3, 35, 40)
+	luis.createElement("video", "DropDown", {"Off", "2x", "4x", "8x"}, gameSettings.fsaa, 10, 3, function(item, index)
+		gameSettings.fsaa = index
+		local fsaaValue = {0, 2, 4, 8}
+		love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {msaa = fsaaValue[index]})
+	end, 35, 50)
+
+    -- High DPI
+    luis.createElement("video", "Label", "High DPI", 10, 3, 40, 40)
+    luis.createElement("video", "CheckBox", gameSettings.highDpi, 3, function(value)
+        gameSettings.highDpi = value
+        love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {highdpi = value})
+    end, 40, 50)
+
+    luis.createElement("video", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 end
 
 local function createAudioMenu()
@@ -285,6 +283,8 @@ function love.load()
     })
 
     love.keyboard.setKeyRepeat(true)
+	luis.initJoysticks()  -- Initialize joysticks
+	luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
 
     -- Create layers for different menus
     luis.newLayer("main", 96, 54)
@@ -306,21 +306,27 @@ function love.load()
 
 --	luis.loadConfig('config.json')
 
+	luis.setTheme(customTheme)
+
 	luis.enableLayer("custom")
     pushMenu("main")
 end
 
+local joyposition = { x=luis.baseWidth/2, y=luis.baseHeight/2 }
+local speed = 300
 function love.update(dt)
-    luis.updateScale()
     luis.update(dt)
-	time = time + dt
-	
+    luis.updateScale()
+
 	icon_widget.position = luis.Vector2D.new(math.sin(time*10)+900, math.sin(time*10)+600)
+	
+	time = time + dt
 end
 
 function love.draw()
 	local startTime = love.timer.getTime()
     luis.draw()
+
 	local endTime = love.timer.getTime()
 	local time = (endTime - startTime) * 1000
 
@@ -342,13 +348,11 @@ function love.resize(w, h)
 end
 
 function pushMenu(menuName)
-	luis.toggleLayer(luis.currentLayer)
-    luis.setCurrentLayer(menuName)
+    luis.setCurrentLayer(menuName)	-- disable current + set new current + enable Layer for drawing
 end
 
 function popMenu()
-	luis.toggleLayer(luis.currentLayer)
-    luis.popLayer()
+    luis.popLayer()	-- disable current + pop new current from Stack + enable Layer for drawing
 end
 
 function handleMainMenuSelection(selected)
@@ -408,7 +412,7 @@ function love.keypressed(key)
     elseif key == "l" then
         luis.toggleLayer('custom')
     else
-        luis.keypressed(key)
+		luis.keypressed(key)
 	end
 end
 
@@ -418,4 +422,27 @@ end
 
 function love.touchreleased(id, x, y, dx, dy, pressure)
     love.mousereleased(x, y, 1, true)
+end
+
+function love.joystickadded(joystick)
+print('joystickadded', joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
+end
+
+function love.joystickremoved(joystick)
+print('joystickremoved', joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+end
+
+function love.gamepadpressed(joystick, button)
+print('love.gamepadpressed', joystick, button)
+--    local name = joystick:getName()
+--    local index = joystick:getConnectedIndex()
+--    print(string.format("Changing active joystick to #%d '%s'.", index, name))
+    luis.joystickpressed(joystick, button)
+end
+
+function love.gamepadpressed(joystick, button)
+print('love.gamepadpressed', joystick, button)
+    luis.joystickreleased(joystick, button)
 end

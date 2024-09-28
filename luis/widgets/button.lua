@@ -31,21 +31,33 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         onClick = onClick,
-		onRelease = onRelease,
+        onRelease = onRelease,
         hover = false,
         pressed = false,
+        focused = false,
+        focusable = true,  -- Make the button focusable
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
         colorR = buttonTheme.color[1],
         colorG = buttonTheme.color[2],
         colorB = buttonTheme.color[3],
         colorA = buttonTheme.color[4],
         elevation = buttonTheme.elevation,
-        
+
         update = function(self, mx, my)
             local wasHovered = self.hover
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
-            
-            if self.hover and not wasHovered then
+ 
+            -- Update focus state
+            self.focused = (luis.currentFocus == self)
+
+            -- Check for joystick button press when focused
+            if self.focused and luis.joystickJustPressed('a') then
+                self:click()
+            elseif self.pressed and not luis.isJoystickPressed('a') then
+                self:release()
+            end
+
+            if (self.hover and not wasHovered) or (self.focused and not self.hover) then
                 luis.flux.to(self, buttonTheme.transitionDuration, {
                     elevation = buttonTheme.elevationHover,
                     colorR = buttonTheme.hoverColor[1],
@@ -53,7 +65,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
                     colorB = buttonTheme.hoverColor[3],
                     colorA = buttonTheme.hoverColor[4]
                 })
-            elseif not self.hover and wasHovered then
+            elseif (not self.hover and wasHovered) and not self.focused then
                 luis.flux.to(self, buttonTheme.transitionDuration, {
                     elevation = buttonTheme.elevation,
                     colorR = buttonTheme.color[1],
@@ -63,17 +75,23 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
                 })
             end
         end,
-        
+
         draw = function(self)
             drawElevatedRectangle(self.position.x, self.position.y, self.width, self.height, {self.colorR, self.colorG, self.colorB, self.colorA}, self.elevation, buttonTheme.cornerRadius)
 
             -- Draw text
             love.graphics.setColor(buttonTheme.textColor)
             love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width, buttonTheme.align)
+            
+            -- Draw focus indicator
+            if self.focused then
+                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, buttonTheme.cornerRadius + 2)
+            end
         end,
-        
+
         click = function(self, x, y, button, istouch)
-            if self.hover then
+            if (self.hover or self.focused) and not self.pressed then
                 self.pressed = true
                 luis.flux.to(self, buttonTheme.transitionDuration, {
                     elevation = buttonTheme.elevationPressed,
@@ -94,9 +112,9 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         release = function(self, x, y, button, istouch)
             if self.pressed then
                 self.pressed = false
-                local targetColor = self.hover and buttonTheme.hoverColor or buttonTheme.color
+                local targetColor = (self.hover or self.focused) and buttonTheme.hoverColor or buttonTheme.color
                 luis.flux.to(self, buttonTheme.transitionDuration, {
-                    elevation = self.hover and buttonTheme.elevationHover or buttonTheme.elevation,
+                    elevation = (self.hover or self.focused) and buttonTheme.elevationHover or buttonTheme.elevation,
                     colorR = targetColor[1],
                     colorG = targetColor[2],
                     colorB = targetColor[3],
@@ -106,6 +124,29 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
                     self.onRelease()
                 end
                 return true
+            end
+            return false
+        end,
+        
+        -- New function for handling focus updates
+        updateFocus = function(self, jx, jy)
+            -- Handle any focus-specific updates here
+            -- For buttons, we don't need to do anything special when focused
+            -- This function is more useful for elements like sliders
+        end,
+        
+        -- Joystick-specific functions
+        joystickpress = function(self, button)
+			print("joystickpress = function", button)
+            if button == 'a' and self.focused then
+                return self:click()
+            end
+            return false
+        end,
+        
+        joystickrelease = function(self, button)
+            if button == 'a' and self.pressed then
+                return self:release()
             end
             return false
         end
