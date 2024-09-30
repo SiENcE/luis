@@ -72,27 +72,98 @@ end
 
 -- The CustomView can be used to render gameplay
 local time = 0
-local customView = luis.createElement("custom", "Custom", function()
-    love.graphics.setColor(1, 0, 0)
-    love.graphics.rectangle("line", 0, 0, 200, 200)
-    for y = 1, 200 - 1 do
-        for x = 1, 200 - 1 do
-            local value = math.sin(x / 26.0)
-                        + math.sin(y / 18.0)
-                        + math.sin((x + y) / 26.0)
-                        + math.sin(math.sqrt(x * x + y * y) / 18.0)
-            
-            value = math.abs(math.sin(value * math.pi + time))
-            
-            local r = math.sin(value * 2 * math.pi + 0) * 0.5 + 0.5
-            local g = math.sin(value * 2 * math.pi + 2 * math.pi / 3) * 0.5 + 0.5
-            local b = math.sin(value * 2 * math.pi + 4 * math.pi / 3) * 0.5 + 0.5
-            
-            love.graphics.setColor(r, g, b)
-            love.graphics.points(x, y)
+
+-- Snake Minigame
+local snake = {
+    body = {{x = 5, y = 5}},
+    direction = {x = 1, y = 0},
+    grow = false
+}
+local food = {x = 10, y = 10}
+local gridSize = 20
+local moveTimer = 0
+local moveInterval = 0.1
+local function updateSnake()
+    local head = snake.body[1]
+    local newHead = {x = head.x + snake.direction.x, y = head.y + snake.direction.y}
+    
+    -- Check for collisions
+    if newHead.x < 0 or newHead.x >= gridSize or newHead.y < 0 or newHead.y >= gridSize then
+        -- Game over - reset snake
+        snake.body = {{x = 5, y = 5}}
+        snake.direction = {x = 1, y = 0}
+        return
+    end
+    
+    for i = 2, #snake.body do
+        if newHead.x == snake.body[i].x and newHead.y == snake.body[i].y then
+            -- Game over - reset snake
+            snake.body = {{x = 5, y = 5}}
+            snake.direction = {x = 1, y = 0}
+            return
         end
     end
-end, 10, 10, 10, 43)
+    
+    table.insert(snake.body, 1, newHead)
+    
+    if newHead.x == food.x and newHead.y == food.y then
+        -- Eat food
+        snake.grow = true
+        -- New food position
+        food.x = love.math.random(0, gridSize - 1)
+        food.y = love.math.random(0, gridSize - 1)
+    end
+    
+    if not snake.grow then
+        table.remove(snake.body)
+    else
+        snake.grow = false
+    end
+end
+
+local function createSnakeMiniGame()
+	local container = luis.newFlexContainer(22, 22, 7, 38)
+
+	local customView = luis.newCustom(function()
+		love.graphics.setColor(1, 0, 0, 0.5)
+		love.graphics.rectangle("line", 0, 0, 20*gridSize, 20*gridSize)
+
+		love.graphics.setColor(1, 1, 0)
+		local cellSize = 400 / gridSize
+		for _, segment in ipairs(snake.body) do
+			love.graphics.rectangle("fill", segment.x * cellSize, segment.y * cellSize, cellSize, cellSize)
+		end
+		
+		love.graphics.setColor(1, 0, 1)
+		love.graphics.rectangle("fill", food.x * cellSize, food.y * cellSize, cellSize, cellSize)
+	end, 20, 20, 0, 0)
+
+	-- add custom update function to our custom widget
+    customView.update = function(self, mx, my)
+		-- Update focus state
+		self.focused = (luis.currentFocus == self)
+	end
+	
+	customView.keypressed = function(self, key)
+		-- Check for joystick button press when focused
+		if self.focused then
+			if key == "up" and snake.direction.y == 0 then
+				snake.direction = {x = 0, y = -1}
+			elseif key == "down" and snake.direction.y == 0 then
+				snake.direction = {x = 0, y = 1}
+			elseif key == "left" and snake.direction.x == 0 then
+				snake.direction = {x = -1, y = 0}
+			elseif key == "right" and snake.direction.x == 0 then
+				snake.direction = {x = 1, y = 0}
+			end
+		end
+	end
+			
+	container:addChild(customView)
+    -- Add the container to your LUIS layer
+    luis.createElement("custom", "FlexContainer", container)
+end
+-- Snake Minigame End
 
 local function createMainMenu()
     luis.createElement("main", "Label", "Main Menu", 96, 4, 4, 44)
@@ -284,7 +355,12 @@ function love.load()
 
     love.keyboard.setKeyRepeat(true)
 	luis.initJoysticks()  -- Initialize joysticks
-	luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	if luis.activeJoystick then
+		local name = luis.activeJoystick:getName()
+		local index = luis.activeJoystick:getConnectedIndex()
+		print(string.format("Changing active joystick to #%d '%s'.", index, name))
+		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	end
 
     -- Create layers for different menus
     luis.newLayer("main", 96, 54)
@@ -293,10 +369,10 @@ function love.load()
     luis.newLayer("audio", 96, 54)
     luis.newLayer("gameplay", 96, 54)
     luis.newLayer("controls", 96, 54)
-	
 	luis.newLayer("custom", 10, 10)
 
 	-- Create UI elements for all menus
+	createSnakeMiniGame()
     createMainMenu()
     createSettingsMenu()
     createVideoMenu()
@@ -304,7 +380,7 @@ function love.load()
     createGameplayMenu()
     createControlsMenu()
 
---	luis.loadConfig('config.json')
+	--luis.loadConfig('config.json')
 
 	luis.setTheme(customTheme)
 
@@ -321,6 +397,13 @@ function love.update(dt)
 	icon_widget.position = luis.Vector2D.new(math.sin(time*10)+900, math.sin(time*10)+600)
 	
 	time = time + dt
+	
+	-- for our snake minigame
+    moveTimer = moveTimer + dt
+    if moveTimer >= moveInterval then
+        updateSnake()
+        moveTimer = 0
+    end
 end
 
 function love.draw()
@@ -328,18 +411,18 @@ function love.draw()
     luis.draw()
 
 	local endTime = love.timer.getTime()
-	local time = (endTime - startTime) * 1000
+	local elapsed_time = (endTime - startTime) * 1000
 
 	local stats = love.graphics.getStats()
 
-	if time >= 7 then
+	if elapsed_time >= 7 then
 		love.graphics.setColor(1, 0, 0)
 	else
 		love.graphics.setColor(1, 1, 1)
 	end
 
 	if gameSettings.showFPS then
-		love.graphics.print(string.format('FPS: %d (%.3f ms) (%d draw calls, %d batched)', love.timer.getFPS(), time, stats.drawcalls, stats.drawcallsbatched), 0, love.graphics.getHeight() - 32)
+		love.graphics.print(string.format('FPS: %d (%.3f ms) (%d draw calls, %d batched)', love.timer.getFPS(), elapsed_time, stats.drawcalls, stats.drawcallsbatched), 0, love.graphics.getHeight() - 32)
 	end
 end
 
@@ -378,7 +461,7 @@ function handleSettingsMenuSelection(selected)
     elseif selected == "Controls" then
         pushMenu("controls")
     elseif selected == "Back" then
---		luis.saveConfig('config.json')
+		--luis.saveConfig('config.json')
 		luis.enableLayer("custom")
         popMenu()
     end
@@ -407,10 +490,6 @@ function love.keypressed(key)
         else
             popMenu()
         end
-    elseif key == "t" then
-        toggleTheme()
-    elseif key == "l" then
-        luis.toggleLayer('custom')
     else
 		luis.keypressed(key)
 	end
@@ -436,13 +515,10 @@ end
 
 function love.gamepadpressed(joystick, button)
 print('love.gamepadpressed', joystick, button)
---    local name = joystick:getName()
---    local index = joystick:getConnectedIndex()
---    print(string.format("Changing active joystick to #%d '%s'.", index, name))
-    luis.joystickpressed(joystick, button)
+    luis.gamepadpressed(joystick, button)
 end
 
-function love.gamepadpressed(joystick, button)
-print('love.gamepadpressed', joystick, button)
-    luis.joystickreleased(joystick, button)
+function love.gamepadreleased(joystick, button)
+print('love.gamepadreleased', joystick, button)
+    luis.gamepadreleased(joystick, button)
 end
