@@ -198,10 +198,12 @@ end
 
 ## known Problems
 
-- DropDownBox: when selecting, the an underlying ui element is also executed (Button i.e.) 
+- DropDownBox: when selecting, the an underlying ui element is also executed (Button i.e.)
+- checkbox saved nicht
+- man muss per gamepad oder maus doppelt auf checkbox klicken, zumindest im video menü
 - InputText: when adding a character in the middle of a text, the text behind is removed
 - FlexContainer: the initial width or height limits the arrangement of child widgets
-- set Color Value in Themes for focus outline! Needed for material theme!
+
 
 ## License
 
