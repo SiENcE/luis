@@ -37,19 +37,19 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
             
             -- Update focus state
             self.focused = (luis.currentFocus == self)
-            
+
             -- Handle mouse input
             if love.mouse.isDown(1) and self.hover then
                 self:setValue(self:getValueFromPosition(mx - self.position.x))
             end
-            
+
             -- Handle joystick/gamepad input when focused
             if self.focused then
-                local jx = luis.getJoystickAxis('leftx')
-                if math.abs(jx) > luis.deadzone then
-                    local delta = jx * (self.max - self.min) * 0.01  -- Adjust sensitivity as needed
-                    self:setValue(self.value + delta)
-                end
+--                local jx = luis.getJoystickAxis('leftx')
+--                if math.abs(jx) > luis.deadzone then
+--                    local delta = jx * (self.max - self.min) * 0.01  -- Adjust sensitivity as needed
+--                    self:setValue(self.value + delta)
+--                end
                 
                 -- Handle gamepad button input for more precise control
                 if luis.isJoystickPressed('dpright') then
@@ -58,6 +58,7 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
                     self:setValue(self.value - (self.max - self.min) * 0.01)
                 end
             end
+
         end,
         
         draw = function(self)
@@ -129,7 +130,25 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
                 local delta = jx * (self.max - self.min) * 0.005  -- Adjust sensitivity as needed
                 self:setValue(self.value + delta)
             end
+        end,
+--[[
+        -- Joystick-specific functions
+        gamepadpressed = function(self, button)
+			print("button.gamepadpressed = function", button)
+            if button == 'a' and self.focused and self.click then
+                return self:click()
+            end
+            return false
+        end,
+        
+        gamepadreleased = function(self, button)
+			print("button.gamepadreleased = function", button)
+            if button == 'a' and self.pressed and self.release then
+                return self:release()
+            end
+            return false
         end
+]]--
     }
 end
 

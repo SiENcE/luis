@@ -23,7 +23,7 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
         checkScale = value and 1 or 0,
 
-        update = function(self, mx, my)
+        update = function(self, mx, my, dt)
             -- Update focus state
             self.focused = (luis.currentFocus == self)
 
@@ -37,6 +37,7 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
 					self:release()
 				end
             end
+
         end,
 
         draw = function(self)
@@ -69,7 +70,26 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
                 return true
             end
             return false
+        end,
+
+--[[
+        -- Joystick-specific functions
+        gamepadpressed = function(self, button)
+			--print("checkbox.gamepadpressed = function", button)
+            if button == 'a' and self.focused and self.click then
+                self:click(self.position.x+1,self.position.y+1)
+            end
+            return false
+        end,
+        
+        gamepadreleased = function(self, button)
+			--print("checkbox.gamepadreleased = function", button)
+            if button == 'a' and self.pressed and self.release then
+                return self:release()
+            end
+            return false
         end
+]]--
     }
 end
 

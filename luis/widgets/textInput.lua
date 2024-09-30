@@ -26,8 +26,13 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
         active = false,
         blinkTimer = 0,
         showCursor = true,
+        focused = false,
+        focusable = true,  -- Make the button focusable
 
-        update = function(self, dt)
+        update = function(self, mx, my, dt)
+			-- Update focus state
+			self.focused = (luis.currentFocus == self)
+
             if self.active then
                 self.blinkTimer = self.blinkTimer + dt
                 if self.blinkTimer >= 0.8 then
@@ -59,6 +64,12 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
                 local cursorX = self.position.x + textInputTheme.padding + luis.theme.text.font:getWidth(utf8_sub(self.text, 1, self.cursorPos))
                 love.graphics.setColor(textInputTheme.cursorColor)
                 love.graphics.line(cursorX, self.position.y + textInputTheme.padding, cursorX, self.position.y + self.height - textInputTheme.padding)
+            end
+
+            -- Draw focus indicator
+            if self.focused then
+                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, textInputTheme.cornerRadius)
             end
         end,
 

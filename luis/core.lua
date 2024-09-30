@@ -162,6 +162,8 @@ function luis.setCurrentLayer(layerName)
         luis.currentLayer = layerName
         -- Ensure the current layer is also enabled
         luis.enableLayer(layerName)
+		-- 
+		luis.currentFocus = nil
         -- Restore focus to the last focused widget of the new current layer
         luis.restoreFocus(layerName)
     end
@@ -204,7 +206,6 @@ end
 -- Toggle a layer's enabled state
 function luis.toggleLayer(layerName)
     if luis.layers[layerName] then
-	print('luis.toggleLayer', layerName)
         luis.enabledLayers[layerName] = not luis.enabledLayers[layerName]
     end
 end
@@ -232,6 +233,9 @@ function luis.createElement(layerName, elementType, ...)
         -- Otherwise, create a new element as before
         element = luis["new" .. elementType](...)
     end
+
+    -- Add default z-index
+    element.zIndex = element.zIndex or 1
 
     table.insert(luis.elements[layerName], element)
     
@@ -392,9 +396,29 @@ function luis.draw()
     love.graphics.setBackgroundColor(luis.theme.background.color)
 
     -- Draw enabled layers
+	--[[
     for layerName, enabled in pairs(luis.enabledLayers) do
         if enabled and luis.elements[layerName] then
             for _, element in ipairs(luis.elements[layerName]) do
+                element:draw()
+                if luis.showElementOutlines then
+                    drawElementOutline(element)
+                end
+            end
+        end
+    end
+	]]--
+    -- Sort by z_index and Draw enabled layers
+    for layerName, enabled in pairs(luis.enabledLayers) do
+        if enabled and luis.elements[layerName] then
+            -- Sort elements by z-index
+            local sortedElements = {}
+            for _, element in ipairs(luis.elements[layerName]) do
+                table.insert(sortedElements, element)
+            end
+            table.sort(sortedElements, function(a, b) return a.zIndex < b.zIndex end)
+
+            for _, element in ipairs(sortedElements) do
                 element:draw()
                 if luis.showElementOutlines then
                     drawElementOutline(element)
@@ -447,7 +471,8 @@ function luis.keypressed(key)
 		for layerName, enabled in pairs(luis.enabledLayers) do
 			if enabled and luis.elements[layerName] then
 				for _, element in ipairs(luis.elements[layerName]) do
-					if (element.type == "TextInput" and element.active) or element.type == "FlexContainer" then
+					--if (element.type == "TextInput" and element.active) or element.type == "FlexContainer" then
+					if (element.type == "TextInput" and element.active) or element.keypressed then
 						element:keypressed(key)
 						return
 					end
@@ -541,7 +566,8 @@ function luis.restoreFocus(layerName)
         element.focused = true
         luis.currentFocus = element
     else
-        luis.moveFocus() -- Fall back to default focus behavior
+		-- Fall back to default focus behavior
+		luis.updateFocusableElements()
     end
 end
 
@@ -647,15 +673,14 @@ function luis.getJoystickPos()
 	return mx, my
 end
 
+
 -- Function for joystick button press
-function luis.joystickpressed(joystick, button)
+function luis.gamepadpressed(joystick, button)
     if joystick == luis.activeJoystick then
         for layerName, enabled in pairs(luis.enabledLayers) do
             if enabled and luis.elements[layerName] then
                 for _, element in ipairs(luis.elements[layerName]) do
-					print('luis.joystickpressed 1',joystick, button)
-                    if element.joystickpress and element:joystickpress(button) then
-						print('luis.joystickpressed 2',joystick, button)
+                    if element.gamepadpressed and element:gamepadpressed(button) then
                         return
                     end
                 end
@@ -665,14 +690,12 @@ function luis.joystickpressed(joystick, button)
 end
 
 -- Function for joystick button release
-function luis.joystickreleased(joystick, button)
+function luis.gamepadreleased(joystick, button)
     if joystick == luis.activeJoystick then
         for layerName, enabled in pairs(luis.enabledLayers) do
             if enabled and luis.elements[layerName] then
                 for _, element in ipairs(luis.elements[layerName]) do
-					print('luis.joystickreleased 1',joystick, button)
-                    if element.joystickrelease and element:joystickrelease(button) then
-						print('luis.joystickreleased 2',joystick, button)
+                    if element.gamepadreleased and element:gamepadreleased(button) then
                         return
                     end
                 end
@@ -680,6 +703,7 @@ function luis.joystickreleased(joystick, button)
         end
     end
 end
+
 
 --==============================================
 -- State Management
@@ -748,7 +772,7 @@ function luis.loadConfig(filename)
                                 end
                             end
                         elseif element.type == "DropDown" then
-                            element:setSelectedIndex(tonumber(elementConfig.value))
+                            element:setValue(tonumber(elementConfig.value))
                         elseif element.type == "TextInput" then
                             element:setText(tostring(elementConfig.value))
                         end

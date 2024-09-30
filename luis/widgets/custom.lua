@@ -14,6 +14,8 @@ function custom.new(drawFunc, width, height, row, col, customTheme)
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
+        focused = false,
+        focusable = true,  -- Make the button focusable
         
         draw = function(self)
             love.graphics.push()
@@ -21,6 +23,12 @@ function custom.new(drawFunc, width, height, row, col, customTheme)
             love.graphics.setColor(customTheme.color or {1, 1, 1, 1})
             self.drawFunc()
             love.graphics.pop()
+
+            -- Draw focus indicator
+            if self.focused then
+                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, customTheme.cornerRadius)
+            end
         end,
         
         setDrawFunc = function(self, newDrawFunc)

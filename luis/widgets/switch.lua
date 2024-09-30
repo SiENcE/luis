@@ -36,6 +36,7 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
 					self:release()
 				end
             end
+
         end,
 
         draw = function(self)
@@ -62,7 +63,25 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
                 return true
             end
             return false
+        end,
+--[[
+        -- Joystick-specific functions
+        gamepadpressed = function(self, button)
+			print("checkbox.gamepadpressed = function", button)
+            if button == 'a' and self.focused and self.click then
+                self:click(self.position.x+1,self.position.y+1)
+            end
+            return false
+        end,
+        
+        gamepadreleased = function(self, button)
+			print("checkbox.gamepadreleased = function", button)
+            if button == 'a' and self.pressed and self.release then
+                return self:release()
+            end
+            return false
         end
+]]--
     }
 end
 

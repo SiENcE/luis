@@ -21,6 +21,8 @@ function flexContainer.new(width, height, row, col, customTheme)
         isDragging = false,
         isResizing = false,
         dragOffset = luis.Vector2D.new(0, 0),
+        focused = false,
+        focusable = true,  -- Make the button focusable
         
         addChild = function(self, child)
             table.insert(self.children, child)
@@ -96,7 +98,10 @@ function flexContainer.new(width, height, row, col, customTheme)
             self:updateMinimumSize()  -- Recalculate minimum size after resizing
         end,
         
-        update = function(self, mx, my)
+        update = function(self, mx, my, dt)
+			-- Update focus state
+			self.focused = (luis.currentFocus == self)
+
             if self.isDragging then
                 self.position.x = mx - self.dragOffset.x
                 self.position.y = my - self.dragOffset.y
@@ -109,7 +114,7 @@ function flexContainer.new(width, height, row, col, customTheme)
 
             for _, child in ipairs(self.children) do
                 if child.update then
-                    child:update(mx, my)
+                    child:update(mx, my, dt)
                 end
             end
         end,
@@ -131,6 +136,12 @@ function flexContainer.new(width, height, row, col, customTheme)
             -- Draw children
             for _, child in ipairs(self.children) do
                 child:draw()
+            end
+
+            -- Draw focus indicator
+            if self.focused then
+                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, containerTheme.cornerRadius)
             end
         end,
         

@@ -29,6 +29,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         maxScrollOffset = math.max(0, #items - maxVisibleItems),
         focusable = true,  -- Make the dropdown focusable
         focused = false,   -- Track focus state
+		zIndex = 1,  -- Default z-index
 
         update = function(self, mx, my)
             -- Update focus state
@@ -36,11 +37,15 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
 
             -- Check for joystick/gamepad input when focused
             if self.focused then
-                if luis.joystickJustPressed('a') or luis.joystickJustPressed('dpright') then
-                    self:joystickpress('a')
-                end
+                if luis.joystickJustPressed('a')  then
+                    self:click(self.position.x+1, self.position.y+1, 'a')
+                elseif luis.joystickJustPressed('b') then
+                    self:click(self.position.x+1, self.position.y+1, 'b')
+                elseif luis.joystickJustPressed('start') then
+                    self:click(self.position.x+1, self.position.y+1, 'start')
+				end
             end
-
+			
             if self.isOpen then
                 local listHeight = math.min(#self.items, maxVisibleItems) * self.height
                 self.hoverIndex = nil
@@ -51,6 +56,13 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
                         break
                     end
                 end
+            end
+
+            -- Update z-index based on open state
+            if self.isOpen then
+                self.zIndex = 1000  -- High z-index when open
+            else
+                self.zIndex = 1  -- Default z-index when closed
             end
         end,
 
@@ -178,10 +190,11 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             end
         end,
 
+--[[
         -- Function for handling gamepad button press
-        joystickpress = function(self, button)
-			print("dropdown.joystickpress = function", button)
-            if button == "a" or button == "start" then
+        gamepadpressed = function(self, button)
+			print("dropdown.gamepadpressed = function", button, self.isOpen, self.focused)
+            if button == "a" or button == "start" and self.focused then
                 if not self.isOpen then
                     self.isOpen = true
                     self.hoverIndex = self.value
@@ -195,12 +208,13 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
                     end
                 end
                 return true
-            elseif button == "b" and self.isOpen then
+            elseif button == "b" and self.isOpen and self.focused then
                 self.isOpen = false
                 return true
             end
             return false
         end
+]]--
     }
 end
 

@@ -25,7 +25,7 @@ end
 -- Button
 function button.new(text, width, height, onClick, onRelease, row, col, customTheme)
     local buttonTheme = customTheme or luis.theme.button
-    local button = {
+    return {
         type = "Button",
         text = text,
         width = width * luis.gridSize,
@@ -134,25 +134,26 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
             -- For buttons, we don't need to do anything special when focused
             -- This function is more useful for elements like sliders
         end,
-        
+
+--[[
         -- Joystick-specific functions
-        joystickpress = function(self, button)
-			print("joystickpress = function", button)
-            if button == 'a' and self.focused then
+        gamepadpressed = function(self, button)
+			print("button.gamepadpressed = function", button, self.text)
+            if button == 'a' and self.focused and self.click then
                 return self:click()
             end
             return false
         end,
         
-        joystickrelease = function(self, button)
-            if button == 'a' and self.pressed then
+        gamepadreleased = function(self, button)
+			print("button.gamepadreleased = function", button, self.text)
+            if button == 'a' and self.pressed and self.release then
                 return self:release()
             end
             return false
         end
+]]--
     }
-    
-    return button
 end
 
 return button
