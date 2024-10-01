@@ -30,12 +30,9 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
         focusable = true,  -- Make the button focusable
 
         update = function(self, mx, my, dt)
-			-- Update focus state
-			self.focused = (luis.currentFocus == self)
-
             if self.active then
                 self.blinkTimer = self.blinkTimer + dt
-                if self.blinkTimer >= 0.8 then
+                if self.blinkTimer >= 0.6 then
                     self.showCursor = not self.showCursor
                     self.blinkTimer = 0
                 end
@@ -138,7 +135,11 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
                 self.text = newText
                 self.cursorPos = utf8.len(newText)
             end
-        end
+        end,
+		
+		getText = function(self)
+			return self.text
+		end
     }
 
     return input
