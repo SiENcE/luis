@@ -48,14 +48,14 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
  
             -- Update focus state
-            self.focused = (luis.currentFocus == self)
+			--self.focused = (luis.currentFocus == self)
 
             -- Check for joystick button press when focused
-            if self.focused and luis.joystickJustPressed('a') then
-                self:click()
-            elseif self.pressed and not luis.isJoystickPressed('a') then
-                self:release()
-            end
+--            if self.focused and luis.joystickJustPressed('a') then
+--                self:click()
+--            elseif self.pressed and not luis.isJoystickPressed('a') then
+--                self:release()
+--            end
 
             if (self.hover and not wasHovered) or (self.focused and not self.hover) then
                 luis.flux.to(self, buttonTheme.transitionDuration, {
@@ -135,11 +135,10 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
             -- This function is more useful for elements like sliders
         end,
 
---[[
         -- Joystick-specific functions
         gamepadpressed = function(self, button)
 			print("button.gamepadpressed = function", button, self.text)
-            if button == 'a' and self.focused and self.click then
+            if button == 'a' and self.focused then
                 return self:click()
             end
             return false
@@ -147,12 +146,11 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         
         gamepadreleased = function(self, button)
 			print("button.gamepadreleased = function", button, self.text)
-            if button == 'a' and self.pressed and self.release then
+            if button == 'a' and self.pressed then
                 return self:release()
             end
             return false
         end
-]]--
     }
 end
 

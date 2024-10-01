@@ -32,9 +32,6 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
 		zIndex = 1,  -- Default z-index
 
         update = function(self, mx, my)
-            -- Update focus state
-            self.focused = (luis.currentFocus == self)
-
             -- Check for joystick/gamepad input when focused
             if self.focused then
                 if luis.joystickJustPressed('a')  then

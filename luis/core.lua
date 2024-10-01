@@ -496,7 +496,6 @@ end
 ------------------------------------------------
 -- Mouse input handling
 ------------------------------------------------
-
 function luis.mousepressed(x, y, button, istouch)
     if button == 1 then  -- Left mouse button
         x, y = x / luis.scale, y / luis.scale
@@ -598,11 +597,6 @@ end
 function luis.moveFocus(direction)
     if #luis.focusableElements == 0 then return end
 
-    -- Clear focus on the current element
-    if luis.currentFocus then
-        luis.currentFocus.focused = false
-    end
-
     local currentIndex = 1
     for i, element in ipairs(luis.focusableElements) do
         if element == luis.currentFocus then
@@ -620,11 +614,42 @@ function luis.moveFocus(direction)
         newIndex = 1 -- Default to first element if no direction specified
     end
 
-    luis.currentFocus = luis.focusableElements[newIndex]
-    luis.currentFocus.focused = true
+    local newFocusElement = luis.focusableElements[newIndex]
+    luis.setCurrentFocus(newFocusElement)
+    
+    -- If the new focus is a FlexContainer, activate its internal focus
+    if newFocusElement.type == "FlexContainer" then
+        newFocusElement:activateInternalFocus()
+    end
     
     -- Update the last focused widget for the current layer
     luis.updateLastFocusedWidget(luis.currentLayer)
+end
+
+-- Update the setCurrentFocus function
+function luis.setCurrentFocus(element)
+    if luis.currentFocus then
+        if luis.currentFocus.type == "FlexContainer" then
+            luis.currentFocus:deactivateInternalFocus()
+        end
+        luis.currentFocus.focused = false
+    end
+    luis.currentFocus = element
+    if luis.currentFocus then
+        luis.currentFocus.focused = true
+        if luis.currentFocus.type == "FlexContainer" then
+            luis.currentFocus:activateInternalFocus()
+        end
+    end
+end
+
+-- Add a new function to handle exiting FlexContainer focus
+function luis.exitFlexContainerFocus()
+    if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
+        luis.currentFocus:deactivateInternalFocus()
+        -- Move focus to the next element
+        luis.moveFocus("next")
+    end
 end
 
 ------------------------------------------------
@@ -677,6 +702,14 @@ end
 -- Function for joystick button press
 function luis.gamepadpressed(joystick, button)
     if joystick == luis.activeJoystick then
+        -- First, check if the current focus is a FlexContainer
+        if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
+            if luis.currentFocus:gamepadpressed(button) then
+                return
+            end
+        end
+
+        -- If FlexContainer didn't handle the input, check other elements
         for layerName, enabled in pairs(luis.enabledLayers) do
             if enabled and luis.elements[layerName] then
                 for _, element in ipairs(luis.elements[layerName]) do
@@ -692,6 +725,13 @@ end
 -- Function for joystick button release
 function luis.gamepadreleased(joystick, button)
     if joystick == luis.activeJoystick then
+        -- First, check if the current focus is a FlexContainer
+        if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
+            if luis.currentFocus:gamepadreleased(button) then
+                return
+            end
+        end
+
         for layerName, enabled in pairs(luis.enabledLayers) do
             if enabled and luis.elements[layerName] then
                 for _, element in ipairs(luis.elements[layerName]) do

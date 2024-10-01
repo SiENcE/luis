@@ -23,20 +23,10 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
         position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
 
         update = function(self, mx, my)
-            -- Update focus state
-            self.focused = (luis.currentFocus == self)
-
             -- Check for joystick button press when focused
-            if self.focused and luis.joystickJustPressed('a') then
-                if self.click then
-					self:click(self.position.x+1,self.position.y+1)
-				end
-            elseif self.pressed and not luis.isJoystickPressed('a') then
-                if self.release then
-					self:release()
-				end
-            end
-
+--            if self.focused and luis.joystickJustPressed('a') then
+--				self:gamepadpressed('a')
+--            end
         end,
 
         draw = function(self)
@@ -64,24 +54,19 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
             end
             return false
         end,
---[[
+
         -- Joystick-specific functions
         gamepadpressed = function(self, button)
-			print("checkbox.gamepadpressed = function", button)
-            if button == 'a' and self.focused and self.click then
-                self:click(self.position.x+1,self.position.y+1)
+			print("switch.gamepadpressed = function", button, self.focused)
+            if button == 'a' and self.focused then
+                self.value = not self.value
+                if self.onChange then
+                    self.onChange(self.value)
+                end
+                return true
             end
             return false
         end,
-        
-        gamepadreleased = function(self, button)
-			print("checkbox.gamepadreleased = function", button)
-            if button == 'a' and self.pressed and self.release then
-                return self:release()
-            end
-            return false
-        end
-]]--
     }
 end
 

@@ -138,13 +138,9 @@ local function createSnakeMiniGame()
 		love.graphics.rectangle("fill", food.x * cellSize, food.y * cellSize, cellSize, cellSize)
 	end, 20, 20, 0, 0)
 
-	-- add custom update function to our custom widget
-    customView.update = function(self, mx, my)
-		-- Update focus state
-		self.focused = (luis.currentFocus == self)
-	end
-	
+	-- add a custom keypress to our custom widget (a custom widget has initially only a draw function)
 	customView.keypressed = function(self, key)
+		print('customView.keypressed', key, customView.focused)
 		-- Check for joystick button press when focused
 		if self.focused then
 			if key == "up" and snake.direction.y == 0 then
@@ -160,7 +156,8 @@ local function createSnakeMiniGame()
 	end
 			
 	container:addChild(customView)
-    -- Add the container to your LUIS layer
+    
+	-- Add the container to your LUIS layer
     luis.createElement("custom", "FlexContainer", container)
 end
 -- Snake Minigame End
@@ -279,6 +276,7 @@ local function createGameplayMenu()
         end, 20, 27 + i * 10)
         luis.createElement("gameplay", "Label", diff, 10, 3, 20, 31 + i * 10)
     end
+	luis.createElement("gameplay", "TextInput", 20, 3, "Enter text here...", function(text) print(text) end, 40, 38)
 
     luis.createElement("gameplay", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 end
@@ -329,7 +327,7 @@ local function createControlsMenu()
 	}
 	local button_widget  = luis.newButton( "Toggle Theme", 15, 3, toggleTheme, function() end, 40, 41, customButtonTheme)
 	local dropdown = luis.newDropDown(  {"Option 1", "Option 2", "Option 3"}, 3, 10, 2, function(item, index) print("Selected: " .. item) end, 35, 43)
-	textInput_widget = luis.newTextInput( 20, 3, "Enter text here...", function(text) print(text) textInput_widget:setText("") end, 45, 38)
+	textInput_widget = luis.newTextInput( 20, 3, "Enter text here...", function(text) print(text) end, 45, 38)
 	container:addChild(button_widget)
 	container:addChild(textInput_widget)
 	container:addChild(dropdown)

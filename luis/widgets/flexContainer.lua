@@ -23,9 +23,15 @@ function flexContainer.new(width, height, row, col, customTheme)
         dragOffset = luis.Vector2D.new(0, 0),
         focused = false,
         focusable = true,  -- Make the button focusable
+        focusableChildren = {},
+        currentFocusIndex = 0,
+		internalFocusActive = false,
         
         addChild = function(self, child)
             table.insert(self.children, child)
+            if child.focusable then
+                table.insert(self.focusableChildren, child)
+            end
             self:arrangeChildren()
             self:updateMinimumSize()
         end,
@@ -34,6 +40,13 @@ function flexContainer.new(width, height, row, col, customTheme)
             for i, c in ipairs(self.children) do
                 if c == child then
                     table.remove(self.children, i)
+                    break
+                end
+            end
+            -- Remove from focusableChildren if present
+            for i, focusableChild in ipairs(self.focusableChildren) do
+                if focusableChild == child then
+                    table.remove(self.focusableChildren, i)
                     break
                 end
             end
@@ -97,10 +110,43 @@ function flexContainer.new(width, height, row, col, customTheme)
             self:arrangeChildren()
             self:updateMinimumSize()  -- Recalculate minimum size after resizing
         end,
-        
+
+        moveFocus = function(self, direction)
+            if #self.focusableChildren == 0 then return end
+
+            if direction == "next" then
+                self.currentChildFocusIndex = (self.currentChildFocusIndex % #self.focusableChildren) + 1
+            elseif direction == "previous" then
+                self.currentChildFocusIndex = ((self.currentChildFocusIndex - 2) % #self.focusableChildren) + 1
+            end
+
+            -- Update focus states
+            for i, child in ipairs(self.focusableChildren) do
+                child.focused = (i == self.currentChildFocusIndex)
+            end
+        end,
+
+        activateInternalFocus = function(self)
+            self.internalFocusActive = true
+            if #self.focusableChildren > 0 then
+                self.currentChildFocusIndex = 1
+                self.focusableChildren[1].focused = true
+            end
+        end,
+
+        deactivateInternalFocus = function(self)
+            self.internalFocusActive = false
+            for _, child in ipairs(self.focusableChildren) do
+                child.focused = false
+            end
+        end,
+
         update = function(self, mx, my, dt)
-			-- Update focus state
-			self.focused = (luis.currentFocus == self)
+            if self.focused and not self.internalFocusActive then
+                self:activateInternalFocus()
+            elseif not self.focused and self.internalFocusActive then
+                self:deactivateInternalFocus()
+            end
 
             if self.isDragging then
                 self.position.x = mx - self.dragOffset.x
@@ -140,8 +186,15 @@ function flexContainer.new(width, height, row, col, customTheme)
 
             -- Draw focus indicator
             if self.focused then
-                love.graphics.setColor(1, 1, 1, 0.5)
+                love.graphics.setColor(1, 1, 1, 0.5) -- grey focus
                 love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, containerTheme.cornerRadius)
+            end
+
+            -- Draw focus indicator for the currently focused child
+            if self.internalFocusActive and self.currentChildFocusIndex > 0 then
+                local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
+                love.graphics.setColor(0.7, 0.7, 0.7, 0.5)  -- darker hild focus
+                love.graphics.rectangle("line", focusedChild.position.x - 2, focusedChild.position.y - 2, focusedChild.width + 4, focusedChild.height + 4, containerTheme.cornerRadius)
             end
         end,
         
@@ -178,7 +231,9 @@ function flexContainer.new(width, height, row, col, customTheme)
             self.isResizing = false
             for _, child in ipairs(self.children) do
                 if child.textinput then
+					child.active = true
                     child:textinput(text)
+					child.active = false
                     return
                 end
             end
@@ -215,7 +270,37 @@ function flexContainer.new(width, height, row, col, customTheme)
         isInContainer = function(self, x, y)
             return x >= self.position.x and x <= self.position.x + self.width and
                    y >= self.position.y and y <= self.position.y + self.height
-        end
+        end,
+
+        gamepadpressed = function(self, button)
+            if not self.internalFocusActive then return false end
+
+            if button == "dpdown" or button == "dpright" then
+                self:moveFocus("next")
+                return true
+            elseif button == "dpup" or button == "dpleft" then
+                self:moveFocus("previous")
+                return true
+            elseif button == "a" or button == "b" then
+                -- Activate the currently focused child
+                local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
+                if focusedChild and focusedChild.gamepadpressed then
+					local rtn = focusedChild:gamepadpressed(button)
+                    return rtn
+                end
+            end
+            return false
+        end,
+
+        gamepadreleased = function(self, button)
+            -- Activate the currently focused child
+			local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
+			if focusedChild and focusedChild.gamepadreleased then
+					local rtn = focusedChild:gamepadreleased(button)
+                    return rtn
+			end
+			return false
+        end,
     }
     
     container:updateMinimumSize()

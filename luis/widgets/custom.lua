@@ -21,7 +21,7 @@ function custom.new(drawFunc, width, height, row, col, customTheme)
             love.graphics.push()
             love.graphics.translate(self.position.x, self.position.y)
             love.graphics.setColor(customTheme.color or {1, 1, 1, 1})
-            self.drawFunc()
+            self.drawFunc(self)
             love.graphics.pop()
 
             -- Draw focus indicator

@@ -28,9 +28,6 @@ function radioButton.new(group, value, size, onChange, row, col, customTheme)
             local wasHovered = self.hover
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
             
-            -- Update focus state
-            self.focused = (luis.currentFocus == self)
-            
             -- Check for joystick/gamepad input when focused
             if self.focused then
                 if luis.joystickJustPressed('a') or luis.joystickJustPressed('dpright') then

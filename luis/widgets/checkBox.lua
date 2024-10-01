@@ -24,20 +24,11 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
         checkScale = value and 1 or 0,
 
         update = function(self, mx, my, dt)
-            -- Update focus state
-            self.focused = (luis.currentFocus == self)
-
             -- Check for joystick button press when focused
-            if self.focused and luis.joystickJustPressed('a') then
-                if self.click then
-					self:click(self.position.x+1,self.position.y+1)
-				end
-            elseif self.pressed and not luis.isJoystickPressed('a') then
-                if self.release then
-					self:release()
-				end
-            end
-
+--            if self.focused and luis.joystickJustPressed('a') then
+--				print('checkbox.joystickJustPressed')
+--				self:gamepadpressed('a')
+--            end
         end,
 
         draw = function(self)
@@ -72,24 +63,19 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
             return false
         end,
 
---[[
         -- Joystick-specific functions
         gamepadpressed = function(self, button)
-			--print("checkbox.gamepadpressed = function", button)
-            if button == 'a' and self.focused and self.click then
-                self:click(self.position.x+1,self.position.y+1)
+			print("checkbox.gamepadpressed = function", button,self.focused,self.value )
+            if button == 'a' and self.focused then
+                self.value = not self.value
+                luis.flux.to(self, 0.2, { checkScale = self.value and 1 or 0 })
+                if self.onChange then
+                    self.onChange(self.value)
+                end
+                return true
             end
             return false
         end,
-        
-        gamepadreleased = function(self, button)
-			--print("checkbox.gamepadreleased = function", button)
-            if button == 'a' and self.pressed and self.release then
-                return self:release()
-            end
-            return false
-        end
-]]--
     }
 end
 

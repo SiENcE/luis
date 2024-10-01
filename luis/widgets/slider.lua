@@ -35,10 +35,7 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
             local wasHovered = self.hover
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
             
-            -- Update focus state
-            self.focused = (luis.currentFocus == self)
-
-            -- Handle mouse input
+			-- Handle mouse input
             if love.mouse.isDown(1) and self.hover then
                 self:setValue(self:getValueFromPosition(mx - self.position.x))
             end
@@ -131,24 +128,7 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
                 self:setValue(self.value + delta)
             end
         end,
---[[
-        -- Joystick-specific functions
-        gamepadpressed = function(self, button)
-			print("button.gamepadpressed = function", button)
-            if button == 'a' and self.focused and self.click then
-                return self:click()
-            end
-            return false
-        end,
-        
-        gamepadreleased = function(self, button)
-			print("button.gamepadreleased = function", button)
-            if button == 'a' and self.pressed and self.release then
-                return self:release()
-            end
-            return false
-        end
-]]--
+
     }
 end
 
