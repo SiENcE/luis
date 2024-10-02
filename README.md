@@ -198,10 +198,9 @@ end
 
 ## known Problems
 
-- DropDownBox: when selecting, the an underlying ui element is also executed (Button i.e.)
-- DropBox, selection doesn't work with gamepad
-- checkbox saved nicht
-- checkbox checked nicht
+- DropBox, selection doesn't work 100% with gamepad
+- mouse cannot focus custom widget
+- checkbox, textinput saved nicht
 - man muss per gamepad oder maus doppelt auf checkbox klicken, zumindest im video menü
 - InputText: when adding a character in the middle of a text, the text behind is removed
 - FlexContainer: the initial width or height limits the arrangement of child widgets

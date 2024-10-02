@@ -378,7 +378,7 @@ function love.load()
     createGameplayMenu()
     createControlsMenu()
 
-	--luis.loadConfig('config.json')
+	luis.loadConfig('config.json')
 
 	luis.setTheme(customTheme)
 
@@ -459,7 +459,7 @@ function handleSettingsMenuSelection(selected)
     elseif selected == "Controls" then
         pushMenu("controls")
     elseif selected == "Back" then
-		--luis.saveConfig('config.json')
+		luis.saveConfig('config.json')
 		luis.enableLayer("custom")
         popMenu()
     end

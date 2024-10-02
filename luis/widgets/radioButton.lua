@@ -18,7 +18,6 @@ function radioButton.new(group, value, size, onChange, row, col, customTheme)
         value = value,
         width = size * luis.gridSize,
         height = size * luis.gridSize,
-        value = false,
         hover = false,
         focused = false,
         focusable = true,

@@ -359,7 +359,7 @@ function luis.update(dt)
                    element.type == "RadioButton" or
                    element.type == "DropDown" or
                    element.type == "TextInput" then
-                    luis.setElementState(layerName, i, element.value or element.selectedIndex or element.text)
+                    luis.setElementState(layerName, i, element.value or element.text)
                 end
             end
         end
@@ -458,6 +458,29 @@ end
 -- Input handling
 --==============================================
 
+-- Helper function to handle input for a single layer
+local function handleLayerInput(layerName, x, y, inputFunction, ...)
+    if luis.enabledLayers[layerName] and luis.elements[layerName] then
+        -- Sort elements by z-index in descending order
+        local sortedElements = {}
+        for _, element in ipairs(luis.elements[layerName]) do
+            table.insert(sortedElements, element)
+        end
+        table.sort(sortedElements, function(a, b) return a.zIndex > b.zIndex end)
+
+        for _, element in ipairs(sortedElements) do
+			-- handle mouse
+            if element[inputFunction] and x and y and element[inputFunction](element, x, y, ...) then
+                return true  -- Stop propagation if an element handled the input
+			-- handle gamepad
+            elseif element[inputFunction] and element[inputFunction](element, ...) then
+				return true  -- Stop propagation if an element handled the input
+			end
+        end
+    end
+    return false
+end
+
 ------------------------------------------------
 -- Keyboard input handling
 ------------------------------------------------
@@ -497,47 +520,32 @@ end
 -- Mouse input handling
 ------------------------------------------------
 function luis.mousepressed(x, y, button, istouch)
-    if button == 1 then  -- Left mouse button
-        x, y = x / luis.scale, y / luis.scale
-        for layerName, enabled in pairs(luis.enabledLayers) do
-            if enabled and luis.elements[layerName] then
-                for _, element in ipairs(luis.elements[layerName]) do
-                    if element.click and element:click(x, y, button, istouch) then
-                        return
-                    end
-                end
-            end
+    x, y = x / luis.scale, y / luis.scale
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, x, y, "click", button, istouch) then
+            return true
         end
     end
+    return false
 end
 
 function luis.mousereleased(x, y, button, istouch)
-    if button == 1 then  -- Left mouse button
-        x, y = x / luis.scale, y / luis.scale
-        for layerName, enabled in pairs(luis.enabledLayers) do
-            if enabled and luis.elements[layerName] then
-                for _, element in ipairs(luis.elements[layerName]) do
-                    if element.release then
-                        element:release(x, y, button, istouch)
-                    end
-                end
-            end
+    x, y = x / luis.scale, y / luis.scale
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, x, y, "release", button, istouch) then
+            return true
         end
     end
+    return false
 end
 
 function luis.wheelmoved(x, y)
-    local mx, my = love.mouse.getPosition()
-    mx, my = mx / luis.scale, my / luis.scale
-    for layerName, enabled in pairs(luis.enabledLayers) do
-        if enabled and luis.elements[layerName] then
-            for _, element in ipairs(luis.elements[layerName]) do
-                if element.wheelmoved and element:wheelmoved(x, y) then
-                    return
-                end
-            end
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, nil, nil, "wheelmoved", x, y) then
+            return true
         end
     end
+    return false
 end
 
 ------------------------------------------------
@@ -705,21 +713,18 @@ function luis.gamepadpressed(joystick, button)
         -- First, check if the current focus is a FlexContainer
         if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
             if luis.currentFocus:gamepadpressed(button) then
-                return
+                return true
             end
         end
 
         -- If FlexContainer didn't handle the input, check other elements
-        for layerName, enabled in pairs(luis.enabledLayers) do
-            if enabled and luis.elements[layerName] then
-                for _, element in ipairs(luis.elements[layerName]) do
-                    if element.gamepadpressed and element:gamepadpressed(button) then
-                        return
-                    end
-                end
+        for layerName, _ in pairs(luis.enabledLayers) do
+            if handleLayerInput(layerName, nil, nil, "gamepadpressed", button) then
+                return true
             end
         end
     end
+    return false
 end
 
 -- Function for joystick button release
@@ -728,20 +733,17 @@ function luis.gamepadreleased(joystick, button)
         -- First, check if the current focus is a FlexContainer
         if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
             if luis.currentFocus:gamepadreleased(button) then
-                return
+                return true
             end
         end
 
-        for layerName, enabled in pairs(luis.enabledLayers) do
-            if enabled and luis.elements[layerName] then
-                for _, element in ipairs(luis.elements[layerName]) do
-                    if element.gamepadreleased and element:gamepadreleased(button) then
-                        return
-                    end
-                end
+        for layerName, _ in pairs(luis.enabledLayers) do
+            if handleLayerInput(layerName, nil, nil, "gamepadreleased", button) then
+                return true
             end
         end
     end
+    return false
 end
 
 
@@ -775,7 +777,7 @@ function luis.saveConfig(filename)
                element.type == "TextInput" then
                 config[layerName][i] = {
                     type = element.type,
-                    value = element.value or element.selectedIndex or element.text
+                    value = element.value or element.text
                 }
             end
         end
@@ -799,9 +801,9 @@ function luis.loadConfig(filename)
                 for i, elementConfig in pairs(elements) do
                     local element = luis.elements[layerName][tonumber(i)]
                     if element and element.type == elementConfig.type then
-                        if element.type == "Slider" then
-                            element.value = elementConfig.value
-                        elseif element.type == "Switch" or element.type == "CheckBox" then
+                        if element.type == "Slider" or
+							element.type == "Switch" or
+							element.type == "CheckBox" then
                             element.value = elementConfig.value
                         elseif element.type == "RadioButton" then
                             element.value = elementConfig.value
@@ -814,7 +816,7 @@ function luis.loadConfig(filename)
                         elseif element.type == "DropDown" then
                             element:setValue(tonumber(elementConfig.value))
                         elseif element.type == "TextInput" then
-                            element:setText(tostring(elementConfig.value))
+                            element:setText(tostring(elementConfig.value or elementConfig.text))
                         end
                         
                         -- Update element state

@@ -170,48 +170,34 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         end,
 
         -- Function for handling gamepad input
-        updateFocus = function(self, jx, jy)
-            if not self.isOpen then
-                if jy > luis.deadzone then
-                    self.isOpen = true
-                    self.hoverIndex = self.value
-                end
-            else
-                if jy > luis.deadzone then
-                    self.hoverIndex = math.min(#self.items, (self.hoverIndex or self.value) + 1)
-                    self.scrollOffset = math.max(0, math.min(self.maxScrollOffset, self.hoverIndex - maxVisibleItems))
-                elseif jy < -luis.deadzone then
-                    self.hoverIndex = math.max(1, (self.hoverIndex or self.value) - 1)
-                    self.scrollOffset = math.max(0, math.min(self.maxScrollOffset, self.hoverIndex - 1))
-                end
-            end
-        end,
+		updateFocus = function(self, jx, jy)
+			if not self.isOpen then
+				if jy > luis.deadzone then
+					self.isOpen = true
+					self.hoverIndex = self.value
+				end
+			else
+				-- Ensure hoverIndex is always a valid number
+				if not self.hoverIndex or self.hoverIndex < 1 or self.hoverIndex > #self.items then
+					self.hoverIndex = self.value
+				end
 
---[[
-        -- Function for handling gamepad button press
-        gamepadpressed = function(self, button)
-			print("dropdown.gamepadpressed = function", button, self.isOpen, self.focused)
-            if button == "a" or button == "start" and self.focused then
-                if not self.isOpen then
-                    self.isOpen = true
-                    self.hoverIndex = self.value
-                else
-                    if self.hoverIndex then
-                        self.value = self.hoverIndex
-                        self.isOpen = false
-                        if self.onChange then
-                            self.onChange(self.items[self.value], self.value)
-                        end
-                    end
-                end
-                return true
-            elseif button == "b" and self.isOpen and self.focused then
-                self.isOpen = false
-                return true
-            end
-            return false
-        end
-]]--
+				local oldHoverIndex = self.hoverIndex
+
+				if jy > luis.deadzone then
+					self.hoverIndex = math.min(#self.items, oldHoverIndex + 1)
+				elseif jy < -luis.deadzone then
+					self.hoverIndex = math.max(1, oldHoverIndex - 1)
+				end
+
+				-- Adjust scroll offset if necessary
+				if self.hoverIndex > self.scrollOffset + maxVisibleItems then
+					self.scrollOffset = math.min(self.maxScrollOffset, self.hoverIndex - maxVisibleItems)
+				elseif self.hoverIndex <= self.scrollOffset then
+					self.scrollOffset = math.max(0, self.hoverIndex - 1)
+				end
+			end
+		end,
     }
 end
 
