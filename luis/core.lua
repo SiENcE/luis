@@ -1,5 +1,3 @@
-local json = require("luis.3rdparty.json")
-
 local luis = {}
 
 -- UI elements storage
@@ -320,16 +318,10 @@ function luis.updateScale()
     luis.scale = math.min(w / luis.baseWidth, h / luis.baseHeight)
 end
 
-local accumulator = 0
+--local accumulator = 0
 local mx = luis.baseWidth
 local my = luis.baseHeight
 function luis.update(dt)
-    accumulator = accumulator + dt
-    if accumulator >= 1/60 then
-        luis.flux.update(accumulator)
-        accumulator = 0
-    end
-
     local mx, my = love.mouse.getPosition()
     mx, my = mx / luis.scale, my / luis.scale
     
@@ -395,19 +387,6 @@ function luis.draw()
     love.graphics.scale(luis.scale, luis.scale)
     love.graphics.setBackgroundColor(luis.theme.background.color)
 
-    -- Draw enabled layers
-	--[[
-    for layerName, enabled in pairs(luis.enabledLayers) do
-        if enabled and luis.elements[layerName] then
-            for _, element in ipairs(luis.elements[layerName]) do
-                element:draw()
-                if luis.showElementOutlines then
-                    drawElementOutline(element)
-                end
-            end
-        end
-    end
-	]]--
     -- Sort by z_index and Draw enabled layers
     for layerName, enabled in pairs(luis.enabledLayers) do
         if enabled and luis.elements[layerName] then
@@ -439,6 +418,7 @@ function luis.draw()
     end
 
     if luis.showLayerNames then
+		local font_backup = love.graphics.getFont()
         love.graphics.setColor(0.5, 0.5, 0.5)
         love.graphics.setFont(luis.theme.text.font)
 		local counter = 0
@@ -449,6 +429,7 @@ function luis.draw()
 				counter = counter +1
             end
         end
+		love.graphics.setFont(font_backup)
     end
 
     love.graphics.pop()
@@ -764,20 +745,118 @@ local function deepCopyWithStringKeys(t)
     return res
 end
 
+function luis.getConfig()
+    local config = {}
+    for layerName, elements in pairs(luis.elements) do
+        config[layerName] = {}
+        for i, element in ipairs(elements) do
+            if element.type == "Switch" or
+               element.type == "CheckBox" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value or false)
+                }
+			elseif element.type == "Slider" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value)
+                }
+			elseif element.type == "RadioButton" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value or false)
+                }
+			elseif element.type == "DropDown" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value)
+                }
+			elseif element.type == "TextInput" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.text)
+                }
+            end
+        end
+    end
+
+    -- Convert elementStates to a new table with string keys
+    local config = deepCopyWithStringKeys(config)
+end
+
+-- load configuration
+local function toboolean(str)
+    local bool = false
+    if str == "true" then
+        bool = true
+    end
+    return bool
+end
+
+function luis.setConfig(config)
+	for layerName, elements in pairs(config) do
+		if luis.elements[layerName] then
+			for i, elementConfig in pairs(elements) do
+				local element = luis.elements[layerName][tonumber(i)]
+				if element and element.type == elementConfig.type then
+					if element.type == "Slider" then
+						element.value = elementConfig.value
+					elseif element.type == "Switch" or
+						element.type == "CheckBox" then
+						element.value = toboolean(elementConfig.value)
+					elseif element.type == "RadioButton" then
+						element.value = toboolean(elementConfig.value)
+						-- Deselect other radio buttons in the same group
+						for _, otherElement in ipairs(luis.elements[layerName]) do
+							if otherElement.type == "RadioButton" and otherElement.group == element.group and otherElement ~= element then
+								otherElement.value = false
+							end
+						end
+					elseif element.type == "DropDown" then
+						element:setValue(tonumber(elementConfig.value))
+					elseif element.type == "TextInput" then
+						element:setText(tostring(elementConfig.value or elementConfig.text))
+					end
+					
+					-- Update element state
+					luis.setElementState(layerName, i, elementConfig.value)
+				end
+			end
+		end
+	end
+end
+
+--[[
 function luis.saveConfig(filename)
     local config = {}
     for layerName, elements in pairs(luis.elements) do
         config[layerName] = {}
         for i, element in ipairs(elements) do
-            if element.type == "Slider" or
-               element.type == "Switch" or
-               element.type == "CheckBox" or
-               element.type == "RadioButton" or
-               element.type == "DropDown" or
-               element.type == "TextInput" then
+            if element.type == "Switch" or
+               element.type == "CheckBox" then
                 config[layerName][i] = {
                     type = element.type,
-                    value = element.value or element.text
+                    value = tostring(element.value or false)
+                }
+			elseif element.type == "Slider" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value)
+                }
+			elseif element.type == "RadioButton" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value or false)
+                }
+			elseif element.type == "DropDown" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.value)
+                }
+			elseif element.type == "TextInput" then
+                config[layerName][i] = {
+                    type = element.type,
+                    value = tostring(element.text)
                 }
             end
         end
@@ -790,7 +869,6 @@ function luis.saveConfig(filename)
     love.filesystem.write(filename, jsonString)
 end
 
--- load configuration
 function luis.loadConfig(filename)
     if love.filesystem.getInfo(filename) then
         local jsonString = love.filesystem.read(filename)
@@ -801,12 +879,13 @@ function luis.loadConfig(filename)
                 for i, elementConfig in pairs(elements) do
                     local element = luis.elements[layerName][tonumber(i)]
                     if element and element.type == elementConfig.type then
-                        if element.type == "Slider" or
-							element.type == "Switch" or
+                        if element.type == "Slider" then
+                            element.value = elementConfig.value
+						elseif element.type == "Switch" or
 							element.type == "CheckBox" then
-                            element.value = elementConfig.value
+                            element.value = toboolean(elementConfig.value)
                         elseif element.type == "RadioButton" then
-                            element.value = elementConfig.value
+                            element.value = toboolean(elementConfig.value)
                             -- Deselect other radio buttons in the same group
                             for _, otherElement in ipairs(luis.elements[layerName]) do
                                 if otherElement.type == "RadioButton" and otherElement.group == element.group and otherElement ~= element then
@@ -827,5 +906,6 @@ function luis.loadConfig(filename)
         end
     end
 end
+]]--
 
 return luis

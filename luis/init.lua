@@ -1,22 +1,31 @@
-local luis = require("luis.core")
-local lfs = love.filesystem
+local function initLuis(widgetPath)
+    local luis = require("luis.core")
+    local lfs = love.filesystem
 
--- Load Vector2D
-luis.Vector2D = require("luis.vector")
-luis.flux = require("luis.3rdparty.flux")
+    -- Set default widget path if not provided
+    widgetPath = widgetPath or "widgets"
 
--- Dynamically load widgets
-luis.widgets = {}
-local widget_files = lfs.getDirectoryItems("luis/widgets")
-
-for _, file in ipairs(widget_files) do
-    local widget_name = file:match("(.+)%.lua$")
-    if widget_name then
-        local widget = require("luis.widgets." .. widget_name)
-		widget.setluis(luis)  -- Pass the core library to the widget module
-        luis.widgets[widget_name] = widget
-        luis["new" .. widget_name:gsub("^%l", string.upper)] = widget.new
+    -- Ensure the widget path exists
+    if not lfs.getInfo(widgetPath, "directory") then
+        --error("Widget directory not found: " .. widgetPath)
+		print("Widget directory not found: " .. widgetPath)
     end
+
+    -- Dynamically load widgets
+    luis.widgets = {}
+    local widget_files = lfs.getDirectoryItems(widgetPath)
+
+    for _, file in ipairs(widget_files) do
+        local widget_name = file:match("(.+)%.lua$")
+        if widget_name then
+            local widget = require(widgetPath:gsub("/", ".") .. "." .. widget_name)
+            widget.setluis(luis)  -- Pass the core library to the widget module
+            luis.widgets[widget_name] = widget
+            luis["new" .. widget_name:gsub("^%l", string.upper)] = widget.new
+        end
+    end
+
+    return luis
 end
 
-return luis
+return initLuis
