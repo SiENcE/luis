@@ -116,7 +116,7 @@ luis.theme = {
         backgroundColor = {0.2, 0.2, 0.2, 0.5},
         borderColor = {0.3, 0.3, 0.3, 1},
         borderWidth = 2,
-        padding = 10,
+        padding = 0,
         handleSize = 20,
         handleColor = {0.5, 0.5, 0.5, 1}
 	},
@@ -273,6 +273,39 @@ function luis.getElementState(layerName, index)
     return nil
 end
 
+function luis.removeElement(layerName, elementToRemove)
+    if not luis.elements[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
+    end
+
+    for i, element in ipairs(luis.elements[layerName]) do
+        if element == elementToRemove then
+            -- Remove the element from the elements table
+            table.remove(luis.elements[layerName], i)
+
+            -- Remove the element's state if it exists
+            if luis.elementStates[layerName] then
+                table.remove(luis.elementStates[layerName], i)
+            end
+
+            -- Update focusable elements if necessary
+            luis.updateFocusableElements()
+
+            -- If the removed element was focused, move focus to the next element
+            if luis.currentFocus == elementToRemove then
+                luis.moveFocus("next")
+            end
+
+            print("Element removed successfully from layer '" .. layerName .. "'.")
+            return true
+        end
+    end
+
+    print("Error: Element not found in layer '" .. layerName .. "'.")
+    return false
+end
+
 --==============================================
 -- Theme handling
 --==============================================
@@ -366,7 +399,7 @@ function luis.update(dt)
 end
 
 -- Element debug outlines
-local function drawElementOutline(element)
+function luis.drawElementOutline(element)
     love.graphics.setColor(1, 1, 1, 0.5)
 	local font_backup = love.graphics.getFont()
 	local font = love.graphics.newFont(12, "mono")
@@ -400,7 +433,7 @@ function luis.draw()
             for _, element in ipairs(sortedElements) do
                 element:draw()
                 if luis.showElementOutlines then
-                    drawElementOutline(element)
+                    luis.drawElementOutline(element)
                 end
             end
         end
@@ -438,7 +471,7 @@ end
 --==============================================
 -- Input handling
 --==============================================
-
+--[[
 -- Helper function to handle input for a single layer
 local function handleLayerInput(layerName, x, y, inputFunction, ...)
     if luis.enabledLayers[layerName] and luis.elements[layerName] then
@@ -455,6 +488,30 @@ local function handleLayerInput(layerName, x, y, inputFunction, ...)
                 return true  -- Stop propagation if an element handled the input
 			-- handle gamepad
             elseif element[inputFunction] and element[inputFunction](element, ...) then
+				return true  -- Stop propagation if an element handled the input
+			end
+        end
+    end
+    return false
+end
+]]--
+local function handleLayerInput(layerName, x, y, inputFunction, ...)
+    if luis.enabledLayers[layerName] and luis.elements[layerName] then
+        -- Sort elements by z-index in descending order
+        local sortedElements = {}
+        for _, element in ipairs(luis.elements[layerName]) do
+            table.insert(sortedElements, element)
+        end
+        table.sort(sortedElements, function(a, b) return a.zIndex > b.zIndex end)
+
+        for _, element in ipairs(sortedElements) do
+			-- handle mouse
+			if (inputFunction == "click" or inputFunction == "release" or inputFunction == "wheelmoved") and
+				element[inputFunction] and x and y and element[inputFunction](element, x, y, ...) then
+                return true  -- Stop propagation if an element handled the input
+			-- handle gamepad
+			elseif (inputFunction == "gamepadpressed" or inputFunction == "gamepadreleased") and
+			   element[inputFunction] and element[inputFunction](element, ...) then
 				return true  -- Stop propagation if an element handled the input
 			end
         end
@@ -500,20 +557,20 @@ end
 ------------------------------------------------
 -- Mouse input handling
 ------------------------------------------------
-function luis.mousepressed(x, y, button, istouch)
+function luis.mousepressed(x, y, button, istouch, presses)
     x, y = x / luis.scale, y / luis.scale
     for layerName, _ in pairs(luis.enabledLayers) do
-        if handleLayerInput(layerName, x, y, "click", button, istouch) then
+        if handleLayerInput(layerName, x, y, "click", button, istouch, presses) then
             return true
         end
     end
     return false
 end
 
-function luis.mousereleased(x, y, button, istouch)
+function luis.mousereleased(x, y, button, istouch, presses)
     x, y = x / luis.scale, y / luis.scale
     for layerName, _ in pairs(luis.enabledLayers) do
-        if handleLayerInput(layerName, x, y, "release", button, istouch) then
+        if handleLayerInput(layerName, x, y, "release", button, istouch, presses) then
             return true
         end
     end
