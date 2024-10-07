@@ -133,4 +133,8 @@ end
 
 function love.keypressed(key)
     luis.keypressed(key)
+
+	if key == "tab" then -- Debug View
+        luis.keypressed(key)
+    end
 end

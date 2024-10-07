@@ -470,5 +470,9 @@ function love.keypressed(key)
             turnRight()
         end
     end
+
+	if key == "tab" then -- Debug View
+        luis.keypressed(key)
+    end
     luis.keypressed(key)
 end

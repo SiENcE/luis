@@ -30,6 +30,10 @@ function love.mousereleased(x, y, button, istouch)
 end
 
 function love.keypressed(key)
+	if key == "tab" then -- Debug View
+        luis.keypressed(key)
+    end
+
     luis.keypressed(key)
 end
 
