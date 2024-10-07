@@ -1,317 +1,211 @@
-# LUIS (Love2D UI System) Documentation
+Here's an API documentation in Markdown for the Core UI library called "LUIS":
+
+# LUIS (Love UI System) API Documentation
+
+LUIS is a flexible UI system for the LÖVE framework, providing a set of core functionalities and support for custom widgets.
 
 ## Table of Contents
 
-1. [Introduction](#introduction)
-2. [Getting Started](#getting-started)
-3. [Core Concepts](#core-concepts)
-   - [Layers](#layers)
-   - [Widgets](#widgets)
-   - [Theming](#theming)
-4. [Basic Usage](#basic-usage)
-5. [Widget Gallery](#widget-gallery)
-6. [Advanced Features](#advanced-features)
-7. [API Reference](#api-reference)
-8. [Examples](#examples)
-9. [Troubleshooting](#troubleshooting)
+1. [Initialization](#initialization)
+2. [Layer Management](#layer-management)
+3. [Element Management](#element-management)
+4. [Input Handling](#input-handling)
+5. [Rendering](#rendering)
+6. [Theme Management](#theme-management)
+7. [State Management](#state-management)
+8. [Scaling and Grid](#scaling-and-grid)
+9. [Joystick and Gamepad Support](#joystick-and-gamepad-support)
+10. [Widget System](#widget-system)
 
-## Introduction
-
-LUIS (Love2D UI System) is a flexible and extensible UI library for the LÖVE2D framework. It provides a comprehensive set of tools for creating complex user interfaces in your LÖVE2D games and applications.
-
-Key features:
-- Layer-based UI management
-- Customizable theming system
-- Responsive layout options
-- Comprehensive input handling (mouse, keyboard, gamepad)
-- Easy-to-use widget system
-
-## Getting Started
-
-### Installation
-
-1. Download the LUIS library and place it in your LÖVE2D project directory.
-2. Require the library in your `main.lua` file:
+## Initialization
 
 ```lua
-local luis = require("luis")
+local luis = require("luis.init")("widgets")
 ```
 
-### Basic Setup
+Initialize LUIS by providing the path to the widget directory. If not specified, it defaults to "widgets".
 
-Here's a minimal setup to get LUIS running in your LÖVE2D project:
+## Layer Management
+
+Layers allow for organizing UI elements in a hierarchical structure.
+
+### Creating a Layer
 
 ```lua
-local luis = require("luis")
-
-function love.load()
-    luis.init()
-    luis.newLayer("main")
-    luis.enableLayer("main")
-    
-    luis.newButton("main", {
-        text = "Click me!",
-        x = 100,
-        y = 100,
-        width = 200,
-        height = 50,
-        onClick = function()
-            print("Button clicked!")
-        end
-    })
-end
-
-function love.update(dt)
-    luis.update(dt)
-end
-
-function love.draw()
-    luis.draw()
-end
-
-function love.mousepressed(x, y, button, istouch)
-    luis.mousepressed(x, y, button, istouch)
-end
-
-function love.mousereleased(x, y, button, istouch)
-    luis.mousereleased(x, y, button, istouch)
-end
+luis.newLayer(name)
 ```
 
-## Core Concepts
+Creates a new layer with the given name.
 
-### Layers
-
-LUIS uses a layer-based system for organizing UI elements. Layers can be enabled, disabled, or toggled, allowing for easy management of complex UI hierarchies.
+### Setting the Current Layer
 
 ```lua
-luis.newLayer("menu")
-luis.enableLayer("menu")
-luis.disableLayer("menu")
-luis.toggleLayer("menu")
+luis.setCurrentLayer(layerName)
 ```
 
-### Widgets
+Sets the specified layer as the current active layer.
 
-Widgets are the building blocks of your UI. LUIS provides a variety of pre-built widgets like buttons, sliders, and text inputs. You can also create custom widgets.
+### Enabling/Disabling Layers
 
 ```lua
-luis.newButton("main", {
-    text = "Click me!",
-    x = 100,
-    y = 100,
-    width = 200,
-    height = 50,
-    onClick = function()
-        print("Button clicked!")
-    end
-})
+luis.enableLayer(layerName)
+luis.disableLayer(layerName)
+luis.toggleLayer(layerName)
 ```
 
-### Theming
+Enable, disable, or toggle the visibility of a layer.
 
-LUIS includes a powerful theming system that allows you to customize the look and feel of your UI.
+### Checking Layer Status
 
 ```lua
-luis.setTheme({
-    button = {
-        color = {0.2, 0.6, 0.8},
-        textColor = {1, 1, 1},
-        cornerRadius = 5
-    }
-})
+luis.isLayerEnabled(layerName)
 ```
 
-## Basic Usage
+Returns a boolean indicating whether the specified layer is enabled.
 
-Here's a more comprehensive example showcasing basic LUIS usage:
+## Element Management
+
+### Creating an Element
 
 ```lua
-local luis = require("luis")
-
-function love.load()
-    luis.init()
-    luis.newLayer("main")
-    luis.enableLayer("main")
-    
-    luis.newButton("main", {
-        text = "Click me!",
-        x = 100,
-        y = 100,
-        width = 200,
-        height = 50,
-        onClick = function()
-            print("Button clicked!")
-        end
-    })
-    
-    luis.newSlider("main", {
-        x = 100,
-        y = 200,
-        width = 200,
-        height = 20,
-        min = 0,
-        max = 100,
-        value = 50,
-        onChange = function(value)
-            print("Slider value: " .. value)
-        end
-    })
-    
-    luis.newCheckBox("main", {
-        x = 100,
-        y = 250,
-        width = 20,
-        height = 20,
-        text = "Check me",
-        onChange = function(checked)
-            print("Checkbox " .. (checked and "checked" or "unchecked"))
-        end
-    })
-end
-
-function love.update(dt)
-    luis.update(dt)
-end
-
-function love.draw()
-    luis.draw()
-end
-
-function love.mousepressed(x, y, button, istouch)
-    luis.mousepressed(x, y, button, istouch)
-end
-
-function love.mousereleased(x, y, button, istouch)
-    luis.mousereleased(x, y, button, istouch)
-end
+luis.createElement(layerName, elementType, ...)
 ```
 
-## Widget Gallery
+Creates a new UI element of the specified type in the given layer.
 
-LUIS provides a variety of pre-built widgets:
+### Removing an Element
+
+```lua
+luis.removeElement(layerName, element)
+```
+
+Removes the specified element from the given layer.
+
+### Getting/Setting Element State
+
+```lua
+luis.getElementState(layerName, index)
+luis.setElementState(layerName, index, value)
+```
+
+Get or set the state of an element at the specified index in a layer.
+
+## Input Handling
+
+LUIS provides functions to handle various input events:
+
+```lua
+luis.mousepressed(x, y, button, istouch, presses)
+luis.mousereleased(x, y, button, istouch, presses)
+luis.wheelmoved(x, y)
+luis.keypressed(key)
+luis.textinput(text)
+```
+
+These functions should be called from the corresponding LÖVE callbacks.
+
+## Rendering
+
+```lua
+luis.draw()
+```
+
+Renders all enabled layers and their elements.
+
+## Theme Management
+
+### Setting a Theme
+
+```lua
+luis.setTheme(newTheme)
+```
+
+Updates the current theme with the provided theme table.
+
+## State Management
+
+### Getting Configuration
+
+```lua
+luis.getConfig()
+```
+
+Returns the current configuration of all UI elements.
+
+### Setting Configuration
+
+```lua
+luis.setConfig(config)
+```
+
+Applies the provided configuration to all UI elements.
+
+## Scaling and Grid
+
+```lua
+luis.setGridSize(gridSize)
+luis.updateScale()
+```
+
+Set the grid size for element positioning and update the UI scale based on the window size.
+
+## Joystick and Gamepad Support
+
+```lua
+luis.initJoysticks()
+luis.setActiveJoystick(joystick)
+luis.isJoystickPressed(button)
+luis.getJoystickAxis(axis)
+luis.gamepadpressed(joystick, button)
+luis.gamepadreleased(joystick, button)
+```
+
+Functions for handling joystick and gamepad input.
+
+## Widget System
+
+LUIS supports custom widgets through a plugin system. Widgets are loaded dynamically from the specified widget directory.
+
+### Supported Widget Types
+
+LUIS supports various widget types, including:
 
 - Button
 - Slider
+- Switch
 - Checkbox
-- Radio Button
-- Text Input
-- Dropdown
-- Progress Bar
-- Image
-- Label
-- Panel
+- RadioButton
+- DropDown
+- TextInput
+- ProgressBar
+- Icon
+- FlexContainer
 
-Each widget has its own set of properties and events. Refer to the API Reference for detailed information on each widget.
+### Creating Custom Widgets
 
-## Advanced Features
+To create a custom widget:
 
-### Custom Widgets
+1. Create a new Lua file in the widgets directory.
+2. Define a table with a `new` function that creates and returns the widget.
+3. Implement the following methods for the widget:
+   - `update(self, mx, my, dt)`
+   - `draw(self)`
+   - `click(self, x, y, button, istouch, presses)`
+   - `release(self, x, y, button, istouch, presses)`
+   - `gamepadpressed(self, button)` (for gamepad support)
+   - `gamepadreleased(self, button)` (for gamepad support)
 
-You can create custom widgets by defining a new widget module:
+### Widget Interaction with Core
 
-```lua
-local CustomWidget = {}
+Widgets can interact with the core LUIS library through the following functions:
 
-function CustomWidget.new(layer, options)
-    -- Implementation here
-end
+- `luis.flux`: For creating animations
+- `luis.theme`: Accessing the current theme
+- `luis.gridSize`: Accessing the current grid size
+- `luis.scale`: Accessing the current UI scale
+- `luis.isJoystickPressed(button)`: Checking joystick button state
+- `luis.getJoystickAxis(axis)`: Getting joystick axis values
 
-function CustomWidget:update(dt)
-    -- Update logic here
-end
+Widgets should be designed to work with the LUIS theming system and respond to input events as defined in the core library.
 
-function CustomWidget:draw()
-    -- Draw logic here
-end
-
-return CustomWidget
-```
-
-### Layout Management
-
-LUIS provides a FlexContainer for creating flexible layouts:
-
-```lua
-luis.newFlexContainer("main", {
-    x = 100,
-    y = 100,
-    width = 400,
-    height = 300,
-    direction = "column",
-    spacing = 10
-})
-```
-
-### State Management
-
-LUIS allows you to save and load UI states:
-
-```lua
-luis.saveConfig("ui_config.json")
-luis.loadConfig("ui_config.json")
-```
-
-## API Reference
-
-(Detailed API reference would go here, documenting all functions, widgets, and their properties)
-
-## Examples
-
-### Creating a Simple Menu
-
-```lua
-local luis = require("luis")
-
-function love.load()
-    luis.init()
-    luis.newLayer("menu")
-    luis.enableLayer("menu")
-    
-    luis.newButton("menu", {
-        text = "Start Game",
-        x = 300,
-        y = 200,
-        width = 200,
-        height = 50,
-        onClick = function()
-            print("Starting game...")
-        end
-    })
-    
-    luis.newButton("menu", {
-        text = "Options",
-        x = 300,
-        y = 275,
-        width = 200,
-        height = 50,
-        onClick = function()
-            print("Opening options...")
-        end
-    })
-    
-    luis.newButton("menu", {
-        text = "Quit",
-        x = 300,
-        y = 350,
-        width = 200,
-        height = 50,
-        onClick = function()
-            love.event.quit()
-        end
-    })
-end
-
--- (Include update, draw, and input handling functions as before)
-```
-
-## Troubleshooting
-
-Common issues and their solutions:
-
-1. **Widgets not appearing**: Ensure that you've created and enabled the correct layer.
-2. **Input not working**: Make sure you're calling the appropriate LUIS input functions in your LÖVE2D callbacks.
-3. **Styling issues**: Check your theme settings and make sure they're applied correctly.
-
-For more help, please refer to the LUIS GitHub repository or community forums.
-
+This documentation provides an overview of the LUIS API. For more detailed information on specific functions and their parameters, refer to the source code and comments within the LUIS core library.

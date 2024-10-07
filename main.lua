@@ -4,5 +4,5 @@
 --require("examples.demo_ui.main")
 --require("examples.guess_game.main")
 --require("examples.basic_ui.main")
-require("examples.complex_ui.main")
+--require("examples.complex_ui.main")
 

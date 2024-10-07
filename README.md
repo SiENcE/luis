@@ -188,7 +188,7 @@ end
 
 ## Documentation
 
-(Include links to /luis/README.MD)
+(Include links to /luis/luis-documentation.md)
 
 ## Dependencies
 
@@ -199,12 +199,10 @@ end
 ## known Problems
 
 - DropBox, selection doesn't work 100% with gamepad
-- maus kann keinen focus auf custom widget haben, dadurch ist snake nicht zu steuern
 - checkbox, radiobuttons are not saved currently
 - man muss per gamepad oder maus doppelt auf checkbox klicken, zumindest im video menü
 - InputText: when adding a character in the middle of a text, the text behind is removed
 - FlexContainer: the initial width or height limits the arrangement of child widgets
-
 
 ## License
 
