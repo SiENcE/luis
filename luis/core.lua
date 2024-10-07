@@ -351,7 +351,6 @@ function luis.updateScale()
     luis.scale = math.min(w / luis.baseWidth, h / luis.baseHeight)
 end
 
---local accumulator = 0
 local mx = luis.baseWidth
 local my = luis.baseHeight
 function luis.update(dt)
@@ -415,6 +414,7 @@ function luis.drawElementOutline(element)
 	love.graphics.setFont(font_backup)
 end
 
+-- draw, z-ordering, debug-view
 function luis.draw()
     love.graphics.push()
     love.graphics.scale(luis.scale, luis.scale)
@@ -471,30 +471,8 @@ end
 --==============================================
 -- Input handling
 --==============================================
---[[
--- Helper function to handle input for a single layer
-local function handleLayerInput(layerName, x, y, inputFunction, ...)
-    if luis.enabledLayers[layerName] and luis.elements[layerName] then
-        -- Sort elements by z-index in descending order
-        local sortedElements = {}
-        for _, element in ipairs(luis.elements[layerName]) do
-            table.insert(sortedElements, element)
-        end
-        table.sort(sortedElements, function(a, b) return a.zIndex > b.zIndex end)
 
-        for _, element in ipairs(sortedElements) do
-			-- handle mouse
-            if element[inputFunction] and x and y and element[inputFunction](element, x, y, ...) then
-                return true  -- Stop propagation if an element handled the input
-			-- handle gamepad
-            elseif element[inputFunction] and element[inputFunction](element, ...) then
-				return true  -- Stop propagation if an element handled the input
-			end
-        end
-    end
-    return false
-end
-]]--
+-- generic Input handling
 local function handleLayerInput(layerName, x, y, inputFunction, ...)
     if luis.enabledLayers[layerName] and luis.elements[layerName] then
         -- Sort elements by z-index in descending order
@@ -699,7 +677,7 @@ function luis.exitFlexContainerFocus()
 end
 
 ------------------------------------------------
--- Joystick input handling
+-- Joystick/Gamepad input handling
 ------------------------------------------------
 
 function luis.initJoysticks()
@@ -743,7 +721,6 @@ end
 function luis.getJoystickPos()
 	return mx, my
 end
-
 
 -- Function for joystick button press
 function luis.gamepadpressed(joystick, button)
@@ -841,7 +818,6 @@ function luis.getConfig()
     local config = deepCopyWithStringKeys(config)
 end
 
--- load configuration
 local function toboolean(str)
     local bool = false
     if str == "true" then
@@ -882,87 +858,5 @@ function luis.setConfig(config)
 		end
 	end
 end
-
---[[
-function luis.saveConfig(filename)
-    local config = {}
-    for layerName, elements in pairs(luis.elements) do
-        config[layerName] = {}
-        for i, element in ipairs(elements) do
-            if element.type == "Switch" or
-               element.type == "CheckBox" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value or false)
-                }
-			elseif element.type == "Slider" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value)
-                }
-			elseif element.type == "RadioButton" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value or false)
-                }
-			elseif element.type == "DropDown" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value)
-                }
-			elseif element.type == "TextInput" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.text)
-                }
-            end
-        end
-    end
-
-    -- Convert elementStates to a new table with string keys
-    local config = deepCopyWithStringKeys(config)
-
-    local jsonString = json.encode(config)
-    love.filesystem.write(filename, jsonString)
-end
-
-function luis.loadConfig(filename)
-    if love.filesystem.getInfo(filename) then
-        local jsonString = love.filesystem.read(filename)
-        local config = json.decode(jsonString)
-        
-        for layerName, elements in pairs(config) do
-            if luis.elements[layerName] then
-                for i, elementConfig in pairs(elements) do
-                    local element = luis.elements[layerName][tonumber(i)]
-                    if element and element.type == elementConfig.type then
-                        if element.type == "Slider" then
-                            element.value = elementConfig.value
-						elseif element.type == "Switch" or
-							element.type == "CheckBox" then
-                            element.value = toboolean(elementConfig.value)
-                        elseif element.type == "RadioButton" then
-                            element.value = toboolean(elementConfig.value)
-                            -- Deselect other radio buttons in the same group
-                            for _, otherElement in ipairs(luis.elements[layerName]) do
-                                if otherElement.type == "RadioButton" and otherElement.group == element.group and otherElement ~= element then
-                                    otherElement.value = false
-                                end
-                            end
-                        elseif element.type == "DropDown" then
-                            element:setValue(tonumber(elementConfig.value))
-                        elseif element.type == "TextInput" then
-                            element:setText(tostring(elementConfig.value or elementConfig.text))
-                        end
-                        
-                        -- Update element state
-                        luis.setElementState(layerName, i, elementConfig.value)
-                    end
-                end
-            end
-        end
-    end
-end
-]]--
 
 return luis
