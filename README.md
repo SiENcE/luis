@@ -188,7 +188,7 @@ end
 
 ## Documentation
 
-(Include links to /luis/luis-documentation.md)
+[LUIS core documentation](/luis/luis-documentation.md)
 
 ## Dependencies
 
