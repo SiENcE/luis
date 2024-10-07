@@ -192,10 +192,16 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
 			-- TODO: z-sort children before draw
             for _, child in ipairs(self.children) do
                 child:draw()
+
                 if luis.showElementOutlines then
                     luis.drawElementOutline(child)
-					love.graphics.print(self.name,child.position.x+child.width/2-string.len(self.name)*2, child.position.y)
+					love.graphics.print(child.type,child.position.x+child.width/2-string.len(child.type)*2, child.position.y)
                 end
+            end
+
+            if luis.showElementOutlines then
+                luis.drawElementOutline(self)
+                love.graphics.print(self.name,self.position.x+self.width/2-string.len(self.name)*2, self.position.y)
             end
 
             -- Draw focus indicator
