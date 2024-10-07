@@ -178,7 +178,7 @@ LUIS supports various widget types, including:
 - ProgressBar
 - Icon
 - FlexContainer
-- +any Custom Widget ...
+- any custom Widget ...
 
 ### Creating Custom Widgets
 
