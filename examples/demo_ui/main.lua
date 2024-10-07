@@ -74,7 +74,14 @@ function love.load()
 end
 
 -- Update function
+local accumulator = 0
 function love.update(dt)
+    accumulator = accumulator + dt
+    if accumulator >= 1/60 then
+        luis.flux.update(accumulator)
+        accumulator = 0
+    end
+
     luis.update(dt)
     
     -- Animate health and mana bars
