@@ -64,7 +64,7 @@ function Slice9Decorator.new(widget, image, left, right, top, bottom)
     return self
 end
 
-function Slice9Decorator:draw()
+function Slice9Decorator:draw(this)
     local x, y = self.widget.position.x, self.widget.position.y
     local w, h = self.widget.width, self.widget.height
     local iw, ih = self.image:getDimensions()
@@ -87,9 +87,16 @@ function Slice9Decorator:draw()
     
     -- Draw center
     love.graphics.draw(self.image, love.graphics.newQuad(self.left, self.top, cw, ch, iw, ih), x + self.left, y + self.top, 0, (w - self.left - self.right) / cw, (h - self.top - self.bottom) / ch)
-    
+
+	-- Draw text
+	if this.text then
+		love.graphics.setColor(this.theme.textColor)
+		local font_backup = love.graphics.getFont()
+		love.graphics.printf(this.text, this.position.x, this.position.y + (this.height - font_backup:getHeight()) / 2, this.width, this.theme.align)
+	end
+
     -- Call the base draw method (which calls the widget's defaultDraw)
-    BaseDecorator.draw(self)
+    --BaseDecorator.draw(self)
 end
 
 decorators.Slice9Decorator = Slice9Decorator

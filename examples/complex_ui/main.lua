@@ -323,8 +323,8 @@ local function createControlsMenu()
 	local container = luis.newFlexContainer(21, 11, 37, 38)
 	
 	-- if you don't want to resize the container manually, disable this
-	--container.release = function() end
-	--container.click = function() end
+	container.release = function() end
+	container.click = function() end
 	
 	local customButtonTheme = {
 		color = {0.5, 0.1, 0.9, 1},
@@ -352,7 +352,10 @@ local function createControlsMenu()
 	luis.createElement("controls", "FlexContainer", container)
 	----------------------------------------------------------------
 
-	luis.createElement("controls", "Button", "Back", 15, 3, popMenu, function() end, 50, 41)
+	local btn = luis.createElement("controls", "Button", "Back", 15, 3, popMenu, function() end, 50, 41)
+	    -- Load the slice-9 image
+    local buttonImage = love.graphics.newImage("examples/complex_ui/assets/images/button_slice9.png")
+	btn:setDecorator("Slice9Decorator", buttonImage, 8, 8, 8, 8)
 end
 
 function love.load()
