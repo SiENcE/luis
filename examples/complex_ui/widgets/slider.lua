@@ -93,7 +93,7 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
-        click = function(self, x, y, button, istouch)
+        click = function(self, x, y, button, istouch, presses)
             if self.hover and button == 1 then
                 self.pressed = true
                 self:setValue(self:getValueFromPosition(x - self.position.x))

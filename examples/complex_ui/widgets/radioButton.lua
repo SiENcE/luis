@@ -70,7 +70,7 @@ function radioButton.new(group, value, size, onChange, row, col, customTheme)
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
-        click = function(self, x, y, button, istouch)
+        click = function(self, x, y, button, istouch, presses)
 			if (self.focused or pointInRect(x, y, self.position.x, self.position.y, self.width, self.height)) and not self.value then
 					-- Deactivate all other radioButtons in the same group
 					for _, element in ipairs(luis.elements[luis.currentLayer]) do

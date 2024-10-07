@@ -88,7 +88,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
-        click = function(self, x, y, button, istouch)
+        click = function(self, x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
                 local clickX = x - self.position.x - textInputTheme.padding

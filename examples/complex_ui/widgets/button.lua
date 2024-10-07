@@ -97,7 +97,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 		-- Draw method that can use a decorator
 		draw = function(self)
 			if self.decorator then
-				self.decorator:draw()
+				self.decorator:draw(self)
 			else
 				self:defaultDraw()
 			end
@@ -108,7 +108,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
-        click = function(self, x, y, button, istouch)
+        click = function(self, x, y, button, istouch, presses)
             if (self.hover or self.focused) and not self.pressed then
                 self.pressed = true
                 luis.flux.to(self, buttonTheme.transitionDuration, {
@@ -127,7 +127,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
             return false
         end,
         
-        release = function(self, x, y, button, istouch)
+        release = function(self, x, y, button, istouch, presses)
             if self.pressed then
                 self.pressed = false
                 local targetColor = (self.hover or self.focused) and buttonTheme.hoverColor or buttonTheme.color

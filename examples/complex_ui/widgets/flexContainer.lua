@@ -10,10 +10,11 @@ function flexContainer.setluis(luisObj)
 end
 
 -- FlexContainer
-function flexContainer.new(width, height, row, col, customTheme)
+function flexContainer.new(width, height, row, col, customTheme, containerName)
     local containerTheme = customTheme or luis.theme.flexContainer
     local container = {
         type = "FlexContainer",
+		name = containerName or "FlexContainer", -- optional, makes it better when handling multiple flexcontainers
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         position = Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
@@ -58,20 +59,23 @@ function flexContainer.new(width, height, row, col, customTheme)
         end,
 
         arrangeChildren = function(self)
-            local x = self.position.x + self.padding
-            local y = self.position.y + self.padding
+            local x = self.padding
+            local y = self.padding
             local maxHeight = 0
             
             for _, child in ipairs(self.children) do
-                if x + child.width > self.position.x + self.width - self.padding then
-                    -- Move to next row
-                    x = self.position.x + self.padding
+                if x + child.width > self.width - self.padding then
+                    x = self.padding
                     y = y + maxHeight + self.padding
                     maxHeight = 0
                 end
                 
-                child.position.x = x
-                child.position.y = y
+                child.position.x = self.position.x + x
+                child.position.y = self.position.y + y
+                
+                if child.type == "FlexContainer" then
+                    child:arrangeChildren()
+                end
                 
                 x = x + child.width + self.padding
                 maxHeight = math.max(maxHeight, child.height)
@@ -152,8 +156,10 @@ function flexContainer.new(width, height, row, col, customTheme)
             end
 
             if self.isDragging then
-                self.position.x = mx - self.dragOffset.x
-                self.position.y = my - self.dragOffset.y
+                local dx = mx - self.dragOffset.x - self.position.x
+                local dy = my - self.dragOffset.y - self.position.y
+                self.position.x = self.position.x + dx
+                self.position.y = self.position.y + dy
                 self:arrangeChildren()
             elseif self.isResizing then
                 self.width = math.max(self.minWidth, mx - self.position.x)
@@ -183,8 +189,13 @@ function flexContainer.new(width, height, row, col, customTheme)
             love.graphics.rectangle("fill", self.position.x + self.width - containerTheme.handleSize, self.position.y + self.height - containerTheme.handleSize, containerTheme.handleSize, containerTheme.handleSize)
             
             -- Draw children
+			-- TODO: z-sort children before draw
             for _, child in ipairs(self.children) do
                 child:draw()
+                if luis.showElementOutlines then
+                    luis.drawElementOutline(child)
+					love.graphics.print(self.name,child.position.x+child.width/2-string.len(self.name)*2, child.position.y)
+                end
             end
 
             -- Draw focus indicator
@@ -215,6 +226,37 @@ function flexContainer.new(width, height, row, col, customTheme)
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
+--[[
+        click = function(self, x, y, button, istouch, presses)
+            if self:isInResizeHandle(x, y) then
+                self.isResizing = true
+                return true
+            elseif self:isInContainer(x, y) then
+                for _, child in ipairs(self.children) do
+                    local childX, childY = x - self.position.x, y - self.position.y
+                    if child.click and child:click(childX, childY, button, istouch, presses) then
+                        return true
+                    end
+                end
+                self.isDragging = true
+                self.dragOffset.x = x - self.position.x
+                self.dragOffset.y = y - self.position.y
+                return true
+            end
+            return false
+        end,
+        
+        release = function(self, x, y, button, istouch, presses)
+            self.isDragging = false
+            self.isResizing = false
+            for _, child in ipairs(self.children) do
+                if child.release then
+                    local childX, childY = x - self.position.x, y - self.position.y
+                    child:release(childX, childY, button, istouch, presses)
+                end
+            end
+        end,
+]]--
         click = function(self, x, y, button, istouch)
             if self:isInResizeHandle(x, y) then
                 self.isResizing = true

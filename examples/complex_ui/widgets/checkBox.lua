@@ -69,7 +69,7 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
-        click = function(self, x, y, button, istouch)
+        click = function(self, x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.value = not self.value
                 luis.flux.to(self, 0.2, { checkScale = self.value and 1 or 0 })
