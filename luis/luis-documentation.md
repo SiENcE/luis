@@ -1,8 +1,6 @@
-Here's an API documentation in Markdown for the Core UI library called "LUIS":
-
 # LUIS (Love UI System) API Documentation
 
-LUIS is a flexible UI system for the LÖVE framework, providing a set of core functionalities and support for custom widgets.
+**LUIS** (LUIS User Interface System) is a flexible graphical user interface (GUI) framework built on top of the [Löve2D](https://love2d.org/). LUIS provides developers with the tools to create dynamic, grid centric, layered user interfaces for games and applications. The core library provides a set of core functionalities and support for custom widgets.
 
 ## Table of Contents
 
@@ -180,6 +178,7 @@ LUIS supports various widget types, including:
 - ProgressBar
 - Icon
 - FlexContainer
+- +any Custom Widget ...
 
 ### Creating Custom Widgets
 
