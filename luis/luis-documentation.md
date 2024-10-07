@@ -256,7 +256,8 @@ function CustomButtonWidget.new(x, y, width, height, text, onClick)
     return self
 end
 
--- add it manually to the luis library (the default way is to load them automatically)
+-- register the Widget to the luis core
+-- NOTE: the default way is to load them automatically via pointing to a folder!)
 CustomButtonWidget.luis = luis
 luis.widgets["CustomButtonWidget"] = CustomButtonWidget
 luis["newCustomButtonWidget"] = CustomButtonWidget.new
@@ -264,8 +265,7 @@ luis["newCustomButtonWidget"] = CustomButtonWidget.new
 function love.load()
     luis.newLayer("main")
     luis.enableLayer("main")
-    
-	luis.createElement("main", "CustomButtonWidget", 100, 200, 100, 50, "Click me!", function() print("Button clicked!") end)
+    luis.createElement("main", "CustomButtonWidget", 100, 200, 100, 50, "Click me!", function() print("Button clicked!") end)
 end
 
 function love.update(dt)
