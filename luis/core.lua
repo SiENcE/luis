@@ -244,7 +244,8 @@ function luis.createElement(layerName, elementType, ...)
        elementType == "RadioButton" or
        elementType == "DropDown" or
 	   elementType == "ProgressBar" or
-       elementType == "TextInput" then
+       elementType == "TextInput" or
+       elementType == "TextInputMultiLine" then
         if not luis.elementStates[layerName] then
             luis.elementStates[layerName] = {}
         end
@@ -382,7 +383,8 @@ function luis.update(dt)
                    element.type == "CheckBox" or
                    element.type == "RadioButton" or
                    element.type == "DropDown" or
-                   element.type == "TextInput" then
+                   element.type == "TextInput" or
+                   element.type == "TextInputMultiLine" then
                     luis.setElementState(layerName, i, element.value or element.text)
                 end
             end
@@ -472,8 +474,10 @@ end
 -- Input handling
 --==============================================
 
--- generic Input handling
+-- generic Input handling for "Mouse (click/release)" and "Gamepad (gamepadpressed/gamepadreleased)"
+-- this Inputs are not pushed recursivly like keypressed/keyreleased & textinput!!
 local function handleLayerInput(layerName, x, y, inputFunction, ...)
+	print('core', inputFunction, x,y )
     if luis.enabledLayers[layerName] and luis.elements[layerName] then
         -- Sort elements by z-index in descending order
         local sortedElements = {}
@@ -501,31 +505,80 @@ end
 -- Keyboard input handling
 ------------------------------------------------
 
-function luis.keypressed(key)
+-- keypressed pushes recursiv across all widgets
+function luis.keypressed(key, scancode, isrepeat)
     if key == "tab" then
         luis.showGrid = not luis.showGrid
         luis.showElementOutlines = not luis.showElementOutlines
-		luis.showLayerNames = not luis.showLayerNames
+        luis.showLayerNames = not luis.showLayerNames
     else
-		for layerName, enabled in pairs(luis.enabledLayers) do
-			if enabled and luis.elements[layerName] then
-				for _, element in ipairs(luis.elements[layerName]) do
-					--if (element.type == "TextInput" and element.active) or element.type == "FlexContainer" then
-					if (element.type == "TextInput" and element.active) or element.keypressed then
-						element:keypressed(key)
-						return
-					end
+        local function handleKeyPressed(elements)
+            for _, element in ipairs(elements) do
+                if element.type == "FlexContainer" then
+                    if handleKeyPressed(element.children) then
+                        return true
+                    end
+                elseif (element.keypressed and element.active) or element.keypressed then
+                    element:keypressed(key, scancode, isrepeat)
+                    return true
+                end
+            end
+            return false
+        end
+
+        for layerName, enabled in pairs(luis.enabledLayers) do
+            if enabled and luis.elements[layerName] then
+                if handleKeyPressed(luis.elements[layerName]) then
+                    return
+                end
+            end
+        end
+    end
+end
+
+function luis.keyreleased( key, scancode )
+	local function handleKeyReleased(elements)
+		for _, element in ipairs(elements) do
+			if element.type == "FlexContainer" then
+				if handleKeyReleased(element.children) then
+					return true
 				end
+			elseif (element.keyreleased and element.active) or element.keyreleased then
+				element:keyreleased( key, scancode )
+				return true
+			end
+		end
+		return false
+	end
+
+	for layerName, enabled in pairs(luis.enabledLayers) do
+		if enabled and luis.elements[layerName] then
+			if handleKeyReleased(luis.elements[layerName]) then
+				return
 			end
 		end
 	end
 end
 
+-- textinput pushes recursiv across all widgets
 function luis.textinput(text)
-    if luis.elements[luis.currentLayer] then
-        for _, element in ipairs(luis.elements[luis.currentLayer]) do
-			if (element.type == "TextInput" and element.active) or element.type == "FlexContainer" then
+    local function handleTextInput(elements)
+        for _, element in ipairs(elements) do
+            if element.type == "FlexContainer" then
+                if handleTextInput(element.children) then
+                    return true
+                end
+            elseif element.textinput and element.active then
                 element:textinput(text)
+                return true
+            end
+        end
+        return false
+    end
+
+    for layerName, enabled in pairs(luis.enabledLayers) do
+        if enabled and luis.elements[layerName] then
+            if handleTextInput(luis.elements[layerName]) then
                 return
             end
         end
@@ -557,7 +610,7 @@ end
 
 function luis.wheelmoved(x, y)
     for layerName, _ in pairs(luis.enabledLayers) do
-        if handleLayerInput(layerName, nil, nil, "wheelmoved", x, y) then
+        if handleLayerInput(layerName, x, y, "wheelmoved") then
             return true
         end
     end
@@ -726,7 +779,7 @@ end
 function luis.gamepadpressed(joystick, button)
     if joystick == luis.activeJoystick then
         -- First, check if the current focus is a FlexContainer
-        if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
+        if luis.currentFocus and luis.currentFocus.gamepadpressed and luis.currentFocus.type == "FlexContainer" then
             if luis.currentFocus:gamepadpressed(button) then
                 return true
             end
@@ -746,7 +799,7 @@ end
 function luis.gamepadreleased(joystick, button)
     if joystick == luis.activeJoystick then
         -- First, check if the current focus is a FlexContainer
-        if luis.currentFocus and luis.currentFocus.type == "FlexContainer" then
+        if luis.currentFocus and luis.currentFocus.gamepadreleased and luis.currentFocus.type == "FlexContainer" then
             if luis.currentFocus:gamepadreleased(button) then
                 return true
             end
@@ -805,7 +858,7 @@ function luis.getConfig()
                     type = element.type,
                     value = tostring(element.value)
                 }
-			elseif element.type == "TextInput" then
+			elseif (element.type == "TextInput" or element.type == "TextInputMultiLine") then
                 config[layerName][i] = {
                     type = element.type,
                     value = tostring(element.text)
@@ -847,7 +900,7 @@ function luis.setConfig(config)
 						end
 					elseif element.type == "DropDown" then
 						element:setValue(tonumber(elementConfig.value))
-					elseif element.type == "TextInput" then
+					elseif (element.type == "TextInput" or element.type == "TextInputMultiLine") then
 						element:setText(tostring(elementConfig.value or elementConfig.text))
 					end
 					

@@ -232,37 +232,6 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
---[[
-        click = function(self, x, y, button, istouch, presses)
-            if self:isInResizeHandle(x, y) then
-                self.isResizing = true
-                return true
-            elseif self:isInContainer(x, y) then
-                for _, child in ipairs(self.children) do
-                    local childX, childY = x - self.position.x, y - self.position.y
-                    if child.click and child:click(childX, childY, button, istouch, presses) then
-                        return true
-                    end
-                end
-                self.isDragging = true
-                self.dragOffset.x = x - self.position.x
-                self.dragOffset.y = y - self.position.y
-                return true
-            end
-            return false
-        end,
-        
-        release = function(self, x, y, button, istouch, presses)
-            self.isDragging = false
-            self.isResizing = false
-            for _, child in ipairs(self.children) do
-                if child.release then
-                    local childX, childY = x - self.position.x, y - self.position.y
-                    child:release(childX, childY, button, istouch, presses)
-                end
-            end
-        end,
-]]--
         click = function(self, x, y, button, istouch)
             if self:isInResizeHandle(x, y) then
                 self.isResizing = true
@@ -291,6 +260,17 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
             end
         end,
 
+        wheelmoved = function(self, x, y)
+            for _, child in ipairs(self.children) do
+                if child.wheelmoved then
+                    child:wheelmoved(x,y)
+                    return
+                end
+            end
+		end,
+--[[
+		-- not needed, as text and key input is pushed via core to all widgets!
+
         textinput = function(self, text)
             self.isDragging = false
             self.isResizing = false
@@ -315,6 +295,17 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
             end
         end,
 
+        keyreleased = function(self, key)
+            self.isDragging = false
+            self.isResizing = false
+            for _, child in ipairs(self.children) do
+                if child.keyreleased then
+                    child:keyreleased(key)
+                    return
+                end
+            end
+		end,
+]]--
         setText = function(self, newText)
            self.isDragging = false
             self.isResizing = false
@@ -366,6 +357,7 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
 			end
 			return false
         end,
+
     }
     
     container:updateMinimumSize()
