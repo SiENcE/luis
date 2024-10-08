@@ -90,14 +90,26 @@ Get or set the state of an element at the specified index in a layer.
 
 ## Input Handling
 
-LUIS provides functions to handle various input events:
+LUIS provides functions to handle Mouse and Keyboard input events:
 
 ```lua
 luis.mousepressed(x, y, button, istouch, presses)
 luis.mousereleased(x, y, button, istouch, presses)
 luis.wheelmoved(x, y)
-luis.keypressed(key)
+luis.keypressed(key, scancode, isrepeat)
+luis.keyreleased( key, scancode )
 luis.textinput(text)
+```
+
+LUIS also provides Joystick and Gamepad Support:
+
+```lua
+luis.initJoysticks()
+luis.setActiveJoystick(joystick)
+luis.isJoystickPressed(button)
+luis.getJoystickAxis(axis)
+luis.gamepadpressed(joystick, button)
+luis.gamepadreleased(joystick, button)
 ```
 
 These functions should be called from the corresponding LÖVE callbacks.
@@ -147,19 +159,6 @@ luis.updateScale()
 
 Set the grid size for element positioning and update the UI scale based on the window size.
 
-## Joystick and Gamepad Support
-
-```lua
-luis.initJoysticks()
-luis.setActiveJoystick(joystick)
-luis.isJoystickPressed(button)
-luis.getJoystickAxis(axis)
-luis.gamepadpressed(joystick, button)
-luis.gamepadreleased(joystick, button)
-```
-
-Functions for handling joystick and gamepad input.
-
 ## Widget System
 
 LUIS supports custom widgets through a plugin system. Widgets are loaded dynamically from the specified widget directory.
@@ -175,6 +174,7 @@ LUIS supports various widget types, including:
 - RadioButton
 - DropDown
 - TextInput
+- TextInputMultiLine
 - ProgressBar
 - Icon
 - FlexContainer
@@ -216,10 +216,10 @@ main.lua
 ```lua
 local initLuis = require("luis.init")
 
--- point this to your widgets folder
+-- Direct this to your widgets folder.
 local luis = initLuis()
 
--- create a Button widget
+-- Create a Button widget
 local CustomButtonWidget = {}
 function CustomButtonWidget.new(x, y, width, height, text, onClick)
     local self = {
@@ -256,8 +256,8 @@ function CustomButtonWidget.new(x, y, width, height, text, onClick)
     return self
 end
 
--- register the Widget to the luis core
--- NOTE: the default way is to load them automatically via pointing to a folder!)
+-- Register the Button Widget to the LUIS core, create an Instance and us it
+-- NOTE: The default method is to load them automatically by specifying a folder!
 CustomButtonWidget.luis = luis
 luis.widgets["CustomButtonWidget"] = CustomButtonWidget
 luis["newCustomButtonWidget"] = CustomButtonWidget.new

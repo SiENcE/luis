@@ -117,12 +117,15 @@ return customWidget
     ```
 3. **Include LUIS in Your Löve2D Project**:
     ```lua
-    local LUIS = require("luis")
+	-- Initialize LUIS
+    local initluis = require("luis.init")
+    
+	-- Direct this to your widgets folder.
+    local luis = initluis("examples/complex_ui/widgets")
     ```
 
 4. **Create and Manage UI Elements**:
     Use LUIS functions to define layers, add UI elements, and manage their states.
-
 
 ## Example
 
@@ -130,7 +133,9 @@ Here's a simple example to create a flexContainer with two buttons and a slider 
 
 main.lua
 ```lua
-local LUIS = require("luis")
+local initluis = require("luis.init")
+-- Direct this to your widgets folder.
+local luis = initluis("examples/complex_ui/widgets")
 
 function love.load()
 	-- Create a FlexContainer
@@ -147,7 +152,7 @@ function love.load()
 	container:addChild(button2)
 	container:addChild(slider)
 
-	LUIS.newLayer("main", 96, 54)
+	LUIS.newLayer("main")
 	LUIS.setCurrentLayer("main")
 	
 	-- Add the container to your LUIS layer
@@ -193,16 +198,15 @@ end
 ## Dependencies
 
 - Löve2D: The game framework used for rendering and managing game objects.
-- flux (included in the `3rdparty` folder)
-- json (included in the `3rdparty` folder)
+- no other dependencies for the core library
 
 ## known Problems
 
-- DropBox, selection doesn't work 100% with gamepad
-- checkbox, radiobuttons are not saved currently
-- man muss per gamepad oder maus doppelt auf checkbox klicken, zumindest im video menü
-- InputText: when adding a character in the middle of a text, the text behind is removed
-- FlexContainer: the initial width or height limits the arrangement of child widgets
+- DropBox: Selection with the gamepad is not fully functional.
+- Checkboxes and radio buttons are currently not being saved.
+- Some elements require double-clicking to activate, especially in the complex_menu sample.
+- InputText: Adding a character in the middle of the text deletes the following characters.
+- FlexContainer: The initial width or height constrains the arrangement of child widgets.
 
 ## License
 
