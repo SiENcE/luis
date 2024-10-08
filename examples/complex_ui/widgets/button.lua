@@ -109,6 +109,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 		end,
 
         click = function(self, x, y, button, istouch, presses)
+			print("button.click = function", x, y, button, istouch, presses)
             if (self.hover or self.focused) and not self.pressed then
                 self.pressed = true
                 luis.flux.to(self, buttonTheme.transitionDuration, {
@@ -128,6 +129,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         end,
         
         release = function(self, x, y, button, istouch, presses)
+			print("button.release = function", x, y, button, istouch, presses)
             if self.pressed then
                 self.pressed = false
                 local targetColor = (self.hover or self.focused) and buttonTheme.hoverColor or buttonTheme.color

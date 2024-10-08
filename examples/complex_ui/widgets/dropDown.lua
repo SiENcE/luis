@@ -161,6 +161,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         end,
         
         wheelmoved = function(self, x, y)
+			print("drop", x,y)
             if self.isOpen then
                 local mx, my = love.mouse.getPosition()
                 mx, my = mx / luis.scale, my / luis.scale

@@ -1,5 +1,5 @@
 local initLuis = require("luis.init")
--- point this to your widgets folder
+-- Direct this to your widgets folder.
 local luis = initLuis("examples/basic_ui/widgets")
 
 local RetroMenu = require("examples.basic_ui.retro_menu")

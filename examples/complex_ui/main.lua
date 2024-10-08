@@ -1,5 +1,5 @@
 local initLuis = require("luis.init")
--- point this to your widgets folder
+-- Direct this to your widgets folder.
 local luis = initLuis("examples/complex_ui/widgets")
 
 -- register flux in luis, because the widgets of complex_ui need this
@@ -323,8 +323,8 @@ local function createControlsMenu()
 	local container = luis.newFlexContainer(21, 11, 37, 38)
 	
 	-- if you don't want to resize the container manually, disable this
-	container.release = function() end
-	container.click = function() end
+	--container.release = function() end
+	--container.click = function() end
 	
 	local customButtonTheme = {
 		color = {0.5, 0.1, 0.9, 1},
@@ -352,7 +352,7 @@ local function createControlsMenu()
 	luis.createElement("controls", "FlexContainer", container)
 	----------------------------------------------------------------
 
-	local btn = luis.createElement("controls", "Button", "Back", 15, 3, popMenu, function() end, 50, 41)
+	local btn = luis.createElement("controls", "Button", "Back (Slice9)", 15, 3, popMenu, function() end, 50, 41)
 	    -- Load the slice-9 image
     local buttonImage = love.graphics.newImage("examples/complex_ui/assets/images/button_slice9.png")
 	btn:setDecorator("Slice9Decorator", buttonImage, 8, 8, 8, 8)

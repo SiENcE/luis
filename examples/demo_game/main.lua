@@ -1,4 +1,5 @@
 local initLuis = require("luis.init")
+-- Direct this to your widgets folder.
 local luis = initLuis("examples/complex_ui/widgets")
 
 -- register flux in LUIS, because the widgets of complex_ui need this
