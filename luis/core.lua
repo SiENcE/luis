@@ -477,7 +477,6 @@ end
 -- generic Input handling for "Mouse (click/release)" and "Gamepad (gamepadpressed/gamepadreleased)"
 -- this Inputs are not pushed recursivly like keypressed/keyreleased & textinput!!
 local function handleLayerInput(layerName, x, y, inputFunction, ...)
-	print('core', inputFunction, x,y )
     if luis.enabledLayers[layerName] and luis.elements[layerName] then
         -- Sort elements by z-index in descending order
         local sortedElements = {}
