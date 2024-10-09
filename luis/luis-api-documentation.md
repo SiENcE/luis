@@ -1,6 +1,6 @@
 # LUIS (Love UI System) API Documentation
 
-LUIS (Love UI System) is a flexible GUI framework for LÖVE (Love2D). It provides tools to create dynamic, grid-centric, layered user interfaces for games and applications.
+LUIS (Love User Interface System) is a flexible GUI framework for LÖVE (Love2D). It provides tools to create dynamic, grid-centric, layered user interfaces for games and applications.
 
 ## Table of Contents
 
