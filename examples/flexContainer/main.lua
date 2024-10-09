@@ -5,6 +5,21 @@ local luis = initluis("examples/complex_ui/widgets")
 -- register flux in luis, because the widgets of complex_ui need this
 luis.flux = require("examples.3rdparty.flux")
 
+local plasmaBuffer
+local colorPalette
+
+function createColorPalette(size)
+    local palette = {}
+    for i = 0, size - 1 do
+        local value = i / size
+        local r = math.sin(value * 2 * math.pi + 0) * 0.5 + 0.5
+        local g = math.sin(value * 2 * math.pi + 2 * math.pi / 3) * 0.5 + 0.5
+        local b = math.sin(value * 2 * math.pi + 4 * math.pi / 3) * 0.5 + 0.5
+        palette[i] = {r, g, b}
+    end
+    return palette
+end
+
 function love.load()
 	--luis.gridSize = 4
 	-- we set the container paddig to gridSize (default is 0)
@@ -37,7 +52,30 @@ function love.load()
 	nav:addChild(luis.createElement("main", "Button", "Menu Item 1", 7, 2, function() print('Menu Item 1 - click') end, function() print('Menu Item 1 - release') end, 1, 1))
 	nav:addChild(luis.createElement("main", "Button", "Menu Item 2", 7, 2, function() print('Menu Item 2 - click') end, function() print('Menu Item 2 - release') end, 1, 1))
 
-	body:addChild(luis.createElement("main", "Label", "MultiLine Editor", body.width/luis.gridSize, 2, 1, 1))
+	-- CustomView can be used to render gameplay
+    plasmaBuffer = love.image.newImageData(body.width, body.height)
+    colorPalette = createColorPalette(256)
+	local customView = luis.createElement("main", "Custom", function()
+		love.graphics.setColor(1, 0, 0)
+		love.graphics.rectangle("line", 0, 0, body.width, body.height)
+		for y = 0, body.height - 1, 2 do
+			for x = 0, body.width - 1, 2 do
+				local value = math.sin(x / 16.0)
+							+ math.sin(y / 8.0)
+							+ math.sin((x + y) / 16.0)
+							+ math.sin(math.sqrt(x * x + y * y) / 8.0)
+				
+				value = math.abs(math.sin(value + love.timer.getTime() * 0.8)) * 255
+				local index = math.floor(value) % 256
+				
+				plasmaBuffer:setPixel(x, y, colorPalette[index][1], colorPalette[index][2], colorPalette[index][3], 1)
+			end
+		end
+		local plasmaImage = love.graphics.newImage(plasmaBuffer)
+		love.graphics.draw(plasmaImage, 0, 0)
+	end, 45, 38, 10, 43)
+	body:addChild(customView)
+
 	aside:addChild(luis.createElement("main", "Button", "Sidebar Item", 4, 2, function() print('Sidebar Item - click') end, function() print('Sidebar Item - release') end, 1, 1))
 
 	-- Create a Menu
@@ -55,16 +93,16 @@ function love.load()
 		end
 	end
 	-- this DropDown is added as Child to the "header" flexContainer. The grid position is not used here, as the flexContainer we have defined orders his childs dynamically!
-	local dropdownbox2 = luis.createElement("main", "DropDown", fileItems, 1, 8, 2, fileFunc, 1, 1, 2)
+	local dropdownbox2 = luis.createElement("main", "DropDown", fileItems, 1, 8, 2, fileFunc, 1, 1)
 	header:addChild(dropdownbox2)
 
 	-- add a TextInput
-	local textInput = luis.createElement("main", "TextInput", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
-	footer:addChild(textInput)
+--	local textInput = luis.createElement("main", "TextInput", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
+--	footer:addChild(textInput)
 
 	-- add a TextInputMultiLine
-	local textInputMultiLine = luis.createElement("gameplay", "TextInputMultiLine", body.width/luis.gridSize, 30, "Enter text here...", function(text) print(text) end, 1, 1)
-	body:addChild(textInputMultiLine)
+	local textInputMultiLine = luis.createElement("main", "TextInputMultiLine", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
+	footer:addChild(textInputMultiLine)
 	
 	love.keyboard.setKeyRepeat(true)
 	luis.initJoysticks()  -- Initialize joysticks
@@ -89,6 +127,7 @@ function love.update(dt)
         luis.flux.update(accumulator)
         accumulator = 0
     end
+
 	luis.update(dt)
 end
 

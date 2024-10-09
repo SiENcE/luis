@@ -26,8 +26,10 @@ function love.load()
 	luis.updateScale()
 
 	-- Create a new layer for our game interface
-	luis.newLayer("game")	-- create new Layer
-	luis.setGridSize(48)  -- 48x48 grid for the whole gui
+	luis.newLayer("game")
+
+	luis.setGridSize(48)  -- Play around by scaling the whole UI (Resolution-independent) here!
+
 	luis.setCurrentLayer("game") -- make game the currentLayer
 
 	luis.theme.text.font = love.graphics.newFont(18, "normal")
@@ -71,6 +73,14 @@ function love.load()
 
 	-- Text input for chat or commands (bottom of the screen)
 	textInput = luis.createElement("game", "TextInput", 22, 2, "Enter command...", function(text) print(text) textInput:setText("") end, 18, 2)
+
+	luis.initJoysticks()  -- Initialize joysticks
+	if luis.activeJoystick then
+		local name = luis.activeJoystick:getName()
+		local index = luis.activeJoystick:getConnectedIndex()
+		print(string.format("Changing active joystick to #%d '%s'.", index, name))
+		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	end
 end
 
 -- Update function
@@ -137,4 +147,20 @@ function love.keypressed(key)
 	if key == "tab" then -- Debug View
         luis.keypressed(key)
     end
+end
+
+function love.joystickadded(joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
+end
+
+function love.joystickremoved(joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+end
+
+function love.gamepadpressed(joystick, button)
+    luis.gamepadpressed(joystick, button)
+end
+
+function love.gamepadreleased(joystick, button)
+    luis.gamepadreleased(joystick, button)
 end

@@ -121,10 +121,12 @@ function updateBattleElements()
         local hpBar = luis.createElement("battle", "ProgressBar", character.hp / character.maxHp, 8, 1, yPos+1, 1)
         battleElements[#battleElements+1] = hpBar
         local hpLabel = luis.createElement("battle", "Label", "HP: " .. character.hp .. "/" .. character.maxHp, 8, 1, yPos+1, 2)
+		hpLabel.zIndex = 100
         battleElements[#battleElements+1] = hpLabel
         local mpBar = luis.createElement("battle", "ProgressBar", character.mp / character.maxMp, 8, 1, yPos+2, 1)
         battleElements[#battleElements+1] = mpBar
         local mpLabel = luis.createElement("battle", "Label", "MP: " .. character.mp .. "/" .. character.maxMp, 8, 1, yPos+2, 2)
+		mpLabel.zIndex = 100
         battleElements[#battleElements+1] = mpLabel
     end
 
@@ -137,6 +139,7 @@ function updateBattleElements()
             local enemyHpBar = luis.createElement("battle", "ProgressBar", enemy.hp / enemy.maxHp, 8, 1, yPos+1, 18)
             battleElements[#battleElements+1] = enemyHpBar
             local enemyHpLabel = luis.createElement("battle", "Label", "HP: " .. enemy.hp .. "/" .. enemy.maxHp, 8, 1, yPos+1, 19)
+			enemyHpLabel.zIndex = 100
             battleElements[#battleElements+1] = enemyHpLabel
             
             -- Add target button for each live enemy
@@ -376,14 +379,16 @@ for i, character in ipairs(gameState.party) do
     luis.createElement("game", "Label", character.name, 8, 1, yPos, 1)
     local hpBar = luis.createElement("game", "ProgressBar", character.hp / character.maxHp, 8, 1, yPos+1, 1)
     local hpLabel = luis.createElement("game", "Label", "HP: " .. character.hp .. "/" .. character.maxHp, 8, 1, yPos+1, 2)
+	hpLabel.zIndex = 100
     local mpBar = luis.createElement("game", "ProgressBar", character.mp / character.maxMp, 8, 1, yPos+2, 1)
     local mpLabel = luis.createElement("game", "Label", "MP: " .. character.mp .. "/" .. character.maxMp, 8, 1, yPos+2, 2)
+	mpLabel.zIndex = 100
 end
 
 -- Update action buttons
-luis.createElement("game", "Button", "Move", 5, 2, moveForward, function() end, 16, 5)
-luis.createElement("game", "Button", "Turn Left", 5, 2, turnLeft, function() end, 16, 10)
-luis.createElement("game", "Button", "Turn Right", 5, 2, turnRight, function() end, 16, 15)
+luis.createElement("game", "Button", "←", 5, 2, turnLeft, function() end, 16, 5)
+luis.createElement("game", "Button", "↑", 5, 2, moveForward, function() end, 16, 10)
+luis.createElement("game", "Button", "→", 5, 2, turnRight, function() end, 16, 15)
 luis.createElement("game", "Button", "Camp", 5, 2, function() gameState.currentView = "camp" end, function() end, 16, 20)
 
 -- Update camp elements
@@ -393,6 +398,14 @@ campElements = {
 }
 
 function love.load()
+	luis.initJoysticks()  -- Initialize joysticks
+	if luis.activeJoystick then
+		local name = luis.activeJoystick:getName()
+		local index = luis.activeJoystick:getConnectedIndex()
+		print(string.format("Changing active joystick to #%d '%s'.", index, name))
+		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	end
+	
 	local customTheme = require("examples.complex_ui.assets.themes.alternativeTheme")
 	luis.setTheme(customTheme)
 end
@@ -476,4 +489,20 @@ function love.keypressed(key)
         luis.keypressed(key)
     end
     luis.keypressed(key)
+end
+
+function love.joystickadded(joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
+end
+
+function love.joystickremoved(joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+end
+
+function love.gamepadpressed(joystick, button)
+    luis.gamepadpressed(joystick, button)
+end
+
+function love.gamepadreleased(joystick, button)
+    luis.gamepadreleased(joystick, button)
 end
