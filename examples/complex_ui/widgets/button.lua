@@ -50,9 +50,6 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         update = function(self, mx, my)
             local wasHovered = self.hover
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
- 
-            -- Update focus state
-			--self.focused = (luis.currentFocus == self)
 
             -- Check for joystick button press when focused
 --            if self.focused and luis.joystickJustPressed('a') then
@@ -109,7 +106,6 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 		end,
 
         click = function(self, x, y, button, istouch, presses)
-			print("button.click = function", x, y, button, istouch, presses)
             if (self.hover or self.focused) and not self.pressed then
                 self.pressed = true
                 luis.flux.to(self, buttonTheme.transitionDuration, {
@@ -129,7 +125,6 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         end,
         
         release = function(self, x, y, button, istouch, presses)
-			print("button.release = function", x, y, button, istouch, presses)
             if self.pressed then
                 self.pressed = false
                 local targetColor = (self.hover or self.focused) and buttonTheme.hoverColor or buttonTheme.color
@@ -157,7 +152,6 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 
         -- Joystick-specific functions
         gamepadpressed = function(self, button)
-			print("button.gamepadpressed = function", button, self.text)
             if button == 'a' and self.focused then
                 return self:click()
             end
@@ -165,7 +159,6 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         end,
         
         gamepadreleased = function(self, button)
-			print("button.gamepadreleased = function", button, self.text)
             if button == 'a' and self.pressed then
                 return self:release()
             end
