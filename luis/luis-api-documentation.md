@@ -1,6 +1,6 @@
 # LUIS (Love UI System) API Documentation
 
-**LUIS** (LUIS User Interface System) is a flexible graphical user interface (GUI) framework built on top of the [Löve2D](https://love2d.org/). LUIS provides developers with the tools to create dynamic, grid centric, layered user interfaces for games and applications. The core library provides a set of core functionalities and support for custom widgets.
+LUIS (Love UI System) is a flexible GUI framework for LÖVE (Love2D). It provides tools to create dynamic, grid-centric, layered user interfaces for games and applications.
 
 ## Table of Contents
 
@@ -14,6 +14,7 @@
 8. [Scaling and Grid](#scaling-and-grid)
 9. [Joystick and Gamepad Support](#joystick-and-gamepad-support)
 10. [Widget System](#widget-system)
+11. [Usage Example](#usage-example)
 
 ## Initialization
 
@@ -25,13 +26,12 @@ Initialize LUIS by providing the path to the widget directory. If not specified,
 
 ## Layer Management
 
-Layers allow for organizing UI elements in a hierarchical structure.
-
 ### Creating a Layer
 
 ```lua
 luis.newLayer(name)
 ```
+- `name`: string - The name of the new layer
 
 Creates a new layer with the given name.
 
@@ -40,6 +40,7 @@ Creates a new layer with the given name.
 ```lua
 luis.setCurrentLayer(layerName)
 ```
+- `layerName`: string - The name of the layer to set as current
 
 Sets the specified layer as the current active layer.
 
@@ -50,6 +51,7 @@ luis.enableLayer(layerName)
 luis.disableLayer(layerName)
 luis.toggleLayer(layerName)
 ```
+- `layerName`: string - The name of the layer to enable, disable, or toggle
 
 Enable, disable, or toggle the visibility of a layer.
 
@@ -58,8 +60,8 @@ Enable, disable, or toggle the visibility of a layer.
 ```lua
 luis.isLayerEnabled(layerName)
 ```
-
-Returns a boolean indicating whether the specified layer is enabled.
+- `layerName`: string - The name of the layer to check
+- Returns: boolean - Whether the layer is enabled
 
 ## Element Management
 
@@ -68,6 +70,9 @@ Returns a boolean indicating whether the specified layer is enabled.
 ```lua
 luis.createElement(layerName, elementType, ...)
 ```
+- `layerName`: string - The name of the layer to add the element to
+- `elementType`: string - The type of element to create (e.g., "Button", "Slider")
+- `...`: Additional parameters specific to the element type
 
 Creates a new UI element of the specified type in the given layer.
 
@@ -76,6 +81,8 @@ Creates a new UI element of the specified type in the given layer.
 ```lua
 luis.removeElement(layerName, element)
 ```
+- `layerName`: string - The name of the layer containing the element
+- `element`: table - The element object to remove
 
 Removes the specified element from the given layer.
 
@@ -85,23 +92,62 @@ Removes the specified element from the given layer.
 luis.getElementState(layerName, index)
 luis.setElementState(layerName, index, value)
 ```
+- `layerName`: string - The name of the layer containing the element
+- `index`: number - The index of the element in the layer
+- `value`: any - The new state value to set
 
 Get or set the state of an element at the specified index in a layer.
 
 ## Input Handling
-
-LUIS provides functions to handle Mouse and Keyboard input events:
 
 ```lua
 luis.mousepressed(x, y, button, istouch, presses)
 luis.mousereleased(x, y, button, istouch, presses)
 luis.wheelmoved(x, y)
 luis.keypressed(key, scancode, isrepeat)
-luis.keyreleased( key, scancode )
+luis.keyreleased(key, scancode)
 luis.textinput(text)
 ```
 
-LUIS also provides Joystick and Gamepad Support:
+These functions should be called from the corresponding LÖVE callbacks to handle input events.
+
+## Rendering
+
+```lua
+luis.draw()
+```
+
+Renders all enabled layers and their elements. Call this in your `love.draw()` function.
+
+## Theme Management
+
+```lua
+luis.setTheme(newTheme)
+```
+- `newTheme`: table - A table containing theme properties to update
+
+Updates the current theme with the provided theme table.
+
+## State Management
+
+```lua
+local config = luis.getConfig()
+luis.setConfig(config)
+```
+
+`getConfig()` returns the current configuration of all UI elements. `setConfig(config)` applies the provided configuration to all UI elements.
+
+## Scaling and Grid
+
+```lua
+luis.setGridSize(gridSize)
+luis.updateScale()
+```
+- `gridSize`: number - The size of the grid for element positioning
+
+Set the grid size for element positioning and update the UI scale based on the window size.
+
+## Joystick and Gamepad Support
 
 ```lua
 luis.initJoysticks()
@@ -112,52 +158,7 @@ luis.gamepadpressed(joystick, button)
 luis.gamepadreleased(joystick, button)
 ```
 
-These functions should be called from the corresponding LÖVE callbacks.
-
-## Rendering
-
-```lua
-luis.draw()
-```
-
-Renders all enabled layers and their elements.
-
-## Theme Management
-
-### Setting a Theme
-
-```lua
-luis.setTheme(newTheme)
-```
-
-Updates the current theme with the provided theme table.
-
-## State Management
-
-### Getting Configuration
-
-```lua
-luis.getConfig()
-```
-
-Returns the current configuration of all UI elements.
-
-### Setting Configuration
-
-```lua
-luis.setConfig(config)
-```
-
-Applies the provided configuration to all UI elements.
-
-## Scaling and Grid
-
-```lua
-luis.setGridSize(gridSize)
-luis.updateScale()
-```
-
-Set the grid size for element positioning and update the UI scale based on the window size.
+These functions provide support for joystick and gamepad input.
 
 ## Widget System
 
@@ -191,6 +192,7 @@ To create a custom widget:
    - `draw(self)`
    - `click(self, x, y, button, istouch, presses)`
    - `release(self, x, y, button, istouch, presses)`
+   - `wheelmoved(self, mx, my)`
    - `gamepadpressed(self, button)` (for gamepad support)
    - `gamepadreleased(self, button)` (for gamepad support)
 
@@ -292,3 +294,5 @@ end
 ```
 
 This documentation provides an overview of the LUIS API. For more detailed information on specific functions and their parameters, refer to the source code and comments within the LUIS core library.
+
+Remember to implement all necessary LÖVE callbacks and forward them to LUIS for proper input handling and rendering.
