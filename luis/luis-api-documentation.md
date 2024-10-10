@@ -200,7 +200,6 @@ To create a custom widget:
 
 Widgets can interact with the core LUIS library through the following functions:
 
-- `luis.flux`: For creating animations
 - `luis.theme`: Accessing the current theme
 - `luis.gridSize`: Accessing the current grid size
 - `luis.scale`: Accessing the current UI scale
