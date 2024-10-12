@@ -20,7 +20,25 @@ LUIS (Love User Interface System) is a flexible GUI framework for LÖVE (Love2D)
 ## Initialization
 
 ```lua
+local initLuis = require("luis.init")
+
+local luis = initLuis()
+```
+
+or
+
+```lua
+-- Direct this to your widgets folder.
 local luis = require("luis.init")("widgets")
+```
+
+or
+
+```lua
+local initLuis = require("luis.init")
+
+-- Direct this to your widgets folder.
+local luis = initLuis("examples/complex_ui/widgets")
 ```
 
 Initialize LUIS by providing the path to the widget directory. If not specified, it defaults to "widgets".
@@ -30,20 +48,12 @@ Initialize LUIS by providing the path to the widget directory. If not specified,
 ### Creating a Layer
 
 ```lua
-luis.newLayer(name)
+luis.newLayer(layerName)
+luis.removeLayer(layerName)
 ```
-- `name`: string - The name of the new layer
+- `layerName`: string - The name of the new layer
 
-Creates a new layer with the given name.
-
-### Setting the Current Layer
-
-```lua
-luis.setCurrentLayer(layerName)
-```
-- `layerName`: string - The name of the layer to set as current
-
-Sets the specified layer as the current active layer.
+Creates and Remove a layer with the given name.
 
 ### Enabling/Disabling Layers
 
@@ -64,18 +74,32 @@ luis.isLayerEnabled(layerName)
 - `layerName`: string - The name of the layer to check
 - Returns: boolean - Whether the layer is enabled
 
+### Working with the LayerStack
+
+```lua
+luis.setCurrentLayer(layerName)
+luis.popLayer()
+```
+- `layerName`: string - The name of the layer to set as current
+
+Sets the specified layer as the active layer and adds it to the LayerStack. When using popLayer, the current layer is removed from the LayerStack and deactivated (the layer itself is not deleted). The layer at the top of the LayerStack then becomes the new active layer and is enabled.
+
+NOTE: It can be used as an alternative to, or in combination with, enableLayer, disableLayer, and toggleLayer. Refer to the complex_ui sample for an example.
+
 ## Element Management
 
 ### Creating an Element
 
 ```lua
-luis.createElement(layerName, elementType, ...)
+luis.createElement(layerName, widgetType, ...)
 ```
-- `layerName`: string - The name of the layer to add the element to
-- `elementType`: string - The type of element to create (e.g., "Button", "Slider")
+- `layerName`: string - The name of the layer to add an element to
+- `widgetType`: string - The widget type of the element to create (e.g., "Button", "Slider")
 - `...`: Additional parameters specific to the element type
 
-Creates a new UI element of the specified type in the given layer.
+Creates a new Element (Instance) of the specified Widget type in the given layer.
+
+Note: An element is an instance of a widget.
 
 ### Removing an Element
 
@@ -101,6 +125,7 @@ Get or set the state of an element at the specified index in a layer.
 
 ## Input Handling
 
+### Mouse & Keyboard Support
 ```lua
 luis.mousepressed(x, y, button, istouch, presses)
 luis.mousereleased(x, y, button, istouch, presses)
@@ -111,6 +136,20 @@ luis.textinput(text)
 ```
 
 These functions should be called from the corresponding LÖVE callbacks to handle input events.
+
+### Joystick and Gamepad Support
+
+```lua
+luis.initJoysticks()
+luis.setActiveJoystick(id, joystick)
+luis.getActiveJoystick(id)
+luis.isJoystickPressed(id, button)
+luis.getJoystickAxis(id, axis)
+luis.gamepadpressed(joystick, button)
+luis.gamepadreleased(joystick, button)
+```
+
+These functions provide support for joystick and gamepad input.
 
 ## Rendering
 
@@ -138,28 +177,40 @@ luis.setConfig(config)
 
 `getConfig()` returns the current configuration of all UI elements. `setConfig(config)` applies the provided configuration to all UI elements.
 
-## Scaling and Grid
+## the Grid
 
 ```lua
 luis.setGridSize(gridSize)
-luis.updateScale()
 ```
 - `gridSize`: number - The size of the grid for element positioning
 
-Set the grid size for element positioning and update the UI scale based on the window size.
+Set the grid size for positioning and laying out elements. You can use it for more advanced features later.
 
-## Joystick and Gamepad Support
+Set the gridSize only once and before creating a Layer or Element! You can change it later, but every new Element will use the updated gridSize. All previously created Elements will retain the gridSize they were created with.
+
+NOTE: The grid is index at 1,1 and NOT 0,0 !
+
+## Scaling
 
 ```lua
-luis.initJoysticks()
-luis.setActiveJoystick(joystick)
-luis.isJoystickPressed(button)
-luis.getJoystickAxis(axis)
-luis.gamepadpressed(joystick, button)
-luis.gamepadreleased(joystick, button)
+luis.updateScale()
 ```
 
-These functions provide support for joystick and gamepad input.
+For window dimensions, update `luis.baseWidth` and `luis.baseHeight`, and use these values to set your window mode.
+
+Then use `luis.updateScale` in the `love.update` callback to automatically scale the UI and Mosue and Touch input.
+
+```lua
+function love.load()
+	love.window.setMode( luis.baseWidth, luis.baseHeight, { resizable=true } )
+end
+
+function love.update(dt)
+	luis.updateScale()
+
+    luis.update(dt)
+end
+```
 
 ## Widget System
 
@@ -210,7 +261,7 @@ Widgets can interact with the core LUIS library through the following functions:
 Widgets should be designed to work with the LUIS theming system and respond to input events as defined in the core library.
 
 
-## Example
+### Example
 
 Here's a simple example to create a button widget yourself and use it (press 'TAB' for debug view):
 
