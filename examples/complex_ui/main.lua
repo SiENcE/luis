@@ -150,7 +150,6 @@ local function createSnakeMiniGame()
 
 	-- add a custom keypress to our custom widget (a custom widget has initially only a draw function)
 	customView.keypressed = function(self, key)
-		print('customView.keypressed', key, customView.focused)
 		-- Check for joystick button press when focused
 		local x,y = love.mouse.getPosition()
 		local hovered = utils.pointInRect( x,y, self.position.x, self.position.y, self.width, self.height)
@@ -369,11 +368,12 @@ function love.load()
 
     love.keyboard.setKeyRepeat(true)
 	luis.initJoysticks()  -- Initialize joysticks
-	if luis.activeJoystick then
-		local name = luis.activeJoystick:getName()
-		local index = luis.activeJoystick:getConnectedIndex()
-		print(string.format("Changing active joystick to #%d '%s'.", index, name))
-		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	if luis.activeJoysticks then
+		for id, activeJoystick in pairs(luis.activeJoysticks) do
+			local name = activeJoystick:getName()
+			local index = activeJoystick:getConnectedIndex()
+			print(string.format("Active joystick #%d '%s'.", index, name))
+		end
 	end
 
     -- Create layers for different menus
@@ -420,9 +420,8 @@ function love.update(dt)
     luis.update(dt)
     luis.updateScale()
 
-	icon_widget.position = Vector2D.new(math.sin(time*10)+900, math.sin(time*10)+600)
-	
 	time = time + dt
+	icon_widget.position = Vector2D.new(math.sin(time*10)+900, math.sin(time*10)+600)
 	
 	-- for our snake minigame
     moveTimer = moveTimer + dt
@@ -534,21 +533,20 @@ function love.touchreleased(id, x, y, dx, dy, pressure)
 end
 
 function love.joystickadded(joystick)
-print('joystickadded', joystick)
     luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
 end
 
 function love.joystickremoved(joystick)
-print('joystickremoved', joystick)
+	print('joystickremoved', joystick)
     luis.initJoysticks()  -- Reinitialize joysticks when one is removed
 end
 
 function love.gamepadpressed(joystick, button)
-print('love.gamepadpressed', joystick, button)
+	print('love.gamepadpressed', joystick, button)
     luis.gamepadpressed(joystick, button)
 end
 
 function love.gamepadreleased(joystick, button)
-print('love.gamepadreleased', joystick, button)
+	print('love.gamepadreleased', joystick, button)
     luis.gamepadreleased(joystick, button)
 end

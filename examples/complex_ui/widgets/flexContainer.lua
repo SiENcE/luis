@@ -201,7 +201,7 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
 
             if luis.showElementOutlines then
                 luis.drawElementOutline(self)
-                love.graphics.print(self.name,self.position.x+self.width/2-string.len(self.name)*2, self.position.y)
+                love.graphics.print(self.name,self.position.x+self.width/2-string.len(self.name)*2, self.position.y+love.graphics.getFont():getHeight())
             end
 
             -- Draw focus indicator
@@ -328,7 +328,8 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
                    y >= self.position.y and y <= self.position.y + self.height
         end,
 
-        gamepadpressed = function(self, button)
+        gamepadpressed = function(self, id, button)
+			--print("checkbox.gamepadpressed = function", id, button, self.focused, self.value )
             if not self.internalFocusActive then return false end
 
             if button == "dpdown" or button == "dpright" then
@@ -341,18 +342,19 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
                 -- Activate the currently focused child
                 local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
                 if focusedChild and focusedChild.gamepadpressed then
-					local rtn = focusedChild:gamepadpressed(button)
+					local rtn = focusedChild:gamepadpressed(id, button)
                     return rtn
                 end
             end
             return false
         end,
 
-        gamepadreleased = function(self, button)
+        gamepadreleased = function(self, id, button)
+			--print("checkbox.gamepadreleased = function", id, button, self.focused )
             -- Activate the currently focused child
 			local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
 			if focusedChild and focusedChild.gamepadreleased then
-					local rtn = focusedChild:gamepadreleased(button)
+					local rtn = focusedChild:gamepadreleased(id, button)
                     return rtn
 			end
 			return false

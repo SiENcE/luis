@@ -28,11 +28,6 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
 		decorator = nil,
 
         update = function(self, mx, my, dt)
-            -- Check for joystick button press when focused
---            if self.focused and luis.joystickJustPressed('a') then
---				print('checkbox.joystickJustPressed')
---				self:gamepadpressed('a')
---            end
         end,
 
         defaultDraw = function(self)
@@ -82,8 +77,8 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
         end,
 
         -- Joystick-specific functions
-        gamepadpressed = function(self, button)
-			print("checkbox.gamepadpressed = function", button,self.focused,self.value )
+        gamepadpressed = function(self, id, button)
+			print("checkbox.gamepadpressed = function", id, button, self.focused, self.value )
             if button == 'a' and self.focused then
                 self.value = not self.value
                 luis.flux.to(self, 0.2, { checkScale = self.value and 1 or 0 })

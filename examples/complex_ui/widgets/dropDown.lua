@@ -31,22 +31,23 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         maxScrollOffset = math.max(0, #items - maxVisibleItems),
         focusable = true,  -- Make the dropdown focusable
         focused = false,   -- Track focus state
-		zIndex = 1,  -- Default z-index
-		theme = dropdownTheme,
-		decorator = nil,
+        zIndex = 1,  -- Default z-index
+        theme = dropdownTheme,
+        decorator = nil,
 
-        update = function(self, mx, my)
+        update = function(self, mx, my, dt)
+--[[
             -- Check for joystick/gamepad input when focused
             if self.focused then
-                if luis.joystickJustPressed('a')  then
+                if luis.joystickJustPressed(1, 'a') then
                     self:click(self.position.x+1, self.position.y+1, 'a')
-                elseif luis.joystickJustPressed('b') then
+                elseif luis.joystickJustPressed(1, 'b') then
                     self:click(self.position.x+1, self.position.y+1, 'b')
-                elseif luis.joystickJustPressed('start') then
+                elseif luis.joystickJustPressed(1, 'start') then
                     self:click(self.position.x+1, self.position.y+1, 'start')
-				end
+                end
             end
-			
+]]--
             if self.isOpen then
                 local listHeight = math.min(#self.items, maxVisibleItems) * self.height
                 self.hoverIndex = nil
@@ -133,10 +134,9 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
 			end
 		end,
 
-		-- Method to set a decorator
-		setDecorator = function(self, decoratorType, ...)
-			self.decorator = decorators[decoratorType].new(self, ...)
-		end,
+        setDecorator = function(self, decoratorType, ...)
+            self.decorator = decorators[decoratorType].new(self, ...)
+        end,
 
         click = function(self, x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
@@ -161,7 +161,6 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         end,
         
         wheelmoved = function(self, x, y)
-			print("drop", x,y)
             if self.isOpen then
                 local mx, my = love.mouse.getPosition()
                 mx, my = mx / luis.scale, my / luis.scale
@@ -189,34 +188,58 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         end,
 
         -- Function for handling gamepad input
-		updateFocus = function(self, jx, jy)
-			if not self.isOpen then
-				if jy > luis.deadzone then
-					self.isOpen = true
-					self.hoverIndex = self.value
-				end
-			else
+        updateFocus = function(self, jx, jy)
+            if not self.isOpen then
+                if jy > luis.deadzone then
+                    self.isOpen = true
+                    self.hoverIndex = self.value
+                end
+            else
 				-- Ensure hoverIndex is always a valid number
-				if not self.hoverIndex or self.hoverIndex < 1 or self.hoverIndex > #self.items then
-					self.hoverIndex = self.value
-				end
+                if not self.hoverIndex or self.hoverIndex < 1 or self.hoverIndex > #self.items then
+                    self.hoverIndex = self.value
+                end
 
-				local oldHoverIndex = self.hoverIndex
+                local oldHoverIndex = self.hoverIndex
 
-				if jy > luis.deadzone then
-					self.hoverIndex = math.min(#self.items, oldHoverIndex + 1)
-				elseif jy < -luis.deadzone then
-					self.hoverIndex = math.max(1, oldHoverIndex - 1)
-				end
+                if jy > luis.deadzone then
+                    self.hoverIndex = math.min(#self.items, oldHoverIndex + 1)
+                elseif jy < -luis.deadzone then
+                    self.hoverIndex = math.max(1, oldHoverIndex - 1)
+                end
 
-				-- Adjust scroll offset if necessary
-				if self.hoverIndex > self.scrollOffset + maxVisibleItems then
-					self.scrollOffset = math.min(self.maxScrollOffset, self.hoverIndex - maxVisibleItems)
-				elseif self.hoverIndex <= self.scrollOffset then
-					self.scrollOffset = math.max(0, self.hoverIndex - 1)
-				end
-			end
-		end,
+                -- Adjust scroll offset if necessary
+                if self.hoverIndex > self.scrollOffset + maxVisibleItems then
+                    self.scrollOffset = math.min(self.maxScrollOffset, self.hoverIndex - maxVisibleItems)
+                elseif self.hoverIndex <= self.scrollOffset then
+                    self.scrollOffset = math.max(0, self.hoverIndex - 1)
+                end
+            end
+        end,
+
+        gamepadpressed = function(self, joystick, button)
+            if self.focused then
+                if button == 'a' then
+                    if self.isOpen then
+                        self.value = self.hoverIndex
+                        self.isOpen = false
+                        if self.onChange then
+                            self.onChange(self.items[self.value], self.value)
+                        end
+                    else
+                        self.isOpen = true
+                        self.hoverIndex = self.value
+                    end
+                    return true
+                elseif button == 'b' then
+                    if self.isOpen then
+                        self.isOpen = false
+                        return true
+                    end
+                end
+            end
+            return false
+        end,
     }
 end
 

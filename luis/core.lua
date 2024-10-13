@@ -21,7 +21,7 @@ luis.showLayerNames = false
 
 -- Variables for joystick and gamepad support
 luis.joysticks = {}
-luis.activeJoystick = nil
+luis.activeJoysticks = {}
 luis.deadzone = 0.2
 luis.dpadSpeed = 300
 -- Variables for joystick navigation
@@ -126,110 +126,150 @@ luis.theme = {
 -- Layer handling
 --==============================================
 
--- Create a new layer
-function luis.newLayer(name)
+function luis.newLayer(layerName)
+    if luis.layers[layerName] then
+        print("Warning: Layer '" .. layerName .. "' already exists.")
+        return false
+    end
     local layer = {
-        name = name,
+        name = layerName,
         elements = {}
     }
-    luis.layers[name] = layer
+    luis.layers[layerName] = layer
+    luis.elements[layerName] = {}
+    luis.elementStates[layerName] = {}
     if luis.currentLayer == nil then
-        luis.currentLayer = name
+        luis.currentLayer = layerName
     end
-	
-    return name
+    table.insert(luis.layerStack, layerName)
+    --print("Layer '" .. layerName .. "' created successfully.")
+    return true
 end
 
 function luis.setCurrentLayer(layerName)
-    if luis.layers[layerName] then
-        -- Store the last focused widget of the current layer before changing
-        luis.updateLastFocusedWidget(luis.currentLayer)
-        
-        -- Remove the layer if it's already in the stack
-        for i, layer in ipairs(luis.layerStack) do
-            if layer == layerName then
-                table.remove(luis.layerStack, i)
-                break
-            end
-        end
-        -- Add the layer to the top of the stack
-        table.insert(luis.layerStack, layerName)
-		-- disable currentLayer
-		luis.disableLayer(luis.currentLayer)
-		-- set new CurrentLayer
-        luis.currentLayer = layerName
-        -- Ensure the current layer is also enabled
-        luis.enableLayer(layerName)
-		-- 
-		luis.currentFocus = nil
-        -- Restore focus to the last focused widget of the new current layer
-        luis.restoreFocus(layerName)
+    if not luis.layers[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
     end
+    luis.updateLastFocusedWidget(luis.currentLayer)
+    luis.disableLayer(luis.currentLayer)
+    luis.currentLayer = layerName
+    luis.enableLayer(layerName)
+    luis.restoreFocus(layerName)
+    -- Update layer stack
+    for i, layer in ipairs(luis.layerStack) do
+        if layer == layerName then
+            table.remove(luis.layerStack, i)
+            break
+        end
+    end
+    table.insert(luis.layerStack, layerName)
+    --print("Current layer set to '" .. layerName .. "'.")
+    return true
 end
 
 function luis.popLayer()
-    if #luis.layerStack > 1 then
-        local poppedLayer = table.remove(luis.layerStack)
-        -- Store the last focused widget of the popped layer
-        luis.updateLastFocusedWidget(poppedLayer)
-		-- disable currentLayer
-        luis.disableLayer(poppedLayer)
-		-- set new CurrentLayer
-        luis.currentLayer = luis.layerStack[#luis.layerStack]
-		-- Ensure the current layer is also enabled
-        luis.enableLayer(luis.currentLayer)
-		-- set focus for gamepad
-		luis.restoreFocus(luis.currentLayer)
-        return luis.currentLayer
+    if #luis.layerStack <= 1 then
+        print("Error: Cannot remove the last layer.")
+        return false
     end
-    return false
+    local removedLayer = table.remove(luis.layerStack)
+    luis.updateLastFocusedWidget(removedLayer)
+    luis.disableLayer(removedLayer)
+    luis.currentLayer = luis.layerStack[#luis.layerStack]
+    luis.enableLayer(luis.currentLayer)
+    luis.restoreFocus(luis.currentLayer)
+    --print("Top layer '" .. removedLayer .. "' removed.")
+    return removedLayer
 end
 
--- Enable a layer
 function luis.enableLayer(layerName)
-    if luis.layers[layerName] then
-        luis.enabledLayers[layerName] = true
+    if not luis.layers[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
     end
+    luis.enabledLayers[layerName] = true
+    --print("Layer '" .. layerName .. "' enabled.")
+    return true
 end
 
--- Disable a layer
 function luis.disableLayer(layerName)
-    if luis.layers[layerName] then
-        -- Store the last focused widget before disabling the layer
-        luis.updateLastFocusedWidget(layerName)
-        luis.enabledLayers[layerName] = false
+    if not luis.layers[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
     end
+    luis.updateLastFocusedWidget(layerName)
+    luis.enabledLayers[layerName] = false
+    --print("Layer '" .. layerName .. "' disabled.")
+    return true
 end
 
--- Toggle a layer's enabled state
 function luis.toggleLayer(layerName)
-    if luis.layers[layerName] then
-        luis.enabledLayers[layerName] = not luis.enabledLayers[layerName]
+    if not luis.layers[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
     end
+    luis.enabledLayers[layerName] = not luis.enabledLayers[layerName]
+    --local status = luis.enabledLayers[layerName] and "enabled" or "disabled"
+    --print("Layer '" .. layerName .. "' " .. status .. ".")
+    return true
 end
 
--- Check if a layer is enabled
 function luis.isLayerEnabled(layerName)
+    if not luis.layers[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
+    end
     return luis.enabledLayers[layerName] == true
 end
 
+function luis.removeLayer(layerName)
+    if not luis.layers[layerName] then
+        print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
+    end
+
+    luis.layers[layerName] = nil
+    luis.elements[layerName] = nil
+    luis.elementStates[layerName] = nil
+    luis.enabledLayers[layerName] = nil
+
+    for i, layer in ipairs(luis.layerStack) do
+        if layer == layerName then
+            table.remove(luis.layerStack, i)
+            break
+        end
+    end
+
+    if luis.currentLayer == layerName then
+        if #luis.layerStack > 0 then
+            luis.currentLayer = luis.layerStack[#luis.layerStack]
+        else
+            luis.currentLayer = nil
+        end
+    end
+
+    luis.updateFocusableElements()
+    --print("Layer '" .. layerName .. "' removed successfully.")
+    return true
+end
 
 --==============================================
 -- Widget handling
 --==============================================
 
-function luis.createElement(layerName, elementType, ...)
+function luis.createElement(layerName, widgetType, ...)
     if not luis.elements[layerName] then
         luis.elements[layerName] = {}
     end
 
     local element
-    if elementType == "FlexContainer" and type((...)) == "table" and (...).type == "FlexContainer" then
+    if widgetType == "FlexContainer" and type((...)) == "table" and (...).type == "FlexContainer" then
         -- If it's a pre-existing FlexContainer, use it directly
         element = (...)
-    else
+	else
         -- Otherwise, create a new element as before
-        element = luis["new" .. elementType](...)
+        element = luis["new" .. widgetType](...)
     end
 
     -- Add default z-index
@@ -238,14 +278,14 @@ function luis.createElement(layerName, elementType, ...)
     table.insert(luis.elements[layerName], element)
     
     -- Initialize state for stateful elements (unchanged)
-    if elementType == "Slider" or
-       elementType == "Switch" or
-       elementType == "CheckBox" or
-       elementType == "RadioButton" or
-       elementType == "DropDown" or
-	   elementType == "ProgressBar" or
-       elementType == "TextInput" or
-       elementType == "TextInputMultiLine" then
+    if widgetType == "Slider" or
+       widgetType == "Switch" or
+       widgetType == "CheckBox" or
+       widgetType == "RadioButton" or
+       widgetType == "DropDown" or
+	   widgetType == "ProgressBar" or
+       widgetType == "TextInput" or
+       widgetType == "TextInputMultiLine" then
         if not luis.elementStates[layerName] then
             luis.elementStates[layerName] = {}
         end
@@ -347,27 +387,29 @@ function luis.setGridSize(gridSize)
 	end
 end
 
+function luis.getGridSize()
+	return luis.gridSize
+end
+
 function luis.updateScale()
     local w, h = love.graphics.getDimensions()
     luis.scale = math.min(w / luis.baseWidth, h / luis.baseHeight)
 end
 
-local mx = luis.baseWidth
-local my = luis.baseHeight
 function luis.update(dt)
     local mx, my = love.mouse.getPosition()
     mx, my = mx / luis.scale, my / luis.scale
-    
+
     -- Joystick navigation
-    local jx, jy = luis.getJoystickAxis('leftx'), luis.getJoystickAxis('lefty')
+    local jx, jy = luis.getJoystickAxis(1, 'leftx'), luis.getJoystickAxis(1, 'lefty')
     if math.abs(jx) > luis.deadzone or math.abs(jy) > luis.deadzone then
         mx, my = mx + jx * 10, my + jy * 10  -- Adjust speed as needed
     end
-    
+
     -- Check for joystick button presses for focus navigation
-    if luis.joystickJustPressed('dpdown') then
+    if luis.joystickJustPressed(1, 'dpdown') then
         luis.moveFocus("next")
-    elseif luis.joystickJustPressed('dpup') then
+    elseif luis.joystickJustPressed(1, 'dpup') then
         luis.moveFocus("previous")
     end
 
@@ -392,8 +434,8 @@ function luis.update(dt)
     end
 
     -- Update focused element
-	luis.updateFocusableElements()
-	
+    luis.updateFocusableElements()
+    
     if luis.currentFocus and luis.currentFocus.updateFocus then
         luis.currentFocus:updateFocus(jx, jy)
     end
@@ -434,6 +476,8 @@ function luis.draw()
 
             for _, element in ipairs(sortedElements) do
                 element:draw()
+				
+				-- Draw element outlines if enabled (DebugView)
                 if luis.showElementOutlines then
                     luis.drawElementOutline(element)
                 end
@@ -441,7 +485,7 @@ function luis.draw()
         end
     end
 
-    -- Draw grid if enabled
+    -- Draw grid if enabled (DebugView)
     if luis.showGrid then
         love.graphics.setColor(luis.theme.grid.color)
         for i = 0, luis.baseWidth, luis.gridSize do
@@ -452,6 +496,7 @@ function luis.draw()
         end
     end
 
+	-- Draw layer names  (DebugView)
     if luis.showLayerNames then
 		local font_backup = love.graphics.getFont()
         love.graphics.setColor(0.5, 0.5, 0.5)
@@ -648,7 +693,7 @@ end
 
 -- Update the list of focusable elements
 function luis.updateFocusableElements()
-	if not luis.activeJoystick then return end
+	if (#luis.activeJoysticks == 0) then return end
 
     luis.focusableElements = {}
     for layerName, enabled in pairs(luis.enabledLayers) do
@@ -732,62 +777,60 @@ end
 -- Joystick/Gamepad input handling
 ------------------------------------------------
 
+-- initJoysticks function
 function luis.initJoysticks()
     luis.joysticks = love.joystick.getJoysticks()
-    if #luis.joysticks > 0 then
-        luis.activeJoystick = luis.joysticks[1]
+    for i, joystick in ipairs(luis.joysticks) do
+        luis.activeJoysticks[i] = joystick
     end
 end
 
 -- Set active joystick
-function luis.setActiveJoystick(joystick)
-    luis.activeJoystick = joystick
+function luis.setActiveJoystick(id, joystick)
+    luis.activeJoysticks[id] = joystick
 end
 
-function luis.joystickJustPressed(button)
-    local isPressed = luis.isJoystickPressed(button)
-    local justPressed = isPressed and not luis.joystickButtonStates[button]
-    luis.joystickButtonStates[button] = isPressed
+function luis.getActiveJoystick(id)
+    return luis.activeJoysticks[id]
+end
+
+-- joystick-related functions to use joystick ID
+function luis.joystickJustPressed(id, button)
+    local isPressed = luis.isJoystickPressed(id, button)
+    local justPressed = isPressed and not luis.joystickButtonStates[id .. button]
+    luis.joystickButtonStates[id .. button] = isPressed
     return justPressed
 end
 
 -- Check if a Joystick or Gamepad button is pressed
-function luis.isJoystickPressed(button)
-    return luis.activeJoystick and luis.activeJoystick:isGamepadDown(button)
+function luis.isJoystickPressed(id, button)
+    return luis.activeJoysticks[id] and luis.activeJoysticks[id]:isGamepadDown(button)
 end
 
 -- Get Joystick or Gamepad axis value
-function luis.getJoystickAxis(axis)
-    if luis.activeJoystick then
-        local value = luis.activeJoystick:getGamepadAxis(axis)
+function luis.getJoystickAxis(id, axis)
+    if luis.activeJoysticks[id] then
+        local value = luis.activeJoysticks[id]:getGamepadAxis(axis)
         return math.abs(value) > luis.deadzone and value or 0
     end
     return 0
 end
 
-function luis.setJoystickPos(x,y)
-	mx=x
-	my=y
-end
-
-function luis.getJoystickPos()
-	return mx, my
-end
-
--- Function for joystick button press
 function luis.gamepadpressed(joystick, button)
-    if joystick == luis.activeJoystick then
-        -- First, check if the current focus is a FlexContainer
-        if luis.currentFocus and luis.currentFocus.gamepadpressed and luis.currentFocus.type == "FlexContainer" then
-            if luis.currentFocus:gamepadpressed(button) then
-                return true
+    for id, activeJoystick in pairs(luis.activeJoysticks) do
+        if joystick == activeJoystick then
+			-- First, check if the current focus is a FlexContainer
+            if luis.currentFocus and luis.currentFocus.gamepadpressed and (luis.currentFocus.type == "FlexContainer" or luis.currentFocus.type == "DropDown") then
+                if luis.currentFocus:gamepadpressed(id, button) then
+                    return true
+                end
             end
-        end
 
-        -- If FlexContainer didn't handle the input, check other elements
-        for layerName, _ in pairs(luis.enabledLayers) do
-            if handleLayerInput(layerName, nil, nil, "gamepadpressed", button) then
-                return true
+			-- If FlexContainer didn't handle the input, check other elements
+            for layerName, _ in pairs(luis.enabledLayers) do
+                if handleLayerInput(layerName, nil, nil, "gamepadpressed", id, button) then
+                    return true
+                end
             end
         end
     end
@@ -796,23 +839,25 @@ end
 
 -- Function for joystick button release
 function luis.gamepadreleased(joystick, button)
-    if joystick == luis.activeJoystick then
-        -- First, check if the current focus is a FlexContainer
-        if luis.currentFocus and luis.currentFocus.gamepadreleased and luis.currentFocus.type == "FlexContainer" then
-            if luis.currentFocus:gamepadreleased(button) then
-                return true
+    for id, activeJoystick in pairs(luis.activeJoysticks) do
+        if joystick == activeJoystick then
+			-- First, check if the current focus is a FlexContainer
+            if luis.currentFocus and luis.currentFocus.gamepadreleased and (luis.currentFocus.type == "FlexContainer" or luis.currentFocus.type == "DropDown") then
+                if luis.currentFocus:gamepadreleased(id, button) then
+                    return true
+                end
             end
-        end
 
-        for layerName, _ in pairs(luis.enabledLayers) do
-            if handleLayerInput(layerName, nil, nil, "gamepadreleased", button) then
-                return true
+			-- If FlexContainer didn't handle the input, check other elements
+            for layerName, _ in pairs(luis.enabledLayers) do
+                if handleLayerInput(layerName, nil, nil, "gamepadreleased", id, button) then
+                    return true
+                end
             end
         end
     end
     return false
 end
-
 
 --==============================================
 -- State Management

@@ -46,16 +46,16 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
 
             -- Handle joystick/gamepad input when focused
             if self.focused then
---                local jx = luis.getJoystickAxis('leftx')
+--                local jx = luis.getJoystickAxis(1, 'leftx')
 --                if math.abs(jx) > luis.deadzone then
 --                    local delta = jx * (self.max - self.min) * 0.01  -- Adjust sensitivity as needed
 --                    self:setValue(self.value + delta)
 --                end
                 
                 -- Handle gamepad button input for more precise control
-                if luis.isJoystickPressed('dpright') then
+                if luis.isJoystickPressed(1, 'dpright') then
                     self:setValue(self.value + (self.max - self.min) * 0.01)
-                elseif luis.isJoystickPressed('dpleft') then
+                elseif luis.isJoystickPressed(1, 'dpleft') then
                     self:setValue(self.value - (self.max - self.min) * 0.01)
                 end
             end

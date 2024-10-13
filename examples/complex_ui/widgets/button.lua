@@ -52,9 +52,9 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
 
             -- Check for joystick button press when focused
---            if self.focused and luis.joystickJustPressed('a') then
+--            if self.focused and luis.joystickJustPressed(1, 'a') then
 --                self:click()
---            elseif self.pressed and not luis.isJoystickPressed('a') then
+--            elseif self.pressed and not luis.isJoystickPressed(1, 'a') then
 --                self:release()
 --            end
 
@@ -151,14 +151,16 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         end,
 
         -- Joystick-specific functions
-        gamepadpressed = function(self, button)
+        gamepadpressed = function(self, id, button)
+			--print("checkbox.gamepadpressed = function", id, button, self.focused )
             if button == 'a' and self.focused then
                 return self:click()
             end
             return false
         end,
         
-        gamepadreleased = function(self, button)
+        gamepadreleased = function(self, id, button)
+			--print("checkbox.gamepadreleased = function", id, button )
             if button == 'a' and self.pressed then
                 return self:release()
             end

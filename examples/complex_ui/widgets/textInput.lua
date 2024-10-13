@@ -93,7 +93,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
 		end,
 
         click = function(self, x, y, button, istouch, presses)
-			print("textinput.click = function", x, y, button, istouch, presses)
+			--print("textinput.click = function", x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
                 local clickX = x - self.position.x - textInputTheme.padding
@@ -112,7 +112,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
         end,
 
         textinput = function(self, text)
-			print("textinput.textinput = function", text )
+			--print("textinput.textinput = function", text )
             if self.active then
                 local newText = utf8_sub(self.text, 1, self.cursorPos) .. text .. utf8_sub(self.text, self.cursorPos + 1)
                 if luis.theme.text.font:getWidth(newText) <= self.width - textInputTheme.padding * 2 then
@@ -123,7 +123,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
         end,
 
         keypressed = function(self, key, scancode, isrepeat )
-			print("textinput.keypressed = function", key, scancode, isrepeat )
+			--print("textinput.keypressed = function", key, scancode, isrepeat )
             if self.active then
 				if key == "return" or key == "kpenter" then
 					if self.onChange then
@@ -156,7 +156,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
         end,
 
         keyreleased = function(self, key, scancode )
-			print("textinput.keyreleased = function", key, scancode, isrepeat )
+			--print("textinput.keyreleased = function", key, scancode, isrepeat )
 		end,
 
         setText = function(self, newText)

@@ -32,7 +32,7 @@ function radioButton.new(group, value, size, onChange, row, col, customTheme)
             
             -- Check for joystick/gamepad input when focused
             if self.focused then
-                if luis.joystickJustPressed('a') or luis.joystickJustPressed('dpright') then
+                if luis.joystickJustPressed(1, 'a') or luis.joystickJustPressed(1, 'dpright') then
                     self:click()
                 end
             end
@@ -114,9 +114,9 @@ function radioButton.new(group, value, size, onChange, row, col, customTheme)
         -- Handle joystick/gamepad navigation
         updateFocus = function(self, jx, jy)
             -- Handle left/right navigation within the group
-            if luis.joystickJustPressed('dpleft') or luis.joystickJustPressed('dpright') then
+            if luis.joystickJustPressed(1, 'dpleft') or luis.joystickJustPressed(1, 'dpright') then
                 local currentIndex, groupButtons = self:getGroupInfo()
-                local newIndex = luis.joystickJustPressed('dpleft') and 
+                local newIndex = luis.joystickJustPressed(1, 'dpleft') and 
                     ((currentIndex - 2) % #groupButtons) + 1 or 
                     (currentIndex % #groupButtons) + 1
                 luis.currentFocus = groupButtons[newIndex]

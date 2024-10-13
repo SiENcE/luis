@@ -27,10 +27,6 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
 		decorator = nil,
 
         update = function(self, mx, my)
-            -- Check for joystick button press when focused
---            if self.focused and luis.joystickJustPressed('a') then
---				self:gamepadpressed('a')
---            end
         end,
 
         defaultDraw = function(self)
@@ -74,8 +70,8 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
         end,
 
         -- Joystick-specific functions
-        gamepadpressed = function(self, button)
-			print("switch.gamepadpressed = function", button, self.focused)
+        gamepadpressed = function(self, id, button)
+			print("switch.gamepadpressed = function", id, button, self.focused)
             if button == 'a' and self.focused then
                 self.value = not self.value
                 if self.onChange then
