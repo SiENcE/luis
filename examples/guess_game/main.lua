@@ -11,9 +11,12 @@ local attempts = 0
 local maxAttempts = 10
 
 function love.load()
-    luis.setGridSize(40)
+	love.window.setMode( luis.baseWidth, luis.baseHeight, { resizable=true } )
+
+    luis.setGridSize(75)
+
     luis.newLayer("game")
-    luis.setCurrentLayer("game")
+	luis.enableLayer("game")
 
     -- Title
     luis.createElement("game", "Label", "Guess the Number", 20, 2, 1, 1, "center")
@@ -22,10 +25,12 @@ function love.load()
     luis.createElement("game", "Label", "Guess a number between 1 and 100", 20, 2, 3, 1, "center")
 
     -- Input field
-    game.input = luis.createElement("game", "TextInput", 10, 2, "", function(text)
-        -- Validation to ensure only numbers are entered
-        game.input:setText(text:match("%d*"))
-    end, 5, 6 )
+    game.input = luis.createElement("game", "TextInput", 10, 2, "",
+		function(text)
+			-- Validation to ensure only numbers are entered
+			game.input:setText(text:match("%d*"))
+		end,
+		5, 6 )
 
     -- Guess button
     luis.createElement("game", "Button", "Guess", 5, 2, function() checkGuess() end, function() end, 5, 16)
@@ -53,24 +58,13 @@ function love.update(dt)
         accumulator = 0
     end
 
+	luis.updateScale()
+
     luis.update(dt)
 end
 
 function love.draw()
     luis.draw()
-end
-
-function love.keypressed(key)
-    luis.keypressed(key)
-    if key == "return" then
-        checkGuess()
-	elseif key == "tab" then -- Debug View
-        luis.keypressed(key)
-    end
-end
-
-function love.textinput(text)
-    luis.textinput(text)
 end
 
 function startNewGame()
@@ -104,9 +98,10 @@ function checkGuess()
         else
             game.feedback.text = "Too high! Try again."
         end
-        game.attemptsLabel.text = "Attempts left: " .. attemptsLeft
-        game.progressBar.value = attempts / maxAttempts
     end
+
+    game.attemptsLabel.text = "Attempts left: " .. attemptsLeft
+    game.progressBar.value = attempts / maxAttempts
 
     game.input:setText("")
 end
@@ -122,3 +117,15 @@ end
 function love.wheelmoved(x, y)
     luis.wheelmoved(x, y)
 end
+
+function love.textinput(text)
+    luis.textinput(text)
+end
+
+function love.keypressed(key)
+    luis.keypressed(key)
+    if key == "return" or key == "enter" then
+        checkGuess()
+    end
+end
+

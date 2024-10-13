@@ -198,10 +198,14 @@ For more detailed information on the LUIS API, including layer management, input
 
 ## known Problems
 
-- DropBox: Selection with the gamepad is not fully functional.
+- DropBox: Selection with the gamepad works a bit
+- button animation funzt. nicht mehr in complex menu
+
 - Checkboxes and radio buttons are currently not being saved.
+- Sliders sometime not save; when using moue!?
 - Some elements require double-clicking to activate, especially in the complex_menu sample.
-- InputText: Adding a character in the middle of the text deletes the following characters.
+- TextInput: Adding a character in the middle of the text deletes the following characters.
+- TextInput, TextInputMultiLine: cursor is behind the characters
 - FlexContainer: The initial width or height constrains the arrangement of child widgets.
 
 ## License

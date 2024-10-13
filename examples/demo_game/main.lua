@@ -5,9 +5,9 @@ local luis = initLuis("examples/complex_ui/widgets")
 -- register flux in LUIS, because the widgets of complex_ui need this
 luis.flux = require("examples.3rdparty.flux")
 
-love.window.setMode(800, 600)
 luis.baseWidth, luis.baseHeight = 800, 600
-luis.updateScale()
+love.window.setMode(luis.baseWidth, luis.baseHeight)
+
 luis.setGridSize(30)
 
 luis.newLayer("game")
@@ -144,7 +144,8 @@ function updateBattleElements()
             
             -- Add target button for each live enemy
             if battleState.targetingMode then
-                local targetButton = luis.createElement("battle", "Button", "Target", 3, 1, function() selectTarget(enemy) end, function() end, yPos, 21)
+                local targetButton = luis.createElement("battle", "Button", "Target", 5, 1, function() selectTarget(enemy) end, function() end, yPos+2, 21)
+				targetButton.zIndex = 100
                 battleElements[#battleElements+1] = targetButton
             end
         end
@@ -161,13 +162,14 @@ function updateBattleElements()
     end
 
     -- Add damage text display
+	--(drawFunc, width, height, row, col, customTheme)
     battleElements[#battleElements+1] = luis.createElement("battle", "Custom", function()
         if battleState.damageTimer > 0 then
             love.graphics.setColor(1, 0, 0)
-            love.graphics.setFont(love.graphics.newFont(24))
-            love.graphics.printf(battleState.damageText, 0, 300, 800, "center")
+            --love.graphics.setFont(love.graphics.newFont(20))
+            love.graphics.printf(battleState.damageText, 0, 0, 400, "center")
         end
-    end, 1, 1, 15, 15)
+    end, 15, 3, 10, 9)
 
     -- Highlight active character
     highlightCharacter(battleState.activeCharacter)
@@ -399,11 +401,12 @@ campElements = {
 
 function love.load()
 	luis.initJoysticks()  -- Initialize joysticks
-	if luis.activeJoystick then
-		local name = luis.activeJoystick:getName()
-		local index = luis.activeJoystick:getConnectedIndex()
-		print(string.format("Changing active joystick to #%d '%s'.", index, name))
-		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	if luis.activeJoysticks then
+		for id, activeJoystick in pairs(luis.activeJoysticks) do
+			local name = activeJoystick:getName()
+			local index = activeJoystick:getConnectedIndex()
+			print(string.format("Active joystick #%d '%s'.", index, name))
+		end
 	end
 	
 	local customTheme = require("examples.complex_ui.assets.themes.alternativeTheme")
@@ -419,10 +422,12 @@ function love.update(dt)
         accumulator = 0
     end
 
+	luis.updateScale()
+
     luis.update(dt)
 
     if gameState.currentView == "battle" then
-        luis.setCurrentLayer("battle")
+        luis.enableLayer("battle")
         luis.disableLayer("camp")
         luis.disableLayer("game")
 
@@ -441,11 +446,11 @@ function love.update(dt)
             end
         end
     elseif gameState.currentView == "camp" then
-        luis.setCurrentLayer("camp")
+        luis.enableLayer("camp")
         luis.disableLayer("battle")
         luis.disableLayer("game")
     else -- "game"
-        luis.setCurrentLayer("game")
+        luis.enableLayer("game")
         luis.disableLayer("battle")
         luis.disableLayer("camp")
     end
@@ -485,9 +490,6 @@ function love.keypressed(key)
         end
     end
 
-	if key == "tab" then -- Debug View
-        luis.keypressed(key)
-    end
     luis.keypressed(key)
 end
 

@@ -21,14 +21,20 @@ function createColorPalette(size)
 end
 
 function love.load()
-	--luis.gridSize = 4
+	luis.baseWidth = 1280
+	luis.baseHeight = 1024
+	love.window.setMode(luis.baseWidth, luis.baseHeight)
+
 	-- we set the container paddig to gridSize (default is 0)
 	luis.theme.flexContainer.padding = 0 --luis.gridSize
 	
 	luis.theme.text.font = love.graphics.newFont(10, "normal")
-	
-	--local container = luis.createElement("main", "FlexContainer", (luis.baseWidth/luis.gridSize)-32, (luis.baseHeight/luis.gridSize)-2, 1, 1, nil, "main" )
-	local container = luis.createElement("main", "FlexContainer", 62, 60, 3, 2, nil, "main" )
+
+	-- first create a new Layer
+	luis.newLayer("main")
+
+	-- second create a FlexContainer and add it to the "main" Layer
+	local container = luis.createElement("main", "FlexContainer", 62, 60, 3, 2, nil, "Main Container" )
 
 	-- Create sub-containers (header, nav, main, aside, footer)
 	local header = luis.newFlexContainer( 60, 4, 1,1, nil, "header")
@@ -37,7 +43,7 @@ function love.load()
 	local aside = luis.newFlexContainer( 6,38,58,8, nil, "aside")
 	local footer = luis.newFlexContainer( 60,5,2,47, nil, "footer")
 
-	-- if you don't want to resize the container manually, disable this
+	-- if you don't want to resize the container manually, disable click & release
 	--body.release = function() end
 	--body.click = function() end
 
@@ -76,7 +82,8 @@ function love.load()
 	end, 45, 38, 10, 43)
 	body:addChild(customView)
 
-	aside:addChild(luis.createElement("main", "Button", "Sidebar Item", 4, 2, function() print('Sidebar Item - click') end, function() print('Sidebar Item - release') end, 1, 1))
+	local sideBarBtn = luis.createElement("main", "Button", "Sidebar Item", 6, 2, function() print('Sidebar Item - click') end, function() print('Sidebar Item - release') end, 1, 1)
+	aside:addChild(sideBarBtn)
 
 	-- Create a Menu
 	local editItems = {"Edit", "Insert", "Copy", "Paste", "Comment", "Block", "Reset"}
@@ -97,26 +104,24 @@ function love.load()
 	header:addChild(dropdownbox2)
 
 	-- add a TextInput
---	local textInput = luis.createElement("main", "TextInput", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
---	footer:addChild(textInput)
+	local textInput = luis.createElement("main", "TextInput", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
+	footer:addChild(textInput)
 
 	-- add a TextInputMultiLine
-	local textInputMultiLine = luis.createElement("main", "TextInputMultiLine", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
-	footer:addChild(textInputMultiLine)
-	
+	local textInputMultiLine = luis.createElement("main", "TextInputMultiLine", 4, aside.height/luis.gridSize-sideBarBtn.height/luis.gridSize, "Enter MultiLine text here...", function(text) print(text) end, 1, 1)
+	aside:addChild(textInputMultiLine)
+
 	love.keyboard.setKeyRepeat(true)
 	luis.initJoysticks()  -- Initialize joysticks
-	if luis.activeJoystick then
-		local name = luis.activeJoystick:getName()
-		local index = luis.activeJoystick:getConnectedIndex()
-		print(string.format("Changing active joystick to #%d '%s'.", index, name))
-		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	if luis.activeJoysticks then
+		for id, activeJoystick in pairs(luis.activeJoysticks) do
+			local name = activeJoystick:getName()
+			local index = activeJoystick:getConnectedIndex()
+			print(string.format("Active joystick #%d '%s'.", index, name))
+		end
 	end
 
-	luis.newLayer("main", 96, 54)
 	luis.setCurrentLayer("main")
-
-	love.window.setMode(1280, 1024)
 end
 
 -- In your main update function
@@ -127,6 +132,8 @@ function love.update(dt)
         luis.flux.update(accumulator)
         accumulator = 0
     end
+
+	luis.updateScale()
 
 	luis.update(dt)
 end

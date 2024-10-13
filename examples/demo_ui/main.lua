@@ -21,14 +21,13 @@ local manaDirection = -1
 
 -- Initialize the luis
 function love.load()
-	love.window.setMode(1920, 1080)
-	luis.baseWidth, luis.baseHeight = 1920, 1080
-	luis.updateScale()
+	-- rsize the Window to scale the UI
+	love.window.setMode( luis.baseWidth, luis.baseHeight, { resizable=true } )
 
 	-- Create a new layer for our game interface
 	luis.newLayer("game")
 
-	luis.setGridSize(48)  -- Play around by scaling the whole UI (Resolution-independent) here!
+	luis.setGridSize(55)  -- Play around by scaling the whole UI nativly!
 
 	luis.setCurrentLayer("game") -- make game the currentLayer
 
@@ -75,11 +74,12 @@ function love.load()
 	textInput = luis.createElement("game", "TextInput", 22, 2, "Enter command...", function(text) print(text) textInput:setText("") end, 18, 2)
 
 	luis.initJoysticks()  -- Initialize joysticks
-	if luis.activeJoystick then
-		local name = luis.activeJoystick:getName()
-		local index = luis.activeJoystick:getConnectedIndex()
-		print(string.format("Changing active joystick to #%d '%s'.", index, name))
-		luis.setJoystickPos(luis.baseWidth/2,luis.baseHeight/2)
+	if luis.activeJoysticks then
+		for id, activeJoystick in pairs(luis.activeJoysticks) do
+			local name = activeJoystick:getName()
+			local index = activeJoystick:getConnectedIndex()
+			print(string.format("Active joystick #%d '%s'.", index, name))
+		end
 	end
 end
 
@@ -91,9 +91,7 @@ function love.update(dt)
         luis.flux.update(accumulator)
         accumulator = 0
     end
-
-    luis.update(dt)
-    
+	
     -- Animate health and mana bars
     healthValue = healthValue + healthDirection * dt * 0.5
     manaValue = manaValue + manaDirection * dt * 0.7
@@ -117,6 +115,10 @@ function love.update(dt)
     local enemyHealth = (math.sin(love.timer.getTime()) + 1) / 2
     enemyHealthBar:setValue(enemyHealth)
 	enemyHealthBar_Label:setText(string.format("HP: %d/1000", math.floor(enemyHealth * 1000)))
+	
+	luis.updateScale()
+
+    luis.update(dt)
 end
 
 -- Draw function
@@ -143,10 +145,6 @@ end
 
 function love.keypressed(key)
     luis.keypressed(key)
-
-	if key == "tab" then -- Debug View
-        luis.keypressed(key)
-    end
 end
 
 function love.joystickadded(joystick)
