@@ -15,4 +15,13 @@ function utils.utf8_sub(str, start_pos, end_pos)
     return string.sub(str, start_byte, end_byte)
 end
 
+-- Function to reverse lookup in table
+function utils.reverseLookup(tbl, val)
+    for k, v in pairs(tbl) do
+        if v == val then
+            return k
+        end
+    end
+end
+
 return utils
