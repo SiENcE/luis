@@ -61,11 +61,11 @@ function love.load()
 	-- CustomView can be used to render gameplay
     plasmaBuffer = love.image.newImageData(body.width, body.height)
     colorPalette = createColorPalette(256)
-	local customView = luis.createElement("main", "Custom", function()
+	local customView = luis.createElement("main", "Custom", function(self)
 		love.graphics.setColor(1, 0, 0)
-		love.graphics.rectangle("line", 0, 0, body.width, body.height)
-		for y = 0, body.height - 1, 2 do
-			for x = 0, body.width - 1, 2 do
+		love.graphics.rectangle("line", 0, 0, self.width, self.height)
+		for y = 0, self.height - 1, 2 do
+			for x = 0, self.width - 1, 2 do
 				local value = math.sin(x / 16.0)
 							+ math.sin(y / 8.0)
 							+ math.sin((x + y) / 16.0)

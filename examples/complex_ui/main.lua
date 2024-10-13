@@ -167,17 +167,19 @@ local function createSnakeMiniGame()
 	end
 			
 	container:addChild(customView)
-    
+	
 	-- Add the container to your LUIS layer
     luis.createElement("custom", "FlexContainer", container)
 end
 -- Snake Minigame End
 
+local mainMenuElements = {}
 local function createMainMenu()
     luis.createElement("main", "Label", "Main Menu", 96, 4, 4, 44)
     local menuItems = {"Start Game", "Settings", "Highscore", "Quit"}
     for i, item in ipairs(menuItems) do
-        luis.createElement("main", "Button", item, 15, 3, function() handleMainMenuSelection(item) end, function() end, 25 + i * 5, 41)
+        local btn = luis.createElement("main", "Button", item, 15, 3, function() handleMainMenuSelection(item) end, function() end, 25 + i * 5, 41)
+		table.insert(mainMenuElements, btn)
     end
 end
 
@@ -393,6 +395,9 @@ function love.load()
     createAudioMenu()
     createGameplayMenu()
     createControlsMenu()
+	
+	-- set current Focus to "Start Game"
+	luis.setCurrentFocus(mainMenuElements[1])
 
 	-- load last widget state
 --    if love.filesystem.getInfo('config.json') then
@@ -417,8 +422,16 @@ function love.update(dt)
         accumulator = 0
     end
 
-    luis.update(dt)
     luis.updateScale()
+
+    -- Check for joystick button presses for focus navigation
+    if luis.joystickJustPressed(1, 'dpdown') then
+        luis.moveFocus("next")
+    elseif luis.joystickJustPressed(1, 'dpup') then
+        luis.moveFocus("previous")
+    end
+
+    luis.update(dt)
 
 	time = time + dt
 	icon_widget.position = Vector2D.new(math.sin(time*10)+900, math.sin(time*10)+600)
@@ -519,6 +532,14 @@ function love.keypressed(key)
         else
             popMenu()
         end
+    elseif key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+    elseif key == "down" then
+        luis.moveFocus("next")
+    elseif key == "up" then
+        luis.moveFocus("previous")
     else
 		luis.keypressed(key)
 	end
