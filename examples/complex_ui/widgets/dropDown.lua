@@ -77,6 +77,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             
             -- Draw selected text
             love.graphics.setColor(dropdownTheme.textColor)
+			love.graphics.setFont(luis.theme.text.font)
             love.graphics.printf(self.items[self.value], self.position.x + luis.gridSize, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width - self.height, dropdownTheme.align)
             
             -- Draw arrow

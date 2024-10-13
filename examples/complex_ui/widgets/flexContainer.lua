@@ -195,13 +195,23 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
 
                 if luis.showElementOutlines then
                     luis.drawElementOutline(child)
+
+					local font_backup = love.graphics.getFont()
+					love.graphics.setColor(1, 1, 1, 0.7)
+					love.graphics.setFont(luis.theme.system.font)
 					love.graphics.print(child.type,child.position.x+child.width/2-string.len(child.type)*2, child.position.y)
+					love.graphics.setFont(font_backup)
                 end
             end
 
             if luis.showElementOutlines then
                 luis.drawElementOutline(self)
+
+				local font_backup = love.graphics.getFont()
+				love.graphics.setColor(1, 1, 1, 0.7)
+				love.graphics.setFont(luis.theme.system.font)
                 love.graphics.print(self.name,self.position.x+self.width/2-string.len(self.name)*2, self.position.y+love.graphics.getFont():getHeight())
+				love.graphics.setFont(font_backup)
             end
 
             -- Draw focus indicator

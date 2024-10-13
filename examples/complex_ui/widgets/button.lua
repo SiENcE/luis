@@ -82,6 +82,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 
             -- Draw text
             love.graphics.setColor(buttonTheme.textColor)
+			love.graphics.setFont(luis.theme.text.font)
             love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width, buttonTheme.align)
             
             -- Draw focus indicator
