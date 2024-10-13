@@ -42,12 +42,15 @@ none - Disables hinting for the font. Results in fuzzier text.
 -- Default theme
 --==============================================
 luis.theme = {
+	system = {
+		font = love.graphics.newFont(14)
+	},
     background = {
         color = {0.1, 0.1, 0.1},
     },
     text = {
         color = {1, 1, 1},
-        font = love.graphics.newFont(32, "normal"),
+        font = love.graphics.newFont(14, "normal"),
         align = "left",
     },
     button = {
@@ -405,14 +408,14 @@ function luis.update(dt)
     if math.abs(jx) > luis.deadzone or math.abs(jy) > luis.deadzone then
         mx, my = mx + jx * 10, my + jy * 10  -- Adjust speed as needed
     end
-
+--[[
     -- Check for joystick button presses for focus navigation
     if luis.joystickJustPressed(1, 'dpdown') then
         luis.moveFocus("next")
     elseif luis.joystickJustPressed(1, 'dpup') then
         luis.moveFocus("previous")
     end
-
+]]--
     for layerName, enabled in pairs(luis.enabledLayers) do
         if enabled and luis.elements[layerName] then
             for i, element in ipairs(luis.elements[layerName]) do
@@ -436,6 +439,7 @@ function luis.update(dt)
     -- Update focused element
     luis.updateFocusableElements()
     
+	-- Update the focus of all elements that have implemented the updateFocus() method
     if luis.currentFocus and luis.currentFocus.updateFocus then
         luis.currentFocus:updateFocus(jx, jy)
     end
@@ -443,7 +447,7 @@ end
 
 -- Element debug outlines
 function luis.drawElementOutline(element)
-    love.graphics.setColor(1, 1, 1, 0.5)
+    love.graphics.setColor(1, 1, 1, 0.7)
 	local font_backup = love.graphics.getFont()
 	local font = love.graphics.newFont(12, "mono")
 	love.graphics.setFont(font)
@@ -500,15 +504,23 @@ function luis.draw()
     if luis.showLayerNames then
 		local font_backup = love.graphics.getFont()
         love.graphics.setColor(0.5, 0.5, 0.5)
-        love.graphics.setFont(luis.theme.text.font)
+        love.graphics.setFont(luis.theme.system.font)
 		local counter = 0
         for layerName, enabled in pairs(luis.enabledLayers) do
             if enabled then
-                local layerWidth = luis.theme.text.font:getWidth(layerName)
+                local layerWidth = luis.theme.system.font:getWidth(layerName)
                 love.graphics.print(layerName, 10+layerWidth*counter, 10+20*counter)
 				counter = counter +1
             end
         end
+
+		for i, element in ipairs(luis.focusableElements) do
+			local text = (element.text or element.type) .. " (" .. i .. ")"
+			if element == luis.currentFocus then
+				text = text .. " <-- current"
+			end
+			love.graphics.print(text, 10, 50+i*luis.theme.system.font:getHeight())
+		end
 		love.graphics.setFont(font_backup)
     end
 
@@ -551,33 +563,27 @@ end
 
 -- keypressed pushes recursiv across all widgets
 function luis.keypressed(key, scancode, isrepeat)
-    if key == "tab" then
-        luis.showGrid = not luis.showGrid
-        luis.showElementOutlines = not luis.showElementOutlines
-        luis.showLayerNames = not luis.showLayerNames
-    else
-        local function handleKeyPressed(elements)
-            for _, element in ipairs(elements) do
-                if element.type == "FlexContainer" then
-                    if handleKeyPressed(element.children) then
-                        return true
-                    end
-                elseif (element.keypressed and element.active) or element.keypressed then
-                    element:keypressed(key, scancode, isrepeat)
-                    return true
-                end
-            end
-            return false
-        end
+	local function handleKeyPressed(elements)
+		for _, element in ipairs(elements) do
+			if element.type == "FlexContainer" then
+				if handleKeyPressed(element.children) then
+					return true
+				end
+			elseif (element.keypressed and element.active) or element.keypressed then
+				element:keypressed(key, scancode, isrepeat)
+				return true
+			end
+		end
+		return false
+	end
 
-        for layerName, enabled in pairs(luis.enabledLayers) do
-            if enabled and luis.elements[layerName] then
-                if handleKeyPressed(luis.elements[layerName]) then
-                    return
-                end
-            end
-        end
-    end
+	for layerName, enabled in pairs(luis.enabledLayers) do
+		if enabled and luis.elements[layerName] then
+			if handleKeyPressed(luis.elements[layerName]) then
+				return
+			end
+		end
+	end
 end
 
 function luis.keyreleased( key, scancode )
@@ -683,10 +689,10 @@ function luis.restoreFocus(layerName)
     local lastFocusedIndex = luis.lastFocusedWidget[layerName]
     if lastFocusedIndex and luis.elements[layerName][lastFocusedIndex] then
         local element = luis.elements[layerName][lastFocusedIndex]
-        element.focused = true
-        luis.currentFocus = element
+		luis.setCurrentFocus(element)
     else
 		-- Fall back to default focus behavior
+		luis.setCurrentFocus(nil)	-- set currentFocus to nil, if to focus to restore
 		luis.updateFocusableElements()
     end
 end
@@ -707,7 +713,7 @@ function luis.updateFocusableElements()
     end
     -- Set initial focus if not set
 	if not luis.currentFocus and #luis.focusableElements > 0 then
-		luis.currentFocus = luis.focusableElements[1]
+		luis.setCurrentFocus(luis.focusableElements[1])
 	end
 	
 	-- after focus change, update all button colors
@@ -716,7 +722,7 @@ end
 
 -- Move focus in a direction
 function luis.moveFocus(direction)
-    if #luis.focusableElements == 0 then return end
+    if (#luis.activeJoysticks == 0) then return end
 
     local currentIndex = 1
     for i, element in ipairs(luis.focusableElements) do

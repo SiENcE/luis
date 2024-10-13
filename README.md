@@ -198,15 +198,16 @@ For more detailed information on the LUIS API, including layer management, input
 
 ## known Problems
 
+- when gamepad is connected and a widget has focus, it's not unfocussed when gamepad is removed
+  - mouse interaction is hindered while gamepad is active
 - DropBox: Selection with the gamepad works a bit
-- button animation funzt. nicht mehr in complex menu
-
+- Button Animations don't work when usign Gamepad & Mouse
 - Checkboxes and radio buttons are currently not being saved.
 - Sliders sometime not save; when using moue!?
 - Some elements require double-clicking to activate, especially in the complex_menu sample.
 - TextInput: Adding a character in the middle of the text deletes the following characters.
-- TextInput, TextInputMultiLine: cursor is behind the characters
 - FlexContainer: The initial width or height constrains the arrangement of child widgets.
+- Rework State Management: to be more generic; add option to retrieve a specific document; get full state of widget
 
 ## License
 

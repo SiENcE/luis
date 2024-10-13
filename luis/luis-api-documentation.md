@@ -14,8 +14,9 @@ LUIS (Love User Interface System) is a flexible GUI framework for LÖVE (Love2D)
 8. [Scaling and Grid](#scaling-and-grid)
 9. [Joystick and Gamepad Support](#joystick-and-gamepad-support)
 10. [Widget System](#widget-system)
-11. [Usage Example](#usage-example)
-12. [Advanced Techniques with Layers and Grid-Based Layout](#advanced-techniques-with-layers-and-grid-based-layout)
+11. [Debugging](#debugging)
+12. [Usage Example](#usage-example)
+13. [Advanced Techniques with Layers and Grid-Based Layout](#advanced-techniques-with-layers-and-grid-based-layout)
 
 ## Initialization
 
@@ -147,9 +148,12 @@ luis.isJoystickPressed(id, button)
 luis.getJoystickAxis(id, axis)
 luis.gamepadpressed(joystick, button)
 luis.gamepadreleased(joystick, button)
+luis.setCurrentFocus(element)
 ```
 
 These functions provide support for joystick and gamepad input.
+
+Use `luis.setCurrentFocus(element)` to set the gamepad or joystick focus to the specified element.
 
 ## Rendering
 
@@ -343,6 +347,26 @@ function love.keypressed(key)
     end
 end
 ```
+
+## Debugging
+
+```lua
+luis.showGrid = true/false
+```
+
+`luis.showGrid` is a boolean value. Setting it to `true` will render the grid, which is useful for debugging and layout purposes.
+
+```lua
+luis.showElementOutlines = true/false
+```
+
+`luis.showElementOutlines` is a boolean value. When set to `true`, it renders the outlines of all elements.
+
+```lua
+luis.showLayerNames = true/false
+```
+
+`luis.showLayerNames` is a boolean value. When enabled to `true`, it displays the names of enabled layers in the top-right corner.
 
 ## Advanced Techniques with Layers and Grid-Based Layout
 
