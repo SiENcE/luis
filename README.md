@@ -2,14 +2,6 @@
 
 **LUIS** (Love User Interface System) is a flexible graphical user interface (GUI) framework built on top of the [Löve2D](https://love2d.org/) game framework. LUIS provides developers with the tools to create dynamic, grid-centric, layered user interfaces for games and applications.
 
-## Overview
-
-- **Löve2D Integration**: Seamlessly integrates with the Löve2D framework
-- **Flexible Containers**: Use FlexContainers for dynamic and responsive layouts
-- **Theming**: Add/Modify themes and individual widget properties during runtime
-- **Lightweight**: Minimal external dependencies for easy integration into your project
-- **Extensible**: Create custom widgets to suit your specific needs
-
 ## Features
 
 | Feature | Description |
@@ -194,7 +186,7 @@ For more detailed information on the LUIS API, including layer management, input
 ## Dependencies
 
 - Löve2D: The game framework used for rendering and managing game objects.
-- Zero dependencies of the luis core library
+- The core library has zero dependencies!
 
 ## known Problems
 
