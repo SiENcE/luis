@@ -198,8 +198,6 @@ For more detailed information on the LUIS API, including layer management, input
 
 ## known Problems
 
-- when gamepad is connected and a widget has focus, it's not unfocussed when gamepad is removed
-  - mouse interaction is hindered while gamepad is active
 - DropBox: Selection with the gamepad works a bit
 - Button Animations don't work when usign Gamepad & Mouse
 - Checkboxes and radio buttons are currently not being saved.

@@ -408,7 +408,10 @@ function luis.update(dt)
     if math.abs(jx) > luis.deadzone or math.abs(jy) > luis.deadzone then
         mx, my = mx + jx * 10, my + jy * 10  -- Adjust speed as needed
     end
+
 --[[
+	=> this must be now implemented in the main program!
+
     -- Check for joystick button presses for focus navigation
     if luis.joystickJustPressed(1, 'dpdown') then
         luis.moveFocus("next")
@@ -416,6 +419,7 @@ function luis.update(dt)
         luis.moveFocus("previous")
     end
 ]]--
+
     for layerName, enabled in pairs(luis.enabledLayers) do
         if enabled and luis.elements[layerName] then
             for i, element in ipairs(luis.elements[layerName]) do
