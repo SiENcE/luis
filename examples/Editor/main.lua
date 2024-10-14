@@ -8,6 +8,8 @@ luis.flux = require("examples.3rdparty.flux")
 local alternativeTheme = require("examples.complex_ui.assets.themes.alternativeTheme")
 alternativeTheme.text.font = love.graphics.newFont("examples/complex_ui/assets/fonts/Monocraft.ttf", 18)
 
+local materialTheme = require("examples.complex_ui.assets.themes.materialTheme")
+
 local editor = {
     currentLayer = "main",
     selectedWidget = nil,
@@ -21,33 +23,84 @@ local editor = {
     startY = 0
 }
 
+local testModeBtn
+
 function love.load()
     love.window.setMode(1280, 720, {resizable=true, vsync=true})
     luis.setGridSize(editor.gridSize)
     luis.newLayer(editor.currentLayer)
     luis.enableLayer(editor.currentLayer)
 
+	luis.setTheme(alternativeTheme)
+
     -- Create toolbar buttons
     for i, widgetType in ipairs(editor.widgetTypes) do
         luis.createElement(editor.currentLayer, "Button", widgetType, 100/luis.gridSize, 30/luis.gridSize, function()
+			if testModeBtn.testmode then return end
+			
             editor.selectedWidget = widgetType
             editor.placingWidget = true
-        end, function() end, 10, (10 + (i-1) * 6) )
+        end, function() end, 10, (16 + (i-1) * 6), materialTheme.button )
     end
+
+	testModeBtn = luis.createElement(editor.currentLayer, "Button", "TestMode OFF", 130/luis.gridSize, 130/luis.gridSize, function()
+			if testModeBtn.testmode == false then
+				testModeBtn.text="TestMode ON"
+				testModeBtn.testmode=true
+
+				for i, widget in ipairs(editor.widgets) do
+					if widget then
+						print(i, widget.type, 'deactivate click&release')
+						if widget.click then
+							widget.click_ = widget.click
+							widget.click = function() end
+						elseif widget.release then
+							widget.release_ = widget.release
+							widget.release = function() end
+						end
+					end
+				end
+			elseif testModeBtn.testmode == true then
+				testModeBtn.text="TestMode OFF"
+				testModeBtn.testmode=false
+
+				for i, widget in ipairs(editor.widgets) do
+					if widget then
+						print(i, widget.type, 'activate click&release')
+						if widget.click then
+							widget.click = widget.click_
+						elseif widget.release then
+							widget.release = widget.release_
+						end
+					end
+				end
+			end
+        end, function() end, 10,5, materialTheme.button )
+
+	testModeBtn.testmode=false
 end
 
+local accumulator = 0
 function love.update(dt)
+    accumulator = accumulator + dt
+    if accumulator >= 1/60 then
+        luis.flux.update(accumulator)
+        accumulator = 0
+    end
+
     luis.updateScale()
 
     luis.update(dt)
+
+	if testModeBtn.testmode then return end
 
     local mx, my = love.mouse.getPosition()
     mx, my = mx / luis.scale, my / luis.scale
 
     if editor.placingWidget and editor.selectedWidget then
         if love.mouse.isDown(1) then
-            local gridX = math.floor(mx / editor.gridSize) * editor.gridSize /2
-            local gridY = math.floor(my / editor.gridSize) * editor.gridSize /2
+            local gridX = 200+math.floor(mx / editor.gridSize) * editor.gridSize /2
+            local gridY = 30+math.floor(my / editor.gridSize) * editor.gridSize /2
             local widgetWidth = editor.gridSize * 5
             local widgetHeight = editor.gridSize * 2
             
@@ -77,8 +130,14 @@ function love.update(dt)
             end
             
             if widget then
-				widget.click = function() end
-				widget.release = function() end
+				print(widget.type, 'deactivate click&release for new element')
+				if widget.click then
+					widget.click_ = widget.click
+					widget.click = function() end
+				elseif widget.release then
+					widget.release_ = widget.release
+					widget.release = function() end
+				end
 
                 table.insert(editor.widgets, widget)
             end
@@ -96,7 +155,6 @@ function love.update(dt)
         editor.resizingWidget.width = math.max(editor.gridSize, gridX - editor.resizingWidget.position.x)
         editor.resizingWidget.height = math.max(editor.gridSize, gridY - editor.resizingWidget.position.y)
     end
-	luis.setTheme(alternativeTheme)
 end
 
 function love.draw()
