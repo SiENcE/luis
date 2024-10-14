@@ -18,7 +18,7 @@ function custom.new(drawFunc, width, height, row, col, customTheme)
         height = height * luis.gridSize,
         position = Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
         focused = false,
-        focusable = true,  -- Make the button focusable
+        focusable = false,    -- Make it not focusable
 		theme = customTheme,
 		decorator = nil,
         

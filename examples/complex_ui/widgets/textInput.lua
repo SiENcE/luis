@@ -29,7 +29,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
         blinkTimer = 0,
         showCursor = true,
         focused = false,
-        focusable = true,  -- Make the button focusable
+        focusable = true,  -- Make it focusable
 		theme = textInputTheme,
 		decorator = nil,
 

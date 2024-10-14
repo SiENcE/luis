@@ -30,7 +30,7 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
         blinkTimer = 0,
         showCursor = true,
         focused = false,
-        focusable = true,
+        focusable = true,  -- Make it focusable
         theme = textInputTheme,
         decorator = nil,
         scrollY = 0,
