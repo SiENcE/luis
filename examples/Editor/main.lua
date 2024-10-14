@@ -37,14 +37,8 @@ function love.load()
 end
 
 function love.update(dt)
-    -- Check for joystick button presses for focus navigation
-    if luis.joystickJustPressed(1, 'dpdown') then
-        luis.moveFocus("next")
-    elseif luis.joystickJustPressed(1, 'dpup') then
-        luis.moveFocus("previous")
-    end
-
     luis.updateScale()
+
     luis.update(dt)
 
     local mx, my = love.mouse.getPosition()

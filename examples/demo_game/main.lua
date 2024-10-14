@@ -424,12 +424,19 @@ function love.update(dt)
 
 	luis.updateScale()
 
+    -- Check for joystick button presses for focus navigation
+    if luis.joystickJustPressed(1, 'dpdown') then
+        luis.moveFocus("next")
+    elseif luis.joystickJustPressed(1, 'dpup') then
+        luis.moveFocus("previous")
+    end
+
     luis.update(dt)
 
     if gameState.currentView == "battle" then
-        luis.enableLayer("battle")
         luis.disableLayer("camp")
         luis.disableLayer("game")
+        luis.enableLayer("battle")
 
         -- Update damage text timer
         if battleState.damageTimer > 0 then
@@ -446,13 +453,13 @@ function love.update(dt)
             end
         end
     elseif gameState.currentView == "camp" then
-        luis.enableLayer("camp")
         luis.disableLayer("battle")
         luis.disableLayer("game")
+        luis.enableLayer("camp")
     else -- "game"
-        luis.enableLayer("game")
         luis.disableLayer("battle")
         luis.disableLayer("camp")
+        luis.enableLayer("game")
     end
 end
 
@@ -488,9 +495,15 @@ function love.keypressed(key)
         elseif key == 'right' then
             turnRight()
         end
-    end
-
-    luis.keypressed(key)
+	end
+	
+	if key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+	else
+		luis.keypressed(key, scancode, isrepeat)
+	end
 end
 
 function love.joystickadded(joystick)

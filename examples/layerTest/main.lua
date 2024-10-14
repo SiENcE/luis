@@ -21,16 +21,6 @@ end
 function love.load()
 	love.window.setMode(1280, 720, {resizable=true, vsync=true})
 
-    -- Initialize joysticks
-	luis.initJoysticks()  -- Initialize joysticks
-	if luis.activeJoysticks then
-		for id, activeJoystick in pairs(luis.activeJoysticks) do
-			local name = activeJoystick:getName()
-			local index = activeJoystick:getConnectedIndex()
-			print(string.format("Active joystick #%d '%s'.", index, name))
-		end
-	end
-
 	local buttonnames = { [1]={"Start Game", "Options", "Quit"}, [2]={"Continue", "New Game", "back"}, [3]={"Video Settings", "Sound Settings", "back"} }
     -- Set up layers and canvases
     for i, layerName in ipairs(layers) do
@@ -53,14 +43,11 @@ function love.load()
 end
 
 function love.update(dt)
-    -- Check for joystick button presses for focus navigation
-    if luis.joystickJustPressed(1, 'dpdown') then
-        luis.moveFocus("next")
-    elseif luis.joystickJustPressed(1, 'dpup') then
-        luis.moveFocus("previous")
-    end
-
     luis.update(dt)
+end
+
+function love.resize(w, h)
+    luis.updateScale()
 end
 
 -- draw only one layer to canvas
@@ -145,12 +132,4 @@ end
 
 function love.mousereleased(x, y, button, istouch, presses)
     luis.mousereleased(x, y, button, istouch, presses)
-end
-
-function love.gamepadpressed(joystick, button)
-    luis.gamepadpressed(joystick, button)
-end
-
-function love.gamepadreleased(joystick, button)
-    luis.gamepadreleased(joystick, button)
 end

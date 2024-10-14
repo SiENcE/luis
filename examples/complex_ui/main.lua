@@ -340,7 +340,7 @@ local function createControlsMenu()
 		transitionDuration = 1.5,
 	}
 	local button_widget  = luis.newButton( "Toggle Theme", 15, 3, toggleTheme, function() end, 40, 41, customButtonTheme)
-	local dropdown = luis.newDropDown(  {"Option 1", "Option 2", "Option 3"}, 3, 10, 2, function(item, index) print("Selected: " .. item) end, 35, 43)
+	local dropdown = luis.newDropDown(  {"Option 1", "Option 2", "Option 3"}, 3, 10, 2, function(item, index) print("Selected:", item, index) end, 35, 43)
 	textInput_widget = luis.newTextInput( 20, 3, "Enter text here...", function(text) print(text) end, 45, 38)
 	container:addChild(button_widget)
 	container:addChild(textInput_widget)
@@ -397,7 +397,7 @@ function love.load()
     createControlsMenu()
 	
 	-- set current Focus to "Start Game"
-	luis.setCurrentFocus(mainMenuElements[1])
+--	luis.setCurrentFocus(mainMenuElements[1])
 
 	-- load last widget state
 --    if love.filesystem.getInfo('config.json') then
@@ -536,13 +536,24 @@ function love.keypressed(key)
         luis.showGrid = not luis.showGrid
         luis.showElementOutlines = not luis.showElementOutlines
         luis.showLayerNames = not luis.showLayerNames
-    elseif key == "down" then
-        luis.moveFocus("next")
-    elseif key == "up" then
-        luis.moveFocus("previous")
-    else
-		luis.keypressed(key)
+
+	-- Keyboard UI Navigation works in this Sample only, when there is a Gamepad/Joystick attached
+	-- because we need a focussed element to navigation
+    elseif luis.currentFocus then
+		if key == "down" then
+			luis.moveFocus("next")
+		elseif key == "up" then
+			luis.moveFocus("previous")
+		elseif key == "return" then
+			if luis.isLayerEnabled("main") then
+				handleMainMenuSelection(luis.currentFocus.text)
+			elseif luis.isLayerEnabled("settings") then
+				handleSettingsMenuSelection(luis.currentFocus.text)
+			end
+		end
 	end
+
+	luis.keypressed(key)
 end
 
 function love.touchpressed(id, x, y, dx, dy, pressure)

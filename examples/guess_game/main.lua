@@ -123,9 +123,14 @@ function love.textinput(text)
 end
 
 function love.keypressed(key)
-    luis.keypressed(key)
     if key == "return" or key == "enter" then
         checkGuess()
-    end
+	elseif key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+	else
+		luis.keypressed(key, scancode, isrepeat)
+	end
 end
 

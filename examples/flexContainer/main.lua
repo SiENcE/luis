@@ -112,14 +112,6 @@ function love.load()
 	aside:addChild(textInputMultiLine)
 
 	love.keyboard.setKeyRepeat(true)
-	luis.initJoysticks()  -- Initialize joysticks
-	if luis.activeJoysticks then
-		for id, activeJoystick in pairs(luis.activeJoysticks) do
-			local name = activeJoystick:getName()
-			local index = activeJoystick:getConnectedIndex()
-			print(string.format("Active joystick #%d '%s'.", index, name))
-		end
-	end
 
 	luis.setCurrentLayer("main")
 end
@@ -165,27 +157,15 @@ function love.keypressed( key, scancode, isrepeat )
         if luis.currentLayer == "main" then
             love.event.quit()
         end
-    else
+    elseif key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+	else
 		luis.keypressed(key, scancode, isrepeat)
 	end
 end
 
 function love.keyreleased( key, scancode )
 	luis.keyreleased( key, scancode )
-end
-
-function love.joystickadded(joystick)
-    luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
-end
-
-function love.joystickremoved(joystick)
-    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
-end
-
-function love.gamepadpressed(joystick, button)
-    luis.gamepadpressed(joystick, button)
-end
-
-function love.gamepadreleased(joystick, button)
-    luis.gamepadreleased(joystick, button)
 end

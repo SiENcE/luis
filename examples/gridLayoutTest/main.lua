@@ -87,7 +87,13 @@ function love.draw()
 end
 
 function love.keypressed(key)
-    luis.keypressed(key)
+	if key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+	else
+		luis.keypressed(key)
+	end
 end
 
 function love.textinput(t)

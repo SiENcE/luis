@@ -325,8 +325,6 @@ function updateVirtualAnalogStick(x, y, isPressed)
 end
 
 function love.keypressed(key, scancode, isrepeat)
-    luis.keypressed(key, scancode, isrepeat)
-    
 	if keyToButton[key] then
         buttonStates[keyToButton[key]] = true
     end
@@ -346,7 +344,14 @@ function love.keypressed(key, scancode, isrepeat)
         analogStickSensitivity = math.min(2, analogStickSensitivity + 0.1)
     elseif key == "y" then
         useExtendedAnalogStick = not useExtendedAnalogStick
-    end
+	elseif key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+	else
+		luis.keypressed(key, scancode, isrepeat)
+	end
+	
 end
 
 function love.keyreleased(key, scancode)

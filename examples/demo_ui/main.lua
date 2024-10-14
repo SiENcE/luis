@@ -81,6 +81,9 @@ function love.load()
 			print(string.format("Active joystick #%d '%s'.", index, name))
 		end
 	end
+
+	local customTheme = require("examples.complex_ui.assets.themes.customTheme")
+	luis.setTheme(customTheme)
 end
 
 -- Update function
@@ -118,6 +121,13 @@ function love.update(dt)
 	
 	luis.updateScale()
 
+    -- Check for joystick button presses for focus navigation
+    if luis.joystickJustPressed(1, 'dpdown') then
+        luis.moveFocus("next")
+    elseif luis.joystickJustPressed(1, 'dpup') then
+        luis.moveFocus("previous")
+    end
+
     luis.update(dt)
 end
 
@@ -144,6 +154,16 @@ function love.textinput(text)
 end
 
 function love.keypressed(key)
+    if key == "tab" then
+        luis.showGrid = not luis.showGrid
+        luis.showElementOutlines = not luis.showElementOutlines
+        luis.showLayerNames = not luis.showLayerNames
+    elseif key == "down" then
+        luis.moveFocus("next")
+    elseif key == "up" then
+        luis.moveFocus("previous")
+    end
+
     luis.keypressed(key)
 end
 
