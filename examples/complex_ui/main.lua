@@ -526,34 +526,13 @@ function love.wheelmoved(x, y)
 end
 
 function love.keypressed(key)
-    if key == "escape" then
-        if luis.currentLayer == "main" then
-            love.event.quit()
-        else
-            popMenu()
-        end
-    elseif key == "tab" then
+    if key == "tab" then
         luis.showGrid = not luis.showGrid
         luis.showElementOutlines = not luis.showElementOutlines
         luis.showLayerNames = not luis.showLayerNames
-
-	-- Keyboard UI Navigation works in this Sample only, when there is a Gamepad/Joystick attached
-	-- because we need a focussed element to navigation
-    elseif luis.currentFocus then
-		if key == "down" then
-			luis.moveFocus("next")
-		elseif key == "up" then
-			luis.moveFocus("previous")
-		elseif key == "return" then
-			if luis.isLayerEnabled("main") then
-				handleMainMenuSelection(luis.currentFocus.text)
-			elseif luis.isLayerEnabled("settings") then
-				handleSettingsMenuSelection(luis.currentFocus.text)
-			end
-		end
+	else
+		luis.keypressed(key)
 	end
-
-	luis.keypressed(key)
 end
 
 function love.touchpressed(id, x, y, dx, dy, pressure)
@@ -570,7 +549,7 @@ end
 
 function love.joystickremoved(joystick)
 	print('joystickremoved', joystick)
-    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+	luis.removeJoystick(joystick)
 end
 
 function love.gamepadpressed(joystick, button)
