@@ -457,7 +457,7 @@ function luis.drawElementOutline(element)
 	love.graphics.setFont(font)
 	local text = element.position.x/luis.gridSize+1 .. " x "	-- we have to add +1 as the grid is indexed at 1,1 not 0,0 !!
 	love.graphics.print(text, element.position.x+2, element.position.y)
-	love.graphics.print(element.position.y/luis.gridSize+2, element.position.x+string.len(text)*4+12, element.position.y)
+	love.graphics.print(element.position.y/luis.gridSize+1, element.position.x+string.len(text)*4+12, element.position.y)
 
 	love.graphics.print(element.width/luis.gridSize, element.position.x+element.width-22, element.position.y)
 	love.graphics.print(element.height/luis.gridSize, element.position.x+element.width-22, element.position.y+element.height-16)
@@ -727,6 +727,7 @@ end
 -- Move focus in a direction
 function luis.moveFocus(direction)
     if (#luis.activeJoysticks == 0) then return end
+	if #luis.focusableElements == 0 then return end
 
     local currentIndex = 1
     for i, element in ipairs(luis.focusableElements) do
@@ -792,6 +793,44 @@ function luis.initJoysticks()
     luis.joysticks = love.joystick.getJoysticks()
     for i, joystick in ipairs(luis.joysticks) do
         luis.activeJoysticks[i] = joystick
+    end
+
+    -- If there are no joysticks, reset focus-related variables
+    if #luis.joysticks == 0 then
+        luis.setCurrentFocus(nil)
+        luis.focusableElements = {}
+        for layerName, _ in pairs(luis.layers) do
+            luis.lastFocusedWidget[layerName] = nil
+        end
+    end
+end
+
+-- just to cleanup the focus
+function luis.removeJoystick(joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+    
+    -- Check if the removed joystick was the active one
+    local removedId
+    for id, activeJoystick in pairs(luis.activeJoysticks) do
+        if joystick == activeJoystick then
+            removedId = id
+            break
+        end
+    end
+    
+    if removedId then
+        luis.activeJoysticks[removedId] = nil
+        
+        -- If there are no more active joysticks, remove focus and clean up
+        if next(luis.activeJoysticks) == nil then
+            luis.setCurrentFocus(nil)
+            luis.updateFocusableElements()
+            
+            -- Clean up luis.lastFocusedWidget
+            for layerName, _ in pairs(luis.layers) do
+                luis.lastFocusedWidget[layerName] = nil
+            end
+        end
     end
 end
 

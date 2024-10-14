@@ -105,10 +105,10 @@ Note: An element is an instance of a widget.
 ### Removing an Element
 
 ```lua
-luis.removeElement(layerName, element)
+luis.removeElement(layerName, elementToRemove)
 ```
 - `layerName`: string - The name of the layer containing the element
-- `element`: table - The element object to remove
+- `elementToRemove`: table - The element object to remove
 
 Removes the specified element from the given layer.
 
@@ -142,6 +142,7 @@ These functions should be called from the corresponding LÖVE callbacks to handl
 
 ```lua
 luis.initJoysticks()
+luis.removeJoystick(joystick)
 luis.setActiveJoystick(id, joystick)
 luis.getActiveJoystick(id)
 luis.gamepadpressed(joystick, button)
@@ -176,7 +177,7 @@ luis.getJoystickAxis(id, axis)
 - `axis`: string - The axis to check (e.g., 'leftx', 'lefty')
 - Returns: number - The current value of the axis
 
-## Focus Handling
+## Focus Management
 
 ```lua
 luis.setCurrentFocus(element)
@@ -248,6 +249,7 @@ luis.setConfig(config)
 
 ```lua
 luis.setGridSize(gridSize)
+luis.setGridSize(gridSize)
 ```
 - `gridSize`: number - The size of the grid for element positioning
 
@@ -288,17 +290,76 @@ LUIS supports custom widgets through a plugin system. Widgets are loaded dynamic
 LUIS supports various widget types, including:
 
 - Button
+
+`button.new(text, width, height, onClick, onRelease, row, col, customTheme)`
+
 - Slider
+
+`slider.new(min, max, value, width, height, onChange, row, col, customTheme)`
+
 - Switch
-- Checkbox
-- RadioButton
-- DropDown
-- TextInput
-- TextInputMultiLine
-- ProgressBar
+
+`switch.new(value, width, height, onChange, row, col, customTheme)`
+
 - Icon
+
+`icon.new(iconPath, size, row, col, customTheme)`
+
+- CheckBox
+
+`checkBox.new(value, size, onChange, row, col, customTheme)`
+
+- RadioButton
+
+`radioButton.new(group, value, size, onChange, row, col, customTheme)`
+
+- Label
+
+`label.new(text, width, height, row, col, align, customTheme)`
+
+- DropDown
+
+`dropDown.new(items, value, width, height, onChange, row, col, maxVisibleItems, customTheme)`
+
+- TextInput
+
+`textInput.new(width, height, placeholder, onChange, row, col, customTheme)`
+
+- TextInputMultiLine
+
+`textInputMultiLine.new(width, height, placeholder, onChange, row, col, customTheme)`
+
 - FlexContainer
-- any custom Widget ...
+
+`flexContainer.new(width, height, row, col, customTheme, containerName)`
+
+- ProgressBar
+
+`progressBar.new(value, width, height, row, col, customTheme)`
+
+- Custom
+
+`custom.new(drawFunc, width, height, row, col, customTheme)`
+
+Each element (widget) type has specific properties and methods.
+
+- `width` and `height`: Dimensions specified in `gridSize`.
+- `row` and `col`: Position of the element (widget) on the grid, anchored at the top-left corner.
+- `placeholder`: Placeholder text to display when no input is provided.
+- `onChange`: Function that is executed when the element's (widget's) state changes.
+- `onClick`: Function that is executed when the button is pressed.
+- `onRelease`: Function that is executed when the button is released.
+- `text`: Text displayed on the element (widget), applicable to buttons and labels.
+- `align`: Alignment of the displayed text.
+- `value`: Initial value for the element (widget).
+- `group`: Group name for a radio button group.
+- `min` and `max`: Minimum and maximum values for sliders.
+- `customTheme`: Custom theme values for this widget type.
+- `drawFunc`: Custom drawing function to be implemented and executed for the widget.
+- `containerName`: Optional name for the container element.
+- `items`: List of strings to display in a dropdown element (widget).
+- `maxVisibleItems`: Maximum number of visible items in the dropdown list.
+- `iconPath`: Path to an image (jpg, png) for the icon element (widget).
 
 ### Creating Custom Widgets
 
