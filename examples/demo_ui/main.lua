@@ -172,7 +172,7 @@ function love.joystickadded(joystick)
 end
 
 function love.joystickremoved(joystick)
-    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+    luis.removeJoystick(joystick)  -- Reinitialize joysticks when one is removed
 end
 
 function love.gamepadpressed(joystick, button)

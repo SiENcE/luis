@@ -86,7 +86,7 @@ function initiateBattle()
         { name = "Orc", hp = 50, maxHp = 50, atk = 12, def = 8, isDead = false },
         { name = "Troll", hp = 80, maxHp = 80, atk = 15, def = 10, isDead = false }
     }
-    battleState.activeCharacter = gameState.party[1]
+    battleState.activeCharacter = getNextLiveCharacter()
     battleState.targetEnemy = gameState.enemies[1]
     battleState.currentTurn = 1
     battleState.targetingMode = false
@@ -218,12 +218,33 @@ function getNextLiveEnemy()
     return nil
 end
 
+--[[
 function getNextLiveCharacter()
     for _, character in ipairs(gameState.party) do
         if character.hp > 0 then
             return character
         end
     end
+    return nil
+end
+]]--
+local currentIndex = 0
+function getNextLiveCharacter()
+    local startIndex = currentIndex + 1
+    local partySize = #gameState.party
+
+    for i = 0, partySize - 1 do
+        local index = (startIndex + i - 1) % partySize + 1
+        local character = gameState.party[index]
+        
+        if character.hp > 0 then
+            currentIndex = index
+            return character
+        end
+    end
+
+    -- If no live characters found, reset the index and return nil
+    currentIndex = 0
     return nil
 end
 
@@ -272,6 +293,7 @@ function battleAction(action)
     -- Move to next character's turn
     battleState.currentTurn = battleState.currentTurn % #gameState.party + 1
     battleState.activeCharacter = getNextLiveCharacter()
+print(battleState.activeCharacter.name)
 
     -- Enemy turn (after all player characters have acted)
     if battleState.currentTurn == 1 then
@@ -511,7 +533,7 @@ function love.joystickadded(joystick)
 end
 
 function love.joystickremoved(joystick)
-    luis.initJoysticks()  -- Reinitialize joysticks when one is removed
+    luis.removeJoystick(joystick)  -- Reinitialize joysticks when one is removed
 end
 
 function love.gamepadpressed(joystick, button)
