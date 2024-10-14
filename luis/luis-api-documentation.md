@@ -144,16 +144,79 @@ These functions should be called from the corresponding LÖVE callbacks to handl
 luis.initJoysticks()
 luis.setActiveJoystick(id, joystick)
 luis.getActiveJoystick(id)
-luis.isJoystickPressed(id, button)
-luis.getJoystickAxis(id, axis)
 luis.gamepadpressed(joystick, button)
 luis.gamepadreleased(joystick, button)
-luis.setCurrentFocus(element)
 ```
+- `id`: number - The ID of the joystick
+- `button`: string - The button to check
+- `joystick`: the joystick object itself
 
 These functions provide support for joystick and gamepad input.
 
+```lua
+luis.isJoystickPressed(id, button)
+```
+- `id`: number - The ID of the joystick
+- `button`: string - The button to check
+- Returns: boolean - Whether the button is currently pressed
+
+```lua
+luis.joystickJustPressed(id, button)
+```
+- `id`: number - The ID of the joystick
+- `button`: string - The button to check
+- Returns: boolean - Whether the button was just pressed
+
+Checks if a joystick button was just pressed in the current frame.
+
+```lua
+luis.getJoystickAxis(id, axis)
+```
+- `id`: number - The ID of the joystick
+- `axis`: string - The axis to check (e.g., 'leftx', 'lefty')
+- Returns: number - The current value of the axis
+
+## Focus Handling
+
+```lua
+luis.setCurrentFocus(element)
+```
+- `element`: element we want to have the focus
+
 Use `luis.setCurrentFocus(element)` to set the gamepad or joystick focus to the specified element.
+
+```lua
+luis.updateLastFocusedWidget(layerName)
+```
+- `layerName`: string - The name of the layer to update
+
+Updates the last focused widget for the specified layer.
+
+```lua
+luis.restoreFocus(layerName)
+```
+- `layerName`: string - The name of the layer to restore focus to
+
+Restores focus to the last focused widget of the specified layer.
+
+```lua
+luis.updateFocusableElements()
+```
+
+Updates the list of focusable elements across all enabled layers.
+
+```lua
+luis.moveFocus(direction)
+```
+- `direction`: string - The direction to move focus ("next" or "previous")
+
+Moves the focus to the next or previous focusable element.
+
+```lua
+luis.exitFlexContainerFocus()
+```
+
+Exits the focus from the current FlexContainer and moves focus to the next element.
 
 ## Rendering
 
@@ -366,7 +429,7 @@ luis.showElementOutlines = true/false
 luis.showLayerNames = true/false
 ```
 
-`luis.showLayerNames` is a boolean value. When enabled to `true`, it displays the names of enabled layers in the top-right corner.
+When set to `true`, displays the names of enabled layers and the list of focusable elements with their current focus state.
 
 ## Advanced Techniques with Layers and Grid-Based Layout
 
