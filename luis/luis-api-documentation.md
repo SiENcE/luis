@@ -197,7 +197,7 @@ function love.joystickadded(joystick)
 end
 
 function love.joystickremoved(joystick)
-	luis.removeJoystick(joystick)
+    luis.removeJoystick(joystick)
 end
 
 function love.gamepadpressed(joystick, button)
@@ -212,15 +212,15 @@ end
 optionally initialize the joysticks and gamepads in love.load()
 
 ```lua
-	luis.initJoysticks()  -- Initialize joysticks
+    luis.initJoysticks()  -- Initialize joysticks
 
-	if luis.activeJoysticks then
-		for id, activeJoystick in pairs(luis.activeJoysticks) do
-			local name = activeJoystick:getName()
-			local index = activeJoystick:getConnectedIndex()
-			print(string.format("Active joystick #%d '%s'.", index, name))
-		end
-	end
+    if luis.activeJoysticks then
+        for id, activeJoystick in pairs(luis.activeJoysticks) do
+            local name = activeJoystick:getName()
+            local index = activeJoystick:getConnectedIndex()
+            print(string.format("Active joystick #%d '%s'.", index, name))
+        end
+    end
 ```
 
 ## Focus Management
@@ -317,11 +317,11 @@ Then use `luis.updateScale` in the `love.update` callback to automatically scale
 
 ```lua
 function love.load()
-	love.window.setMode( luis.baseWidth, luis.baseHeight, { resizable=true } )
+    love.window.setMode( luis.baseWidth, luis.baseHeight, { resizable=true } )
 end
 
 function love.update(dt)
-	luis.updateScale()
+    luis.updateScale()
 
     luis.update(dt)
 end
@@ -451,8 +451,8 @@ local CustomButtonWidget = {}
 function CustomButtonWidget.new(x, y, width, height, text, onClick)
     local self = {
         type = "CustomButtonWidget", position = {x=x, y=y},
-		width = width, height = height, text = text,
-		onClick = onClick, hovered = false, pressed = false
+        width = width, height = height, text = text,
+        onClick = onClick, hovered = false, pressed = false
     }
     function self:update(mx, my)
         self.hovered = mx > self.position.x and mx < self.position.x + self.width and
