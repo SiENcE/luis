@@ -195,14 +195,10 @@ For more detailed information on the LUIS API, including layer management, input
 
 ## known Problems
 
-- DropBox: Selection with the gamepad works a bit
-- Button Animations don't work when usign Gamepad & Mouse
-- Checkboxes and radio buttons are currently not being saved.
-- Sliders sometime not save; when using moue!?
+- DropBox: Selection with the gamepad works only a bit
+- Sliders, Checkboxes and RadioButtons are currently not being saved.
 - Some elements require double-clicking to activate, especially in the complex_menu sample.
 - TextInput: Adding a character in the middle of the text deletes the following characters.
-- FlexContainer: The initial width or height constrains the arrangement of child widgets.
-- Rework State Management: to be more generic; add option to retrieve a specific document; get full state of widget
 
 ## License
 
