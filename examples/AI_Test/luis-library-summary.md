@@ -114,7 +114,7 @@ The library supports various UI elements including:
 
 - DropDown
 
-`DropDown.new(items, value, width, height, onChange, row, col, maxVisibleItems, customTheme)`
+`DropDown.new(items, value, width, height, onChange, row, col, maxVisibleItems, customTheme, title)`
 
 - TextInput
 
@@ -154,6 +154,9 @@ Each element (widget) type has specific properties and methods.
 - `containerName`: Optional name for the container element.
 - `items`: List of strings to display in a dropdown element (widget).
 - `maxVisibleItems`: Maximum number of visible items in the dropdown list.
+- `title`: The dropdown will behave differently based on whether a title is provided or not (see desc. above)
+  - With a `title`: The title is always displayed when closed, and only the items can be selected when open.
+  - Without a `title`: The selected item is displayed when closed, matching the original behavior.
 - `iconPath`: Path to an image (jpg, png) for the icon element (widget).
 
 ## Usage in LÖVE2D

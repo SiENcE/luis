@@ -86,21 +86,21 @@ function love.load()
 	aside:addChild(sideBarBtn)
 
 	-- Create a Menu
-	local editItems = {"Edit", "Insert", "Copy", "Paste", "Comment", "Block", "Reset"}
+	local editItems = {"Revert", "Insert", "Copy", "Paste", "Comment", "Block", "Reset"}
 	editFunc = function(self, item)
 		print(item)
 	end
 	-- this DropDown is placed directly ont he "main" Layer. The last two prameter specify the grid position.
-	local dropdownbox1 = luis.createElement("main", "DropDown", editItems, 1, 8, 2, editFunc, 1, 10, 4)
+	local dropdownbox1 = luis.createElement("main", "DropDown", editItems, 1, 8, 2, editFunc, 1, 10, 4, nil, "Edit")
 
-	local fileItems = {"File", "Load", "Save", "Exit"}
+	local fileItems = {"New", "Load", "Save", "Exit"}
 	fileFunc = function(self, item)
 		if item == 4 then
 			love.event.quit()
 		end
 	end
 	-- this DropDown is added as Child to the "header" flexContainer. The grid position is not used here, as the flexContainer we have defined orders his childs dynamically!
-	local dropdownbox2 = luis.createElement("main", "DropDown", fileItems, 1, 8, 2, fileFunc, 1, 1)
+	local dropdownbox2 = luis.createElement("main", "DropDown", fileItems, 1, 8, 2, fileFunc, 1, 1, 4, nil, "File")
 	header:addChild(dropdownbox2)
 
 	-- add a TextInput

@@ -12,13 +12,13 @@ function dropDown.setluis(luisObj)
 end
 
 -- dropDown
-function dropDown.new(items, value, width, height, onChange, row, col, maxVisibleItems, customTheme)
+function dropDown.new(items, value, width, height, onChange, row, col, maxVisibleItems, customTheme, title)
     local dropdownTheme = customTheme or luis.theme.dropdown
-    
-    local maxVisibleItems = maxVisibleItems or 5  -- Maximum number of visible items when dropDown is open
+    maxVisibleItems = maxVisibleItems or 5  -- Maximum number of visible items when dropDown is open
     
     return {
         type = "DropDown",
+        title = title,
         items = items,
         value = value or 1,
         width = width * luis.gridSize,
@@ -29,25 +29,13 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         hoverIndex = nil,
         scrollOffset = 0,
         maxScrollOffset = math.max(0, #items - maxVisibleItems),
-        focusable = true,  -- Make the dropdown focusable
-        focused = false,   -- Track focus state
-        zIndex = 1,  -- Default z-index
+        focusable = true,
+        focused = false,
+        zIndex = 1,
         theme = dropdownTheme,
         decorator = nil,
 
         update = function(self, mx, my, dt)
---[[
-            -- Check for joystick/gamepad input when focused
-            if self.focused then
-                if luis.joystickJustPressed(1, 'a') then
-                    self:click(self.position.x+1, self.position.y+1, 'a')
-                elseif luis.joystickJustPressed(1, 'b') then
-                    self:click(self.position.x+1, self.position.y+1, 'b')
-                elseif luis.joystickJustPressed(1, 'start') then
-                    self:click(self.position.x+1, self.position.y+1, 'start')
-                end
-            end
-]]--
             if self.isOpen then
                 local listHeight = math.min(#self.items, maxVisibleItems) * self.height
                 self.hoverIndex = nil
@@ -60,12 +48,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
                 end
             end
 
-            -- Update z-index based on open state
-            if self.isOpen then
-                self.zIndex = 1000  -- High z-index when open
-            else
-                self.zIndex = 1  -- Default z-index when closed
-            end
+            self.zIndex = self.isOpen and 1000 or 1
         end,
 
         defaultDraw = function(self)
@@ -75,10 +58,11 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             love.graphics.setColor(dropdownTheme.borderColor)
             love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height)
             
-            -- Draw selected text
+            -- Draw title or selected item
             love.graphics.setColor(dropdownTheme.textColor)
-			love.graphics.setFont(luis.theme.text.font)
-            love.graphics.printf(self.items[self.value], self.position.x + luis.gridSize, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width - self.height, dropdownTheme.align)
+            love.graphics.setFont(luis.theme.text.font)
+            local displayText = self.title or self.items[self.value]
+            love.graphics.printf(displayText, self.position.x + luis.gridSize, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width - self.height, dropdownTheme.align)
             
             -- Draw arrow
             love.graphics.setColor(dropdownTheme.arrowColor)
@@ -126,14 +110,13 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             end
         end,
 
-		-- Draw method that can use a decorator
-		draw = function(self)
-			if self.decorator then
-				self.decorator:draw()
-			else
-				self:defaultDraw()
-			end
-		end,
+        draw = function(self)
+            if self.decorator then
+                self.decorator:draw()
+            else
+                self:defaultDraw()
+            end
+        end,
 
         setDecorator = function(self, decoratorType, ...)
             self.decorator = decorators[decoratorType].new(self, ...)
@@ -188,17 +171,15 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             end
         end,
 
-        -- Function for handling gamepad input
         updateFocus = function(self, jx, jy)
             if not self.isOpen then
                 if jy > luis.deadzone then
                     self.isOpen = true
-                    self.hoverIndex = self.value
+                    self.hoverIndex = self.title and 1 or self.value
                 end
             else
-				-- Ensure hoverIndex is always a valid number
                 if not self.hoverIndex or self.hoverIndex < 1 or self.hoverIndex > #self.items then
-                    self.hoverIndex = self.value
+                    self.hoverIndex = self.title and 1 or self.value
                 end
 
                 local oldHoverIndex = self.hoverIndex
@@ -209,7 +190,6 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
                     self.hoverIndex = math.max(1, oldHoverIndex - 1)
                 end
 
-                -- Adjust scroll offset if necessary
                 if self.hoverIndex > self.scrollOffset + maxVisibleItems then
                     self.scrollOffset = math.min(self.maxScrollOffset, self.hoverIndex - maxVisibleItems)
                 elseif self.hoverIndex <= self.scrollOffset then
@@ -229,7 +209,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
                         end
                     else
                         self.isOpen = true
-                        self.hoverIndex = self.value
+                        self.hoverIndex = self.title and 1 or self.value
                     end
                     return true
                 elseif button == 'b' then
