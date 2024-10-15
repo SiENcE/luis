@@ -17,6 +17,53 @@ local alternativeTheme = require("examples.complex_ui.assets.themes.alternativeT
 local resolutions = love.window.getFullscreenModes()
 table.sort(resolutions, function(a, b) return a.width*a.height < b.width*b.height end)   -- sort from smallest to largest
 
+local buttonStates = {
+    d = false,
+    s = false,
+    w = false,
+    a = false,
+    up = false,
+    down = false,
+    left = false,
+    right = false
+}
+-- Mapping buttons to keyboard keys
+local keyToButton = {
+    a = "d",
+    b = "s",
+    x = "w",
+    y = "a",
+    dpleft = "left",
+    dpright = "right",
+    dpup = "up",
+    dpdown = "down"
+}
+local function addVirtualKeyboardGamepad()
+	print('addVirtualKeyboardGamepad')
+	-- create Virtual Analog Stick to emulate Löve2D Gamepad API
+	local vjoystick = {}
+	-- first virtual Analog Stick
+	vjoystick.getName = function()
+		return "Virtual Gamepad #1"
+	end
+	vjoystick.getConnectedIndex = function()
+		return 1
+	end
+	vjoystick.isGamepadDown = function(self, button)
+		--print(button, keyToButton[button], buttonStates[keyToButton[button]])
+		return buttonStates[keyToButton[button]]
+	end
+	vjoystick.getGamepadAxis = function(self, axis)
+		return 0
+	end
+	luis.setActiveJoystick(1, vjoystick)
+end
+
+local function removeVirtualKeyboardGamepad()
+	print('removeVirtualKeyboardGamepad')
+	luis.removeJoystick(1)
+end
+
 local function addNameAttribute(modes)
     for i, mode in ipairs(modes) do
         mode.name = tostring(mode.width) .. "x" .. tostring(mode.height)
@@ -369,7 +416,11 @@ function love.load()
     })
 
     love.keyboard.setKeyRepeat(true)
+
+--[[
 	luis.initJoysticks()  -- Initialize joysticks
+
+
 	if luis.activeJoysticks then
 		for id, activeJoystick in pairs(luis.activeJoysticks) do
 			local name = activeJoystick:getName()
@@ -377,7 +428,7 @@ function love.load()
 			print(string.format("Active joystick #%d '%s'.", index, name))
 		end
 	end
-
+]]--
     -- Create layers for different menus
     luis.newLayer("main", 96, 54)
     luis.newLayer("settings", 96, 54)
@@ -525,14 +576,47 @@ function love.wheelmoved(x, y)
     luis.wheelmoved(x, y)
 end
 
-function love.keypressed(key)
+function love.keypressed(key, scancode, isrepeat)
+	-- Add virtual gamepad for keyboard support
+	if #luis.activeJoysticks == 0 or
+	   luis.getActiveJoystick(1).getName() ~= "Virtual Gamepad #1" then
+		addVirtualKeyboardGamepad()
+	end
+
     if key == "tab" then
         luis.showGrid = not luis.showGrid
         luis.showElementOutlines = not luis.showElementOutlines
         luis.showLayerNames = not luis.showLayerNames
-	else
-		luis.keypressed(key)
+    elseif luis.currentFocus and not buttonStates['down'] then
+		if key == "down" then
+			buttonStates['down'] = true
+			return
+		elseif key == "up" and not buttonStates['up'] then
+			buttonStates['up'] = true
+			return
+		elseif key == "a" then
+			love.gamepadpressed(luis.getActiveJoystick(1), key)
+			return
+		end
 	end
+	luis.keypressed(key, scancode, isrepeat)
+end
+
+function love.keyreleased(key)
+    if luis.currentFocus then
+		if key == "down" then
+			buttonStates['down'] = false
+			return
+		elseif key == "up" then
+			buttonStates['up'] = false
+			return
+		elseif key == "a" then
+			love.gamepadreleased(luis.getActiveJoystick(1), key)
+			return
+		end
+	end
+
+	luis.keyreleased(key, scancode )
 end
 
 function love.touchpressed(id, x, y, dx, dy, pressure)
@@ -544,12 +628,20 @@ function love.touchreleased(id, x, y, dx, dy, pressure)
 end
 
 function love.joystickadded(joystick)
+	print('joystickadded', joystick)
+	
+	-- REMOVE keyboard emulated gamepad
+	removeVirtualKeyboardGamepad()
+
     luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
 end
 
 function love.joystickremoved(joystick)
 	print('joystickremoved', joystick)
 	luis.removeJoystick(joystick)
+
+	-- ADD keyboard emulated gamepad
+	addVirtualKeyboardGamepad()
 end
 
 function love.gamepadpressed(joystick, button)
