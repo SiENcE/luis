@@ -158,13 +158,9 @@ function love.keypressed(key)
         luis.showGrid = not luis.showGrid
         luis.showElementOutlines = not luis.showElementOutlines
         luis.showLayerNames = not luis.showLayerNames
-    elseif key == "down" then
-        luis.moveFocus("next")
-    elseif key == "up" then
-        luis.moveFocus("previous")
-    end
-
-    luis.keypressed(key)
+    else
+		luis.keypressed(key)
+	end
 end
 
 function love.joystickadded(joystick)

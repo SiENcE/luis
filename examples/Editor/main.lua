@@ -247,10 +247,6 @@ function love.keypressed(key, scancode, isrepeat)
         luis.showGrid = not luis.showGrid
         luis.showElementOutlines = not luis.showElementOutlines
         luis.showLayerNames = not luis.showLayerNames
-    elseif key == "down" then
-        luis.moveFocus("next")
-    elseif key == "up" then
-        luis.moveFocus("previous")
     else
         luis.keypressed(key, scancode, isrepeat)
     end

@@ -234,7 +234,14 @@ function createVirtualGamepad()
     end
 end
 
+local accumulator = 0
 function love.update(dt)
+    accumulator = accumulator + dt
+    if accumulator >= 1/60 then
+        luis.flux.update(accumulator)
+        accumulator = 0
+    end
+
     luis.update(dt)
 
     -- Update ballArena
