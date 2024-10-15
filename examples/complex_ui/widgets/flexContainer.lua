@@ -221,7 +221,7 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
             end
 
             -- Draw focus indicator for the currently focused child
-            if self.internalFocusActive and self.currentChildFocusIndex > 0 then
+            if self.internalFocusActive and self.currentChildFocusIndex and self.currentChildFocusIndex > 0 then
                 local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
                 love.graphics.setColor(0.7, 0.7, 0.7, 0.5)  -- darker hild focus
                 love.graphics.rectangle("line", focusedChild.position.x - 2, focusedChild.position.y - 2, focusedChild.width + 4, focusedChild.height + 4, containerTheme.cornerRadius)
