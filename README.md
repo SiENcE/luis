@@ -125,6 +125,7 @@ Here's a simple example to create a FlexContainer with two buttons and a slider 
 main.lua
 ```lua
 local initluis = require("luis.init")
+
 -- Direct this to your widgets folder.
 local luis = initluis("examples/complex_ui/widgets")
 
@@ -178,8 +179,8 @@ function love.keypressed(key)
         luis.showLayerNames = not luis.showLayerNames
         luis.showElementOutlines = not luis.showElementOutlines
     else
-		luis.keypressed(key)
-	end
+        luis.keypressed(key)
+    end
 end
 ```
 
