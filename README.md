@@ -174,8 +174,12 @@ function love.keypressed(key)
             love.event.quit()
         end
     elseif key == "tab" then -- Debug View
-        luis.keypressed(key)
-    end
+        luis.showGrid = not luis.showGrid
+        luis.showLayerNames = not luis.showLayerNames
+        luis.showElementOutlines = not luis.showElementOutlines
+    else
+		luis.keypressed(key)
+	end
 end
 ```
 

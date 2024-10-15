@@ -177,6 +177,52 @@ luis.getJoystickAxis(id, axis)
 - `axis`: string - The axis to check (e.g., 'leftx', 'lefty')
 - Returns: number - The current value of the axis
 
+
+### Example
+
+Here's a simple example to add joystick and gamepad support:
+
+```lua
+function love.update(dt)
+    -- Check for joystick button presses for focus navigation
+    if luis.joystickJustPressed(1, 'dpdown') then
+        luis.moveFocus("next")
+    elseif luis.joystickJustPressed(1, 'dpup') then
+        luis.moveFocus("previous")
+    end
+end
+
+function love.joystickadded(joystick)
+    luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
+end
+
+function love.joystickremoved(joystick)
+	luis.removeJoystick(joystick)
+end
+
+function love.gamepadpressed(joystick, button)
+    luis.gamepadpressed(joystick, button)
+end
+
+function love.gamepadreleased(joystick, button)
+    luis.gamepadreleased(joystick, button)
+end
+```
+
+optionally initialize the joysticks and gamepads in love.load()
+
+```lua
+	luis.initJoysticks()  -- Initialize joysticks
+
+	if luis.activeJoysticks then
+		for id, activeJoystick in pairs(luis.activeJoysticks) do
+			local name = activeJoystick:getName()
+			local index = activeJoystick:getConnectedIndex()
+			print(string.format("Active joystick #%d '%s'.", index, name))
+		end
+	end
+```
+
 ## Focus Management
 
 ```lua
