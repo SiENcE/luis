@@ -20,7 +20,6 @@ luis.showElementOutlines = false
 luis.showLayerNames = false
 
 -- Variables for joystick and gamepad support
-luis.joysticks = {}
 luis.activeJoysticks = {}
 luis.deadzone = 0.2
 luis.dpadSpeed = 300
@@ -790,13 +789,13 @@ end
 
 -- initJoysticks function
 function luis.initJoysticks()
-    luis.joysticks = love.joystick.getJoysticks()
-    for i, joystick in ipairs(luis.joysticks) do
+    local joysticks = love.joystick.getJoysticks()
+    for i, joystick in ipairs(joysticks) do
         luis.activeJoysticks[i] = joystick
     end
 
     -- If there are no joysticks, reset focus-related variables
-    if #luis.joysticks == 0 then
+    if #joysticks == 0 then
         luis.setCurrentFocus(nil)
         luis.focusableElements = {}
         for layerName, _ in pairs(luis.layers) do
