@@ -270,8 +270,13 @@ function luis.createElement(layerName, widgetType, ...)
         -- If it's a pre-existing FlexContainer, use it directly
         element = (...)
 	else
-        -- Otherwise, create a new element as before
-        element = luis["new" .. widgetType](...)
+		if luis["new" .. widgetType] then
+			-- Otherwise, create a new element as before
+			element = luis["new" .. widgetType](...)
+		else
+			print("ERROR: no widgetType with the following name registered:", widgetType)
+			return false
+		end
     end
 
     -- Add default z-index
@@ -865,6 +870,7 @@ function luis.getJoystickAxis(id, axis)
 end
 
 function luis.gamepadpressed(joystick, button)
+print('luis.gamepadpressed',joystick, button)
     for id, activeJoystick in pairs(luis.activeJoysticks) do
         if joystick == activeJoystick then
 			-- First, check if the current focus is a FlexContainer
