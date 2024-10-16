@@ -169,6 +169,12 @@ Each element (widget) type has specific properties and methods.
 ## Notes
 
 - The library uses a coordinate system based on a 1920x1080 resolution, which is then scaled to fit the actual window size.
+- Ensure that the parameter order of the widgets created with "createElement" is correct.
+- LUIS is a retained mode GUI system.
 - Z-index is supported for layering elements within a single layer.
+- Use layers when you need TABs.
+- Use a flexContainer and a DropDown with title when yoou want to create a "Menu bar"
+- Combine a Slider with a Label to show the Slider value in the Label.
+- When you create a Radio Button, always create at least two and group them.
 - The library includes built-in support for gamepads/joysticks, including focus navigation.
 - State of UI elements can be saved and loaded using `getConfig()` and `setConfig()`.

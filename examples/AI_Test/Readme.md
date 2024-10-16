@@ -1,5 +1,5 @@
 "Provide the description of the 'luis-library-summary.md' for the LUIS UI Library to ChatGPT or Claude.ai. Ask it to generate a sample application, such as a game menu with settings, using this library.
-Make sure, the parameter order of the widgets created with "createElement" is correct."
+Ensure that the parameter order of the widgets created with "createElement" is correct."
 
 Note:
 - You may need to rearrange the parameters of the elements/widgets.
