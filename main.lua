@@ -1,7 +1,7 @@
 -----------------------------------------------
 -- Samples with Mouse/Gamepad/Keyboard support
 -----------------------------------------------
-require("examples.complex_ui.main")
+--require("examples.complex_ui.main")
 --require("examples.demo_game.main")
 --require("examples.demo_ui.main")
 
@@ -17,4 +17,5 @@ require("examples.complex_ui.main")
 --require("examples.test.main")
 --require("examples.AI_Test.main")
 --require("examples.jrpg_battlemenu.main")
-
+--require("examples.luis_suit_test.main")	-- comparision between LUIS and SUIT
+require("examples.nodegraph.main")
