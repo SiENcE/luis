@@ -31,7 +31,10 @@ LUIS provides a variety of built-in widgets to create rich user interfaces:
 9. **ProgressBar**: Display progress or loading status
 10. **Label**: Display a text label
 11. **Icon**: Display graphical icons
-12. **FlexContainer**: Special container for flexible layouts
+12. **ColorPicker**: Choose and Select a color
+13. **Node**: A node to build an interactive NodeGraph
+14. **Custom**: Add your own drawing function
+15. **FlexContainer**: Special container for flexible layouts
 
 ### FlexContainer
 

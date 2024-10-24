@@ -387,6 +387,15 @@ LUIS supports various widget types, including:
 
 `custom.new(drawFunc, width, height, row, col, customTheme)`
 
+- ColorPicker
+
+`colorPicker.new(width, height, row, col, onChange, customTheme)`
+
+- Node
+
+`node.new(title, width, height, row, col, func, customTheme)`
+
+
 Each element (widget) type has specific properties and methods.
 
 - `width` and `height`: Dimensions specified in `gridSize`.
@@ -402,6 +411,7 @@ Each element (widget) type has specific properties and methods.
 - `min` and `max`: Minimum and maximum values for sliders.
 - `customTheme`: Custom theme values for this widget type.
 - `drawFunc`: Custom drawing function to be implemented and executed for the widget.
+- `func`: function that processes input to output when node is connected to other nodes
 - `containerName`: Optional name for the container element.
 - `items`: List of strings to display in a dropdown element (widget).
 - `maxVisibleItems`: Maximum number of visible items in the dropdown list.
