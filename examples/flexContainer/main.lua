@@ -58,6 +58,26 @@ function love.load()
 	nav:addChild(luis.createElement("main", "Button", "Menu Item 1", 7, 2, function() print('Menu Item 1 - click') end, function() print('Menu Item 1 - release') end, 1, 1))
 	nav:addChild(luis.createElement("main", "Button", "Menu Item 2", 7, 2, function() print('Menu Item 2 - click') end, function() print('Menu Item 2 - release') end, 1, 1))
 
+    local node1 = luis.createElement("gameplay", "Node", "My Node 0", 8, 8, 10, 10)
+    node1:addOutput("Output 1")
+    node1:addOutput("Output 2")
+
+    local node2 = luis.createElement("gameplay", "Node", "My Node 1", 8, 8, 5, 19)
+    node2:addInput("Input 1")
+    node2:addOutput("Output 1")
+
+    local node3 = luis.createElement("gameplay", "Node", "My Node 2", 8, 8, 14, 19)
+    node3:addInput("Input 1")
+    node3:addInput("Input 2")
+
+    node1:connect(1, node2, 1)
+    node1:connect(2, node3, 1)
+    node2:connect(1, node3, 2)
+
+	body:addChild(node1)
+	body:addChild(node2)
+	body:addChild(node3)
+
 	-- CustomView can be used to render gameplay
     plasmaBuffer = love.image.newImageData(body.width, body.height)
     colorPalette = createColorPalette(256)
@@ -79,9 +99,9 @@ function love.load()
 		end
 		local plasmaImage = love.graphics.newImage(plasmaBuffer)
 		love.graphics.draw(plasmaImage, 0, 0)
-	end, 45, 38, 10, 43)
+	end, 10, 10, 0, 0)
 	body:addChild(customView)
-
+	
 	local sideBarBtn = luis.createElement("main", "Button", "Sidebar Item", 6, 2, function() print('Sidebar Item - click') end, function() print('Sidebar Item - release') end, 1, 1)
 	aside:addChild(sideBarBtn)
 
