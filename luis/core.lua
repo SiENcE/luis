@@ -122,6 +122,20 @@ luis.theme = {
         handleSize = 20,
         handleColor = {0.5, 0.5, 0.5, 1}
 	},
+	node = {
+		textColor = {1,1,1},
+		backgroundColor = {0.1, 0.1, 0.1},
+		borderColorHover = {0.25, 0.25, 0.25, 1},
+		borderColor = {0.25, 0.25, 0.25, 1},
+		inputPortColor = {0,1,0},
+		outputPortColor = {1,0,0},
+		connectionColor = {0,1,0},
+		connectingColor = {0.7,0.7,0.7},
+	},
+	colorpicker = {
+		cornerRadius = 4,
+		font = love.graphics.newFont(8, "normal"),
+	}
 }
 
 --==============================================
@@ -559,6 +573,11 @@ local function handleLayerInput(layerName, x, y, inputFunction, ...)
 			elseif (inputFunction == "gamepadpressed" or inputFunction == "gamepadreleased") and
 			   element[inputFunction] and element[inputFunction](element, ...) then
 				return true  -- Stop propagation if an element handled the input
+			elseif (inputFunction == "keypressed" or inputFunction == "keyreleased") and
+			   element[inputFunction] and element[inputFunction](element, ...) then
+				return true  -- Stop propagation if an element handled the input
+			else
+				--print("ERROR: unhandled Input", layerName, x, y, inputFunction)
 			end
         end
     end
@@ -586,12 +605,16 @@ function luis.keypressed(key, scancode, isrepeat)
 	end
 
 	for layerName, enabled in pairs(luis.enabledLayers) do
-		if enabled and luis.elements[layerName] then
-			if handleKeyPressed(luis.elements[layerName]) then
-				return
-			end
+--		if enabled and luis.elements[layerName] then
+--			if handleKeyPressed(luis.elements[layerName]) then
+--				return
+--			end
+--		end
+		if handleLayerInput(layerName, nil, nil, "keypressed", key, scancode, isrepeat) then
+			return true
 		end
 	end
+	return false
 end
 
 function luis.keyreleased( key, scancode )
@@ -610,12 +633,16 @@ function luis.keyreleased( key, scancode )
 	end
 
 	for layerName, enabled in pairs(luis.enabledLayers) do
-		if enabled and luis.elements[layerName] then
-			if handleKeyReleased(luis.elements[layerName]) then
-				return
-			end
+--		if enabled and luis.elements[layerName] then
+--			if handleKeyReleased(luis.elements[layerName]) then
+--				return
+--			end
+--		end
+		if handleLayerInput(layerName, nil, nil, "keyreleased", key, scancode, isrepeat) then
+			return true
 		end
 	end
+	return false
 end
 
 -- textinput pushes recursiv across all widgets
