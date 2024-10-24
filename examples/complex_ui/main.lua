@@ -17,27 +17,6 @@ local alternativeTheme = require("examples.complex_ui.assets.themes.alternativeT
 local resolutions = love.window.getFullscreenModes()
 table.sort(resolutions, function(a, b) return a.width*a.height < b.width*b.height end)   -- sort from smallest to largest
 
-local buttonStates = {
-    d = false,
-    s = false,
-    w = false,
-    a = false,
-    up = false,
-    down = false,
-    left = false,
-    right = false
-}
--- Mapping buttons to keyboard keys
-local keyToButton = {
-    a = "d",
-    b = "s",
-    x = "w",
-    y = "a",
-    dpleft = "left",
-    dpright = "right",
-    dpup = "up",
-    dpdown = "down"
-}
 local function addVirtualKeyboardGamepad()
 	print('addVirtualKeyboardGamepad')
 	-- create Virtual Analog Stick to emulate Löve2D Gamepad API
@@ -50,8 +29,6 @@ local function addVirtualKeyboardGamepad()
 		return 1
 	end
 	vjoystick.isGamepadDown = function(self, button)
-		--print(button, keyToButton[button], buttonStates[keyToButton[button]])
-		return buttonStates[keyToButton[button]]
 	end
 	vjoystick.getGamepadAxis = function(self, axis)
 		return 0
@@ -337,6 +314,13 @@ local function createGameplayMenu()
 		btn:setDecorator("GlowDecorator", {1, 0, 0, 0.5}, 5)
         luis.createElement("gameplay", "Label", diff, 10, 3, 20, 31 + i * 10)
     end
+
+	-- In your LUIS initialization code:
+	luis.createElement("gameplay", "ColorPicker", 10, 3, 30, 42,
+		function(color)
+			print("Selected color:", color[1], color[2], color[3])
+		end)
+
 	luis.createElement("gameplay", "TextInput", 20, 3, "Enter text here...", function(text) print(text) end, 40, 38)
 
     luis.createElement("gameplay", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
@@ -563,9 +547,9 @@ end
 
 function love.keypressed(key, scancode, isrepeat)
 	-- Add virtual gamepad for keyboard support
---	if #luis.activeJoysticks == 0 then
---		addVirtualKeyboardGamepad()
---	end
+	if #luis.activeJoysticks == 0 then
+		addVirtualKeyboardGamepad()
+	end
     if key == "escape" then
         if luis.currentLayer == "main" then
             love.event.quit()
@@ -584,28 +568,15 @@ function love.keypressed(key, scancode, isrepeat)
 		luis.setCurrentFocus(nil)
     elseif luis.currentFocus then
 		if key == "down" then
-			love.gamepadpressed(luis.getActiveJoystick(1), key)
+			luis.moveFocus("next")
 			return
 		elseif key == "up" then
-			love.gamepadpressed(luis.getActiveJoystick(1), key)
+			luis.moveFocus("previous")
 			return
-		elseif key == "a" then
-			love.gamepadpressed(luis.getActiveJoystick(1), key)
-			return
-		end
---[[
-    elseif luis.currentFocus and not buttonStates['down'] then
-		if key == "down" then
-			buttonStates['down'] = true
-			return
-		elseif key == "up" and not buttonStates['up'] then
-			buttonStates['up'] = true
-			return
-		elseif key == "a" then
-			love.gamepadpressed(luis.getActiveJoystick(1), key)
+		elseif key == "return" or key == "a" then
+			luis.gamepadpressed(luis.getActiveJoystick(1), key)
 			return
 		end
-]]--
 	end
 	luis.keypressed(key, scancode, isrepeat)
 end
@@ -613,29 +584,11 @@ end
 function love.keyreleased(key)
     if luis.currentFocus then
 		if luis.currentFocus then
-			if key == "down" then
-				love.gamepadreleased(luis.getActiveJoystick(1), key)
-				return
-			elseif key == "up" then
-				love.gamepadreleased(luis.getActiveJoystick(1), key)
-				return
-			elseif key == "a" then
-				love.gamepadreleased(luis.getActiveJoystick(1), key)
+			if key == "a" then
+				luis.gamepadreleased(luis.getActiveJoystick(1), key)
 				return
 			end
 		end
---[[
-		if key == "down" then
-			buttonStates['down'] = false
-			return
-		elseif key == "up" then
-			buttonStates['up'] = false
-			return
-		elseif key == "a" then
-			love.gamepadreleased(luis.getActiveJoystick(1), key)
-			return
-		end
-]]--
 	end
 
 	luis.keyreleased(key, scancode )
@@ -653,9 +606,9 @@ function love.joystickadded(joystick)
 	print('joystickadded', joystick)
 	
 	-- REMOVE keyboard emulated gamepad
---	if luis.getActiveJoystick(1) and luis.getActiveJoystick(1):getName() == "Virtual Gamepad #1" then
---		removeVirtualKeyboardGamepad()
---	end
+	if luis.getActiveJoystick(1) and luis.getActiveJoystick(1):getName() == "Virtual Gamepad #1" then
+		removeVirtualKeyboardGamepad()
+	end
 
     luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
 end
