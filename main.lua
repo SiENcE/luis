@@ -15,7 +15,7 @@ require("examples.complex_ui.main")
 --require("examples.gridLayoutTest.main")
 --require("examples.basic_ui.main")
 --require("examples.guess_game.main")
---require("examples.test.main")
---require("examples.AI_Test.main")
 --require("examples.jrpg_battlemenu.main")
---require("examples.luis_suit_test.main")	-- comparision between LUIS and SUIT
+--require("examples.AI_Test.main")
+--require("examples.test.main")
+
