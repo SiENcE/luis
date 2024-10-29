@@ -323,6 +323,43 @@ local function createGameplayMenu()
 
 	luis.createElement("gameplay", "TextInput", 20, 3, "Enter text here...", function(text) print(text) end, 40, 38)
 
+	-------------------------------------------------------
+
+	-- Create with any number of segments
+	local wheel = luis.createElement("gameplay", "DialogueWheel", 
+		{"Option1", "Option2", "Option3", "Option4"}, -- Can be any number
+		20, 20,
+		function(segmentText, segment)
+			print(segmentText, segment)
+		end,
+		25, 10
+	)
+
+	-- You can pass options with enabled state
+	local options = {
+		{ text = "Attack", enabled = true },
+		{ text = "Defend", enabled = false },
+		{ text = "Magic", enabled = true },
+		{ text = "Item", enabled = true }
+	}
+
+	-- Or toggle them later
+	wheel:setSegmentEnabled(2, false)  -- Disable second segment
+	wheel:setSegmentEnabled(2, true)   -- Enable second segment
+
+
+	-- Update with new options
+	wheel:setOptions(options)
+
+	-- Or with detailed options
+	wheel:setOptions({
+		{ text = "Yes!", enabled = true },
+		{ text = "No!", enabled = true },
+		{ text = "Maybe!", enabled = true },
+		{ text = "Test!", enabled = true },
+	})
+	-------------------------------------------------------
+
     luis.createElement("gameplay", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 end
 

@@ -134,8 +134,20 @@ luis.theme = {
 	},
 	colorpicker = {
 		cornerRadius = 4,
+		backgroundColor = {0.2, 0.2, 0.2, 0.8},
+		borderColor = {0.3, 0.3, 0.3, 1},
 		font = love.graphics.newFont(8, "normal"),
-	}
+	},
+	dialogueWheel = {
+		backgroundColor = {0.2, 0.2, 0.2, 0.8},
+        highlightColor = {0.4, 0.4, 0.8, 0.9},
+        disabledColor = {0.3, 0.3, 0.3, 0.8},
+        textColor = {1, 1, 1, 1},
+		font = love.graphics.newFont(24, "normal"),
+        disabledTextColor = {0.5, 0.5, 0.5, 1},
+        selectedColor = {0.6, 0.6, 1, 0.9},
+        focusColor = {1, 1, 1, 0.5}
+    }
 }
 
 --==============================================

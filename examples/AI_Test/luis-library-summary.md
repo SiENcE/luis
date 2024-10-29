@@ -136,6 +136,19 @@ The library supports various UI elements including:
 
 `Custom.new(drawFunc, width, height, row, col, customTheme)`
 
+- ColorPicker
+
+`colorPicker.new(width, height, row, col, onChange, customTheme)`
+
+- Node
+
+`node.new(title, width, height, row, col, func, customTheme)`
+
+- DialogueWheel
+
+`dialogueWheel.new(options, width, height, onChange, row, col, customTheme)`
+
+
 Each element (widget) type has specific properties and methods.
 
 - `width` and `height`: Dimensions specified in `gridSize`.
@@ -151,6 +164,7 @@ Each element (widget) type has specific properties and methods.
 - `min` and `max`: Minimum and maximum values for sliders.
 - `customTheme`: Custom theme values for this widget type.
 - `drawFunc`: Custom drawing function to be implemented and executed for the widget.
+- `func`: function that processes input to output when node is connected to other nodes
 - `containerName`: Optional name for the container element.
 - `items`: List of strings to display in a dropdown element (widget).
 - `maxVisibleItems`: Maximum number of visible items in the dropdown list.
@@ -158,6 +172,7 @@ Each element (widget) type has specific properties and methods.
   - With a `title`: The title is always displayed when closed, and only the items can be selected when open.
   - Without a `title`: The selected item is displayed when closed, matching the original behavior.
 - `iconPath`: Path to an image (jpg, png) for the icon element (widget).
+- `options`: List of options to choose from.
 
 ## Usage in LÖVE2D
 

@@ -295,7 +295,6 @@ luis.setConfig(config)
 
 ```lua
 luis.setGridSize(gridSize)
-luis.setGridSize(gridSize)
 ```
 - `gridSize`: number - The size of the grid for element positioning
 
@@ -395,6 +394,10 @@ LUIS supports various widget types, including:
 
 `node.new(title, width, height, row, col, func, customTheme)`
 
+- DialogueWheel
+
+`dialogueWheel.new(options, width, height, onChange, row, col, customTheme)`
+
 
 Each element (widget) type has specific properties and methods.
 
@@ -419,6 +422,7 @@ Each element (widget) type has specific properties and methods.
   - With a `title`: The title is always displayed when closed, and only the items can be selected when open.
   - Without a `title`: The selected item is displayed when closed, matching the original behavior.
 - `iconPath`: Path to an image (jpg, png) for the icon element (widget).
+- `options`: List of options to choose from.
 
 
 ### Creating Custom Widgets

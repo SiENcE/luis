@@ -33,8 +33,10 @@ LUIS provides a variety of built-in widgets to create rich user interfaces:
 11. **Icon**: Display graphical icons
 12. **ColorPicker**: Choose and Select a color
 13. **Node**: A node to build an interactive NodeGraph
-14. **Custom**: Add your own drawing function
-15. **FlexContainer**: Special container for flexible layouts
+14. **DialogueWheel**: Circular interface that presents selectable options in a radial format
+15. **Custom**: Add your own drawing function
+16. **FlexContainer**: Special container for flexible layouts
+
 
 ### FlexContainer
 
@@ -198,7 +200,8 @@ For more detailed information on the LUIS API, including layer management, input
 
 ## known Problems
 
-- DropBox: Selection with the gamepad works only a bit
+- DropBox: Selection with the gamepad-analogstick works not for all choices
+- FlexContainer - dropdown select is not possible via gamepad-analogstick
 - Sliders, Checkboxes and RadioButtons are currently not being saved.
 - Some elements require double-clicking to activate, especially in the complex_menu sample.
 - TextInput: Adding a character in the middle of the text deletes the following characters.

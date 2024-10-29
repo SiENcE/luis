@@ -64,7 +64,16 @@ end
 
 function colorPicker.draw(self)
     love.graphics.setLineWidth(1)
-    
+
+    -- Draw background and frame
+    love.graphics.setColor( self.theme.backgroundColor )
+    love.graphics.rectangle("fill", -6, -4, self.width+180, self.height+8, self.theme.cornerRadius, self.theme.cornerRadius)
+
+    -- Draw outer frame
+    love.graphics.setColor( self.theme.borderColor )
+    love.graphics.setLineWidth(2)
+    love.graphics.rectangle("line", -6, -4, self.width+180, self.height+8, self.theme.cornerRadius, self.theme.cornerRadius)
+
     -- Draw hue slider
     for i = 0, self.width do
         local hue = i / self.width
@@ -116,12 +125,14 @@ function colorPicker.draw(self)
     local h, s, l = RGBtoHSL(r, g, b)
     local hsl = string.format("HSL: %.2f, %.2f, %.2f", h, s, l)
 
+	local font_backup = love.graphics.getFont()
 	love.graphics.setFont(self.theme.font)
-    love.graphics.print(hex, self.width + 50, 10)
-    love.graphics.print(rgb, self.width + 50, 30)
-    love.graphics.print(cmyk, self.width + 50, 50)
-    love.graphics.print(hsv, self.width + 50, 70)
-    love.graphics.print(hsl, self.width + 50, 90)
+    love.graphics.print(hex, self.width + 50, 0)
+    love.graphics.print(rgb, self.width + 50, 12)
+    love.graphics.print(cmyk, self.width + 50, 24)
+    love.graphics.print(hsv, self.width + 50, 36)
+    love.graphics.print(hsl, self.width + 50, 48)
+	love.graphics.setFont(font_backup)
 end
 
 -- Helper function to convert HSV to RGB
