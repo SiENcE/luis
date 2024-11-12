@@ -118,7 +118,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
                 })
                 
                 if self.onClick then
-                    self.onClick()
+                    self.onClick(self)
                 end
                 return true
             end
@@ -137,7 +137,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
                     colorA = targetColor[4]
                 })
                 if self.onRelease then
-                    self.onRelease()
+                    self.onRelease(self)
                 end
                 return true
             end
