@@ -96,6 +96,7 @@ local alternativeTheme = {
         padding = 10,
         handleSize = 10,
         handleColor = altColors.rust,
+		cornerRadius = 1,
 	},
 }
 

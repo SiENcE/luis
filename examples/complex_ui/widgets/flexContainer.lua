@@ -31,13 +31,47 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
 		theme = containerTheme,
 		decorator = nil,
         
-        addChild = function(self, child)
-            table.insert(self.children, child)
-            if child.focusable then
-                table.insert(self.focusableChildren, child)
+        -- Check if a child already exists in the container
+        hasChild = function(self, child)
+            -- First check if child is nil
+            if not child then
+                return false
             end
-            self:arrangeChildren()
-            self:updateMinimumSize()
+            
+            -- Check direct reference match
+            for _, existingChild in ipairs(self.children) do
+                if existingChild == child then
+                    return true
+                end
+            end
+            
+            -- Optionally check based on properties if child has unique identifiers
+            -- like position, type, width, height, etc.
+            for _, existingChild in ipairs(self.children) do
+                if existingChild.type == child.type and
+                   existingChild.position.x == child.position.x and
+                   existingChild.position.y == child.position.y and
+                   existingChild.width == child.width and
+                   existingChild.height == child.height then
+                    return true
+                end
+            end
+            
+            return false
+        end,
+        
+        addChild = function(self, child)
+            -- Check if child already exists before adding
+            if not self:hasChild(child) then
+                table.insert(self.children, child)
+                if child.focusable then
+                    table.insert(self.focusableChildren, child)
+                end
+                self:arrangeChildren()
+                self:updateMinimumSize()
+                return true
+            end
+            return false
         end,
         
         removeChild = function(self, child)
@@ -177,16 +211,16 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         defaultDraw = function(self)
             -- Draw container background
             love.graphics.setColor(containerTheme.backgroundColor)
-            love.graphics.rectangle("fill", self.position.x, self.position.y, self.width, self.height)
+            love.graphics.rectangle("fill", self.position.x, self.position.y, self.width, self.height, containerTheme.cornerRadius)
             
             -- Draw container border
             love.graphics.setColor(containerTheme.borderColor)
             love.graphics.setLineWidth(containerTheme.borderWidth)
-            love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height)
+            love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height, containerTheme.cornerRadius)
             
             -- Draw resize handle
             love.graphics.setColor(containerTheme.handleColor)
-            love.graphics.rectangle("fill", self.position.x + self.width - containerTheme.handleSize, self.position.y + self.height - containerTheme.handleSize, containerTheme.handleSize, containerTheme.handleSize)
+            love.graphics.rectangle("fill", self.position.x + self.width - containerTheme.handleSize, self.position.y + self.height - containerTheme.handleSize, containerTheme.handleSize, containerTheme.handleSize, containerTheme.cornerRadius)
             
             -- Draw children
 			-- TODO: z-sort children before draw

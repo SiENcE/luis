@@ -76,7 +76,8 @@ local defaultTheme = {
         borderWidth = 2,
         padding = 10,
         handleSize = 20,
-        handleColor = {0.5, 0.5, 0.5, 1}
+        handleColor = {0.5, 0.5, 0.5, 1},
+		cornerRadius = 1,
 	},
 }
 

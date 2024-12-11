@@ -96,6 +96,7 @@ local customTheme = {
         padding = 10,
         handleSize = 20,
         handleColor = colors.yellow,
+		cornerRadius = 3,
 	},
 }
 

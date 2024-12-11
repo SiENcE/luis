@@ -75,7 +75,8 @@ local materialTheme = {
         borderWidth = 2,
         padding = 10,
         handleSize = 10,
-        handleColor = {0.15, 0.55, 0.85, 0.5}
+        handleColor = {0.15, 0.55, 0.85, 0.5},
+		cornerRadius = 1,
 	},
 }
 
