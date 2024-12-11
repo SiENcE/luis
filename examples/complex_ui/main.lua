@@ -114,7 +114,7 @@ local snake = {
     grow = false
 }
 local food = {x = 10, y = 10}
-local gridSize = 20
+local gridSize = luis.gridSize
 local moveTimer = 0
 local moveInterval = 0.1
 local function updateSnake()
