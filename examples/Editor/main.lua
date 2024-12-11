@@ -2,6 +2,7 @@ local initLuis = require("luis.init")
 local luis = initLuis("examples/complex_ui/widgets")
 luis.flux = require("examples.3rdparty.flux")
 local json = require("examples.3rdparty.json")
+local utils = require("examples.3rdparty.utils")
 
 local alternativeTheme = require("examples.complex_ui.assets.themes.alternativeTheme")
 alternativeTheme.text.font = love.graphics.newFont("examples/complex_ui/assets/fonts/Monocraft.ttf", 18)
@@ -16,7 +17,7 @@ local editor = {
     resizingWidget = false,
     movingWidget = false,
     widgets = {},
-    widgetTypes = {"Button", "Label", "Icon", "Slider", "Switch", "CheckBox", "RadioButton", "DropDown", "TextInput", "TextInputMultiLine", "ProgressBar"},
+    widgetTypes = {"FlexContainer","Button", "Label", "Icon", "Slider", "Switch", "CheckBox", "RadioButton", "DropDown", "TextInput", "TextInputMultiLine", "ProgressBar"},
     gridSize = 20,
     startX = 0,
     startY = 0
@@ -50,7 +51,9 @@ local function saveLayout(filename)
         elseif widget.type == "DropDown" then
             widgetData.properties.items = widget.items
             widgetData.properties.selectedIndex = widget.selectedIndex
-        end
+		elseif widget.type == "FlexContainer" then
+			widgetData.properties.children = widget.children
+		end
         
         table.insert(layout.widgets, widgetData)
     end
@@ -92,8 +95,11 @@ local function loadLayout(filename)
         local x, y = widgetData.x, widgetData.y
         local width, height = widgetData.width, widgetData.height
         local props = widgetData.properties
-        
-        if widgetData.type == "Button" then
+		
+        if widgetData.type == "FlexContainer" then
+			-- (width, height, row, col, customTheme, containerName)
+            widget = luis.createElement(editor.currentLayer, "FlexContainer", width /luis.gridSize, height /luis.gridSize, x /luis.gridSize+1, y /luis.gridSize+1, nil, "FlexContainer" + love.math.random(1,1000) )
+        elseif widgetData.type == "Button" then
             widget = luis.createElement(editor.currentLayer, "Button", props.text or "Button", 
                 width /luis.gridSize, height /luis.gridSize, function() end, function() end, x /luis.gridSize+1, y /luis.gridSize+1)
         elseif widgetData.type == "Label" then
@@ -271,7 +277,10 @@ function love.update(dt)
             local widgetHeight = editor.gridSize * 2
             
             local widget
-            if editor.selectedWidget == "Button" then
+			if editor.selectedWidget == "FlexContainer" then
+				local mainContainer = luis.newFlexContainer(widgetWidth /luis.gridSize, widgetHeight /luis.gridSize, gridX /luis.gridSize+1, gridY /luis.gridSize+1, nil, "FlexContainer")
+				widget = luis.createElement(editor.currentLayer, "FlexContainer", mainContainer)
+            elseif editor.selectedWidget == "Button" then
                 widget = luis.createElement(editor.currentLayer, "Button", editor.selectedWidget, widgetWidth / luis.gridSize, widgetHeight / luis.gridSize, function() end, function() end, gridX / luis.gridSize + 1, gridY / luis.gridSize + 1)
             elseif editor.selectedWidget == "Label" then
                 widget = luis.createElement(editor.currentLayer, "Label", editor.selectedWidget, widgetWidth / luis.gridSize, widgetHeight / luis.gridSize, gridX / luis.gridSize + 1, gridY / luis.gridSize + 1, "left")
@@ -319,7 +328,18 @@ function love.update(dt)
             -- Update widget position, accounting for initial click offset
             editor.movingWidget.position.x = gridX
             editor.movingWidget.position.y = gridY
-            
+
+			for i, widget in ipairs(editor.widgets) do
+				if editor.movingWidget then
+					local x,y = love.mouse.getPosition()
+					if widget and widget.type == "FlexContainer" and widget:isInContainer(x,y) then
+						if not widget:hasChild(editor.movingWidget) then
+							widget:addChild(editor.movingWidget)
+						end
+					end
+				end
+			end
+		
         elseif editor.resizingWidget then
             -- Calculate new dimensions based on mouse position
             local gridX = math.floor(mx / luis.gridSize) * luis.gridSize
@@ -389,6 +409,9 @@ function love.mousepressed(x, y, button, istouch, presses)
 
     if not luis.mousepressed(gridX, gridY, button, istouch, presses) and editor.mode == "edit" then
         for _, widget in ipairs(editor.widgets) do
+			local isOver = utils.pointInRect(x, y, widget.position.x, widget.position.y, widget.width, widget.height)
+			if widget.type == "FlexContainer" and isOver then return end
+
             -- Calculate widget bounds in screen space
             local widgetX = widget.position.x
             local widgetY = widget.position.y
