@@ -28,6 +28,9 @@ luis.currentFocus = nil
 luis.focusableElements = {}
 luis.joystickButtonStates = {}
 
+-- mouse
+luis.clickCooldown = 0
+
 --[[
 love.graphics.newFont(fontsize, hinting mode)
 
@@ -430,6 +433,10 @@ function luis.updateScale()
 end
 
 function luis.update(dt)
+    if luis.clickCooldown > 0 then
+        luis.clickCooldown = math.max(0, luis.clickCooldown - dt)
+    end
+
     local mx, my = love.mouse.getPosition()
     mx, my = mx / luis.scale, my / luis.scale
 
@@ -685,10 +692,24 @@ end
 ------------------------------------------------
 -- Mouse input handling
 ------------------------------------------------
+--[[
 function luis.mousepressed(x, y, button, istouch, presses)
     x, y = x / luis.scale, y / luis.scale
     for layerName, _ in pairs(luis.enabledLayers) do
         if handleLayerInput(layerName, x, y, "click", button, istouch, presses) then
+            return true
+        end
+    end
+    return false
+end
+]]--
+function luis.mousepressed(x, y, button, istouch, presses)
+    x, y = x / luis.scale, y / luis.scale
+    if luis.clickCooldown > 0 then return false end
+    
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, x, y, "click", button, istouch, presses) then
+            luis.clickCooldown = 0.2  -- 200ms cooldown
             return true
         end
     end
