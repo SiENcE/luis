@@ -1,5 +1,6 @@
 local Vector2D = require("examples.3rdparty.vector")
 local custom = require("examples.complex_ui.widgets.custom")
+local utils = require("examples.3rdparty.utils")
 
 local colorPicker = {}
 
@@ -9,7 +10,7 @@ function colorPicker.setluis(luisObj)
 end
 
 function colorPicker.new(width, height, row, col, onChange, customTheme)
-	local colorPickerTheme = customTheme or luis.theme.colorpicker
+    local colorPickerTheme = customTheme or luis.theme.colorpicker
     local colorp = custom.new(colorPicker.draw, width, height, row, col, colorPickerTheme)
 
     colorp.type = "ColorPicker"
@@ -18,7 +19,31 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
     colorp.value = 1
     colorp.onChange = onChange or function() end
     colorp.focusable = true
-	theme = colorPickerTheme
+    colorp.theme = colorPickerTheme
+    colorp.totalWidth = width * luis.gridSize + 180  -- Include space for color values display
+    colorp.totalHeight = height * luis.gridSize + 8   -- Include padding
+
+    function colorp:isInBounds(x, y)
+        return utils.pointInRect(x, y, 
+            self.position.x - 6,  -- Account for padding
+            self.position.y - 4, 
+            self.totalWidth,
+            self.totalHeight)
+    end
+
+    function colorp:getSliderRegion(y)
+        local relY = y - self.position.y
+        local sliderHeight = self.height / 3
+
+        if relY < sliderHeight then
+            return "hue"
+        elseif relY < sliderHeight * 2 then
+            return "saturation"
+        elseif relY < sliderHeight * 3 then
+            return "value"
+        end
+        return nil
+    end
 
     function colorp:updateColor()
         local r, g, b = HSVtoRGB(self.hue, self.saturation, self.value)
@@ -27,34 +52,54 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
     end
 
     function colorp:click(x, y, button)
+        if not self:isInBounds(x, y) then return false end
+        
         if button == 1 then
             local relX = x - self.position.x
-            local relY = y - self.position.y
+            local region = self:getSliderRegion(y)
             
-            -- Limit relX and relY to colorp bounds
-            relX = math.max(0, math.min(relX, self.width))
-            relY = math.max(0, math.min(relY, self.height))
-            
-            -- Hue slider
-            if relY < self.height * 0.33 then
-                self.hue = relX / self.width
-            -- Saturation slider
-            elseif relY < self.height * 0.66 then
-                self.saturation = relX / self.width
-            -- Value slider
-            else
-                self.value = relX / self.width
+            if region then
+                -- Limit relX to the slider width
+                relX = math.max(0, math.min(relX, self.width))
+                
+                if region == "hue" then
+                    self.hue = relX / self.width
+                elseif region == "saturation" then
+                    self.saturation = relX / self.width
+                elseif region == "value" then
+                    self.value = relX / self.width
+                end
+                
+                self:updateColor()
+                return true
             end
-            
-            self:updateColor()
         end
+        return false
     end
 
     function colorp:wheelmoved(x, y)
-        if self.focused then
-            self.hue = (self.hue + y * 0.01) % 1
-            self:updateColor()
+        local mx, my = love.mouse.getPosition()
+        mx, my = mx / luis.scale, my / luis.scale
+        
+        if not self:isInBounds(mx, my) then
+            return false
         end
+
+        local region = self:getSliderRegion(my)
+        if not region then return false end
+
+        -- Adjust step size for finer control
+        local step = 0.01
+        if region == "hue" then
+            self.hue = (self.hue + y * step) % 1
+        elseif region == "saturation" then
+            self.saturation = math.max(0, math.min(1, self.saturation + y * step))
+        elseif region == "value" then
+            self.value = math.max(0, math.min(1, self.value + y * step))
+        end
+
+        self:updateColor()
+        return true
     end
 
     colorp:updateColor()
