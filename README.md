@@ -204,7 +204,6 @@ For more detailed information on the LUIS API, including layer management, input
 - FlexContainer - dropdown select is not possible via gamepad-analogstick
 - Sliders, Checkboxes and RadioButtons are currently not being saved.
 - Some elements require double-clicking to activate, especially in the complex_menu sample.
-- TextInput: Adding a character in the middle of the text deletes the following characters.
 
 ## License
 

@@ -110,7 +110,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
             end
             return false
         end,
-
+--[[
         textinput = function(self, text)
 			--print("textinput.textinput = function", text )
             if self.active then
@@ -121,6 +121,18 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
                 end
             end
         end,
+]]--
+		textinput = function(self, text)
+			if self.active then
+				local before = utf8_sub(self.text, 1, self.cursorPos)
+				local after = utf8_sub(self.text, self.cursorPos + 1)
+				local newText = before .. text .. after
+				if luis.theme.text.font:getWidth(newText) <= self.width - textInputTheme.padding * 2 then
+					self.text = newText
+					self.cursorPos = self.cursorPos + utf8.len(text)
+				end
+			end
+		end,
 
         keypressed = function(self, key, scancode, isrepeat )
 			--print("textinput.keypressed = function", key, scancode, isrepeat )
