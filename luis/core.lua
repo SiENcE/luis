@@ -995,31 +995,17 @@ function luis.getConfig()
     for layerName, elements in pairs(luis.elements) do
         config[layerName] = {}
         for i, element in ipairs(elements) do
-            if element.type == "Switch" or
-               element.type == "CheckBox" then
+            if element.type == "Slider" or
+               element.type == "Switch" or
+               element.type == "CheckBox" or
+               element.type == "RadioButton" or
+               element.type == "DropDown" or
+               element.type == "TextInput" or
+               element.type == "TextInputMultiLine" or
+               element.type == "ProgressBar" then  -- Added ProgressBar
                 config[layerName][i] = {
                     type = element.type,
-                    value = tostring(element.value or false)
-                }
-			elseif element.type == "Slider" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value)
-                }
-			elseif element.type == "RadioButton" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value or false)
-                }
-			elseif element.type == "DropDown" then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.value)
-                }
-			elseif (element.type == "TextInput" or element.type == "TextInputMultiLine") then
-                config[layerName][i] = {
-                    type = element.type,
-                    value = tostring(element.text)
+                    value = tostring(element.value or element.text or false)
                 }
             end
         end
@@ -1027,6 +1013,7 @@ function luis.getConfig()
 
     -- Convert elementStates to a new table with string keys
     local config = deepCopyWithStringKeys(config)
+	return config
 end
 
 local function toboolean(str)
@@ -1057,6 +1044,8 @@ function luis.setConfig(config)
 							end
 						end
 					elseif element.type == "DropDown" then
+						element:setValue(tonumber(elementConfig.value))
+					elseif element.type == "ProgressBar" then
 						element:setValue(tonumber(elementConfig.value))
 					elseif (element.type == "TextInput" or element.type == "TextInputMultiLine") then
 						element:setText(tostring(elementConfig.value or elementConfig.text))
