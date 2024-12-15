@@ -24,9 +24,6 @@ function Button.new(x, y, width, height, text, onClick)
     function self:update(mx, my, dt)
         local wasHovered = self.hovered
         self.hovered = utils.pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
-        if self.hovered ~= wasHovered and self.focused then
-            Button.luis.flux.to(self, 0.2, { elevation = self.hovered and Button.luis.theme.button.elevationHover or Button.luis.theme.button.elevation })
-        end
     end
 
     function self:draw()
