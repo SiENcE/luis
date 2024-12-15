@@ -504,6 +504,7 @@ function luis.drawElementOutline(element)
 end
 
 -- draw, z-ordering, debug-view
+--[[
 function luis.draw()
     love.graphics.push()
     love.graphics.scale(luis.scale, luis.scale)
@@ -563,6 +564,80 @@ function luis.draw()
 			love.graphics.print(text, 10, 50+i*luis.theme.system.font:getHeight())
 		end
 		love.graphics.setFont(font_backup)
+    end
+
+    love.graphics.pop()
+end
+]]--
+function luis.draw()
+    love.graphics.push()
+    love.graphics.scale(luis.scale, luis.scale)
+    love.graphics.setBackgroundColor(luis.theme.background.color)
+
+    -- Create a flat list of all elements from enabled layers
+    local allElements = {}
+    for layerName, enabled in pairs(luis.enabledLayers) do
+        if enabled and luis.elements[layerName] then
+            for _, element in ipairs(luis.elements[layerName]) do
+                -- Include layer information with the element for debugging
+                table.insert(allElements, {
+                    element = element,
+                    layer = layerName
+                })
+            end
+        end
+    end
+
+    -- Sort all elements by z-index, regardless of layer
+    table.sort(allElements, function(a, b)
+        local aIndex = a.element.zIndex or 1
+        local bIndex = b.element.zIndex or 1
+        return aIndex < bIndex
+    end)
+
+    -- Draw all elements in z-index order
+    for _, item in ipairs(allElements) do
+        item.element:draw()
+        
+        -- Draw element outlines if enabled (DebugView)
+        if luis.showElementOutlines then
+            luis.drawElementOutline(item.element)
+        end
+    end
+
+    -- Draw grid if enabled (DebugView)
+    if luis.showGrid then
+        love.graphics.setColor(luis.theme.grid.color)
+        for i = 0, luis.baseWidth, luis.gridSize do
+            love.graphics.line(i, 0, i, luis.baseHeight)
+        end
+        for j = 0, luis.baseHeight, luis.gridSize do
+            love.graphics.line(0, j, luis.baseWidth, j)
+        end
+    end
+
+    -- Draw layer names (DebugView)
+    if luis.showLayerNames then
+        local font_backup = love.graphics.getFont()
+        love.graphics.setColor(0.5, 0.5, 0.5)
+        love.graphics.setFont(luis.theme.system.font)
+        local counter = 0
+        for layerName, enabled in pairs(luis.enabledLayers) do
+            if enabled then
+                local layerWidth = luis.theme.system.font:getWidth(layerName)
+                love.graphics.print(layerName, 10+layerWidth*counter, 10+20*counter)
+                counter = counter + 1
+            end
+        end
+
+        for i, element in ipairs(luis.focusableElements) do
+            local text = (element.text or element.type) .. " (" .. i .. ")"
+            if element == luis.currentFocus then
+                text = text .. " <-- current"
+            end
+            love.graphics.print(text, 10, 50+i*luis.theme.system.font:getHeight())
+        end
+        love.graphics.setFont(font_backup)
     end
 
     love.graphics.pop()
