@@ -37,73 +37,6 @@ LUIS provides a variety of built-in widgets to create rich user interfaces:
 15. **Custom**: Add your own drawing function
 16. **FlexContainer**: Special container for flexible layouts
 
-
-### FlexContainer
-
-The FlexContainer is a powerful widget that allows for dynamic and responsive layouts:
-
-- **Drag and Resize**: Containers can be moved and resized at runtime
-- **Auto-arranging**: Child elements are automatically arranged within the container
-- **Nested Containers**: Create complex layouts by nesting FlexContainers
-- **Padding Control**: Adjust spacing between child elements
-
-Example usage:
-
-```lua
-local container = LUIS.newFlexContainer(30, 30, 10, 10)
-local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
-local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
-
-container:addChild(button1)
-container:addChild(button2)
-
-LUIS.createElement(LUIS.currentLayer, "FlexContainer", container)
-```
-
-## Custom Widgets
-
-LUIS supports the creation of custom widgets to extend its functionality:
-
-1. Create a new Lua file in the `luis/widgets` directory
-2. Define your widget's properties and methods
-3. Implement the required functions: `new()`, `update()`, `draw()`, and `click()`
-4. Use the `setluis()` function to access the core LUIS library
-
-Example of a custom widget:
-
-```lua
-local customWidget = {}
-
-local luis
-function customWidget.setluis(luisObj)
-    luis = luisObj
-end
-
-function customWidget.new(width, height, row, col)
-    local widget = {
-        type = "CustomWidget",
-        width = width * luis.gridSize,
-        height = height * luis.gridSize,
-        position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
-        
-        update = function(self, mx, my)
-            -- Update logic here
-        end,
-        
-        draw = function(self)
-            -- Drawing logic here
-        end,
-        
-        click = function(self, x, y)
-            -- Click handling logic here
-        end
-    }
-    return widget
-end
-
-return customWidget
-```
-
 ## Getting Started
 
 1. **Install Löve2D**: You can download Löve2D from [here](https://love2d.org/).
@@ -187,6 +120,72 @@ function love.keypressed(key)
         luis.keypressed(key)
     end
 end
+```
+
+### FlexContainer
+
+The FlexContainer is a powerful widget that allows for dynamic and responsive layouts:
+
+- **Drag and Resize**: Containers can be moved and resized at runtime
+- **Auto-arranging**: Child elements are automatically arranged within the container
+- **Nested Containers**: Create complex layouts by nesting FlexContainers
+- **Padding Control**: Adjust spacing between child elements
+
+Example usage:
+
+```lua
+local container = LUIS.newFlexContainer(30, 30, 10, 10)
+local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
+local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
+
+container:addChild(button1)
+container:addChild(button2)
+
+LUIS.createElement(LUIS.currentLayer, "FlexContainer", container)
+```
+
+## Custom Widgets
+
+LUIS supports the creation of custom widgets to extend its functionality:
+
+1. Create a new Lua file in the `luis/widgets` directory
+2. Define your widget's properties and methods
+3. Implement the required functions: `new()`, `update()`, `draw()`, and `click()`
+4. Use the `setluis()` function to access the core LUIS library
+
+Example of a custom widget:
+
+```lua
+local customWidget = {}
+
+local luis
+function customWidget.setluis(luisObj)
+    luis = luisObj
+end
+
+function customWidget.new(width, height, row, col)
+    local widget = {
+        type = "CustomWidget",
+        width = width * luis.gridSize,
+        height = height * luis.gridSize,
+        position = luis.Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
+        
+        update = function(self, mx, my)
+            -- Update logic here
+        end,
+        
+        draw = function(self)
+            -- Drawing logic here
+        end,
+        
+        click = function(self, x, y)
+            -- Click handling logic here
+        end
+    }
+    return widget
+end
+
+return customWidget
 ```
 
 ## Documentation
