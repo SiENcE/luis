@@ -101,4 +101,75 @@ end
 
 decorators.Slice9Decorator = Slice9Decorator
 
+-- Glassmorphism Decorator
+local GlassmorphismDecorator = setmetatable({}, {__index = BaseDecorator})
+GlassmorphismDecorator.__index = GlassmorphismDecorator
+
+function GlassmorphismDecorator.new(widget, options)
+    local self = setmetatable(BaseDecorator.new(widget), GlassmorphismDecorator)
+    
+    -- Default options
+    self.options = {
+        opacity = options.opacity or 0.5,
+        blur = options.blur or 10,
+        borderRadius = options.borderRadius or 10,
+        borderWidth = options.borderWidth or 1,
+        borderColor = options.borderColor or {1, 1, 1, 0.2},
+        backgroundColor = options.backgroundColor or {1, 1, 1, 0.1},
+        shadowColor = options.shadowColor or {0, 0, 0, 0.2},
+        shadowBlur = options.shadowBlur or 15,
+        shadowOffsetX = options.shadowOffsetX or 5,
+        shadowOffsetY = options.shadowOffsetY or 5,
+        highlightColor = options.highlightColor or {1, 1, 1, 0.1},
+        highlightWidth = options.highlightWidth or 1
+    }
+    
+    return self
+end
+
+function GlassmorphismDecorator:draw()
+    local x, y = self.widget.position.x, self.widget.position.y
+    local w, h = self.widget.width, self.widget.height
+    local opt = self.options
+    
+    -- Draw shadow
+    love.graphics.setColor(opt.shadowColor)
+    for i = 1, opt.shadowBlur do
+        local alpha = (opt.shadowBlur - i) / opt.shadowBlur * opt.shadowColor[4]
+        love.graphics.setColor(opt.shadowColor[1], opt.shadowColor[2], opt.shadowColor[3], alpha)
+        love.graphics.rectangle(
+            "fill",
+            x + opt.shadowOffsetX - i/2,
+            y + opt.shadowOffsetY - i/2,
+            w + i,
+            h + i,
+            opt.borderRadius
+        )
+    end
+    
+    -- Draw main background with glass effect
+    love.graphics.setColor(opt.backgroundColor)
+    love.graphics.rectangle("fill", x, y, w, h, opt.borderRadius)
+    
+    -- Draw border
+    love.graphics.setColor(opt.borderColor)
+    love.graphics.setLineWidth(opt.borderWidth)
+    love.graphics.rectangle("line", x, y, w, h, opt.borderRadius)
+    
+    -- Draw highlight edge (top and left)
+    love.graphics.setColor(opt.highlightColor)
+    love.graphics.setLineWidth(opt.highlightWidth)
+    love.graphics.line(
+        x, y + h - opt.borderRadius,  -- Start from bottom-left
+        x, y + opt.borderRadius,      -- Go up to top-left
+        x + opt.borderRadius, y       -- Turn right to top
+    )
+    
+    -- Call the widget's default draw method
+    BaseDecorator.draw(self)
+end
+
+-- Add to the decorators table
+decorators.GlassmorphismDecorator = GlassmorphismDecorator
+
 return decorators
