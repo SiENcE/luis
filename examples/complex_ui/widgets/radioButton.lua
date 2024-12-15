@@ -40,12 +40,12 @@ function radioButton.new(group, value, size, onChange, row, col, customTheme)
         
         defaultDraw = function(self)
             -- Draw the radio button circle
-            love.graphics.setColor(radioTheme.circleColor)
+            love.graphics.setColor(self.theme.circleColor)
             love.graphics.circle("line", self.position.x + self.width/2, self.position.y + self.height/2, self.width/2)
             
             -- If value, draw the inner dot
             if self.value then
-                love.graphics.setColor(radioTheme.dotColor)
+                love.graphics.setColor(self.theme.dotColor)
                 love.graphics.circle("fill", self.position.x + self.width/2, self.position.y + self.height/2, self.width/4)
             end
             

@@ -9,7 +9,7 @@ function label.setluis(luisObj)
 end
 
 local function applyThemeToText(customTheme)
-    local textTheme = customTheme.theme.text or luis.theme.text
+    local textTheme = customTheme or luis.theme.text
     love.graphics.setColor(textTheme.color)
     love.graphics.setFont(textTheme.font)
     return textTheme
@@ -28,7 +28,7 @@ function label.new(text, width, height, row, col, align, customTheme)
 		decorator = nil,
         
         defaultDraw = function(self)
-            local textTheme = applyThemeToText(customTheme or luis)
+            local textTheme = applyThemeToText(self.theme or luis)
             love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - textTheme.font:getHeight()) / 2, self.width, align or textTheme.align)
         end,
 
