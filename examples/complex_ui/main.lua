@@ -301,18 +301,38 @@ end
 
 local function createGameplayMenu()
     luis.createElement("gameplay", "Label", "Gameplay Settings", 96, 4, 4, 41)
-    
-    luis.createElement("gameplay", "Label", "Difficulty", 10, 3, 20, 28)
+
+	-- custom widget Theme
+    local radiobuttonTheme = {
+        circleColor = {0,0,0,0},
+        dotColor = {0,128,128},
+    }
+    local textLabel = {
+        color = {128,128,0},
+        font = love.graphics.newFont("examples/complex_ui/assets/fonts/DungeonFont.ttf", 32),
+        align = "left",
+    }    
+    luis.createElement("gameplay", "Label", "Difficulty", 10, 3, 20, 28, nil, textLabel)
     local difficulties = {"Easy", "Normal", "Hard"}
+	-- create  radio Buttons
     for i, diff in ipairs(difficulties) do
         local btn = luis.createElement("gameplay", "RadioButton", "difficulty", gameSettings.difficulty == diff, 3, function(value)
             if value then
                 gameSettings.difficulty = diff
                 -- Update actual difficulty here
             end
-        end, 20, 27 + i * 10)
-		btn:setDecorator("GlowDecorator", {1, 0, 0, 0.5}, 5)
-        luis.createElement("gameplay", "Label", diff, 10, 3, 20, 31 + i * 10)
+        end, 20, 27 + i * 10, radiobuttonTheme)
+		-- optional Decorator applied
+		btn:setDecorator("GlassmorphismDecorator", {
+			opacity = 0.6,
+			blur = 15,
+			borderRadius = 12,
+			backgroundColor = {1, 1, 1, 0.15},
+			shadowOffsetX = 8,
+			shadowOffsetY = 8
+		})
+		-- create a Label for each Button
+        luis.createElement("gameplay", "Label", diff, 10, 3, 20, 31 + i * 10, nil, textLabel)
     end
 
 	-- In your LUIS initialization code:

@@ -2,20 +2,20 @@
 -- Samples with Mouse/Gamepad/Keyboard support
 -----------------------------------------------
 require("examples.complex_ui.main")
---require("examples.demo_game.main")
---require("examples.demo_ui.main")
-
------------------------------------------------
--- other Samples
------------------------------------------------
 --require("examples.virtual_gamepad.main")
 --require("examples.flexContainer.main")
 --require("examples.nodegraph.main")
 --require("examples.editor.main")
+
+-----------------------------------------------
+-- other Samples
+-----------------------------------------------
+--require("examples.demo_ui.main")
+--require("examples.basic_ui.main")
 --require("examples.gridLayoutTest.main")
 --require("examples.difficulty_curve.main")
---require("examples.basic_ui.main")
---require("examples.AI_Test.main")
+--require("examples.demo_game.main")
 --require("examples.guess_game.main")
+--require("examples.AI_Test.main")
 --require("examples.jrpg_battlemenu.main")
 --require("examples.test.main")
