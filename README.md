@@ -28,7 +28,7 @@
  </a>
 </p>
 <p align="center">
- <em>Flexible Layout using FlexContainer</em>
+ <em>Flexible Layout using FlexContainer with a couple of widgets.</em>
 </p>
 
 <p align="center">
@@ -37,8 +37,36 @@
  </a>
 </p>
 <p align="center">
- <em>You see different layers a custom widget in a Flexcontainer, theming and all possible widgets.</em>
+ <em>You can see different layers, a custom widget within a Flex container, theming, and a variety of available widgets.</em>
 </p>
+
+<p align="center">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.49.44.gif">
+  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.49.44.gif">
+ </a>
+</p>
+<p align="center">
+ <em>Virtual gamepad integration made with LUIS.</em>
+</p>
+
+<p align="center">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
+  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
+ </a>
+</p>
+<p align="center">
+ <em>A LUIS UI-Editor made with LUIS.</em>
+</p>
+
+<p align="center">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.53.47.gif">
+  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.53.47.gif">
+ </a>
+</p>
+<p align="center">
+ <em>1-bit full adder node graph create with LUIS Node Widgets.</em>
+</p>
+
 
 ## Widget Types
 
