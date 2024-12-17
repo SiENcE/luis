@@ -1,8 +1,8 @@
 # LUIS: Love UI System
 
 <p align="center">
- <a href="https://github.com/SiENcE/luis/blob/main/logo_small.png">
-  <img border="0" src="https://github.com/SiENcE/luis/blob/main/logo_small.png">
+ <a href="https://github.com/SiENcE/luis/blob/main/examples/complex_ui/assets/images/logo_small.png">
+  <img border="0" src="https://github.com/SiENcE/luis/blob/main/examples/complex_ui/assets/images/logo_small.png">
  </a>
 </p>
 
