@@ -23,8 +23,8 @@
 | Debug Mode | Toggle grid and element outlines for easy development |
 
 <p align="center">
- <a href="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.png">
-  <img border="0" style="width: 600px; height: 479px; src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.png">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
+  <img border="0" style="width: 600px; height: 479px; src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
  </a>
 </p>
 
