@@ -240,6 +240,31 @@ end
 return customWidget
 ```
 
+## Widget Decorators
+
+LUIS supports the Decorator pattern, allowing you to dynamically add visual effects and behaviors to widgets. Each widget includes built-in support for decorators that can modify their appearance without changing their core functionality.
+
+Example usage:
+
+```lua
+-- Create a button with a glass morphism
+local button = LUIS.newButton("Glassmorphism Button", 15, 3, onClick, onRelease, 5, 2)
+button:setDecorator("GlassmorphismDecorator", {1, 0.5, 0, 0.5}, 15)  -- Glass morphism with size 15
+
+-- Create a button with a glow effect
+local button = LUIS.newButton("Glowing Button", 15, 3, onClick, onRelease, 5, 2)
+button:setDecorator("GlowDecorator", {1, 0.5, 0, 0.5}, 15)  -- Orange glow with size 15
+
+-- Create a button with a 9-slice border
+local button2 = LUIS.newButton("Bordered Button", 15, 3, onClick, onRelease, 5, 2)
+button2:setDecorator("Slice9Decorator", borderImage, 10, 10, 10, 10)  -- 10px borders
+```
+
+Available decorators:
+- **GlassmorphismDecorator**: Implements a modern glassmorphism effect with customizable transparency, blur, borders, and shadows.
+- **GlowDecorator**: Adds a customizable glow effect around the widget
+- **Slice9Decorator**: Implements 9-slice scaling for bordered widgets
+
 ## Documentation
 
 For more detailed information on the LUIS API, including layer management, input handling, theming, and state management, please refer to the [LUIS core documentation](/luis/luis-api-documentation.md).
@@ -247,14 +272,14 @@ For more detailed information on the LUIS API, including layer management, input
 ## Dependencies
 
 - Löve2D: The game framework used for rendering and managing game objects.
-- The core library has zero dependencies!
+- The **core** library has **zero dependencies**, so you write your own widgets to have a lightweight ui system (see [basic_ui_sample](/examples/basic_ui/) ).
 
 ## known Problems
 
 - DropBox: Selection with the gamepad-analogstick works not for all choices
 - FlexContainer - dropdown select is not possible via gamepad-analogstick
-- Sliders, Checkboxes and RadioButtons are currently not being saved.
-- Some elements require double-clicking to activate, especially in the complex_menu sample.
+- Sliders, Checkboxes and RadioButtons are currently not being saved
+- In the complex_menu sample, some elements require double-clicking to activate
 
 ## License
 

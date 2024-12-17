@@ -21,6 +21,7 @@ LUIS (Love User Interface System) is a flexible GUI framework for LÖVE (Love2D)
 ## Initialization
 
 ```lua
+-- Default initialization
 local initLuis = require("luis.init")
 
 local luis = initLuis()
@@ -29,13 +30,14 @@ local luis = initLuis()
 or
 
 ```lua
--- Direct this to your widgets folder.
+-- Default initialization (looks for "widgets" directory)
 local luis = require("luis.init")("widgets")
 ```
 
 or
 
 ```lua
+-- Two-step initialization
 local initLuis = require("luis.init")
 
 -- Direct this to your widgets folder.
@@ -140,6 +142,8 @@ These functions should be called from the corresponding LÖVE callbacks to handl
 
 ### Joystick and Gamepad Support
 
+LUIS includes built-in gamepad support with focus-based navigation:
+
 ```lua
 luis.initJoysticks()
 luis.removeJoystick(joystick)
@@ -183,17 +187,21 @@ luis.getJoystickAxis(id, axis)
 Here's a simple example to add joystick and gamepad support:
 
 ```lua
-function love.update(dt)
-    -- Check for joystick button presses for focus navigation
-    if luis.joystickJustPressed(1, 'dpdown') then
-        luis.moveFocus("next")
-    elseif luis.joystickJustPressed(1, 'dpup') then
-        luis.moveFocus("previous")
+function love.load()
+    -- Initialize gamepad support
+    luis.initJoysticks()
+    
+    -- Optional: Check connected gamepads
+    if luis.activeJoysticks then
+        for id, joystick in pairs(luis.activeJoysticks) do
+            print(string.format("Gamepad #%d: %s", id, joystick:getName()))
+        end
     end
 end
 
+-- Required callbacks for gamepad support
 function love.joystickadded(joystick)
-    luis.initJoysticks()  -- Reinitialize joysticks when a new one is added
+    luis.initJoysticks()
 end
 
 function love.joystickremoved(joystick)
@@ -207,21 +215,21 @@ end
 function love.gamepadreleased(joystick, button)
     luis.gamepadreleased(joystick, button)
 end
-```
 
-optionally initialize the joysticks and gamepads in love.load()
-
-```lua
-    luis.initJoysticks()  -- Initialize joysticks
-
-    if luis.activeJoysticks then
-        for id, activeJoystick in pairs(luis.activeJoysticks) do
-            local name = activeJoystick:getName()
-            local index = activeJoystick:getConnectedIndex()
-            print(string.format("Active joystick #%d '%s'.", index, name))
-        end
+-- Handle navigation in your update function
+function love.update(dt)
+    -- Example: D-pad navigation between elements
+    if luis.joystickJustPressed(1, 'dpdown') then
+        luis.moveFocus("next")
+    elseif luis.joystickJustPressed(1, 'dpup') then
+        luis.moveFocus("previous")
     end
+end
 ```
+
+Focusable elements (like buttons, checkboxes, etc.) can be navigated using the D-pad, and activated using the 'A' button by default. The currently focused element will show a visual indicator.
+
+**Note**: When using FlexContainers with gamepad support, use `luis.exitFlexContainerFocus()` to leave container focus and move to the next element.
 
 ## Focus Management
 
@@ -291,24 +299,9 @@ luis.setConfig(config)
 
 `getConfig()` returns the current configuration of all UI elements. `setConfig(config)` applies the provided configuration to all UI elements.
 
-## the Grid
+## Scaling System
 
-```lua
-luis.setGridSize(gridSize)
-```
-- `gridSize`: number - The size of the grid for element positioning
-
-Set the grid size for positioning and laying out elements. You can use it for more advanced features later.
-
-Set the gridSize only once and before creating a Layer or Element! You can change it later, but every new Element will use the updated gridSize. All previously created Elements will retain the gridSize they were created with.
-
-NOTE: The grid is index at 1,1 and NOT 0,0 !
-
-## Scaling
-
-```lua
-luis.updateScale()
-```
+LUIS includes a built-in scaling system for resolution independence.
 
 For window dimensions, update `luis.baseWidth` and `luis.baseHeight`, and use these values to set your window mode.
 
@@ -316,15 +309,41 @@ Then use `luis.updateScale` in the `love.update` callback to automatically scale
 
 ```lua
 function love.load()
-    love.window.setMode( luis.baseWidth, luis.baseHeight, { resizable=true } )
+    -- Set your base resolution
+    luis.baseWidth = 1920  
+    luis.baseHeight = 1080
+    
+    -- Set window mode using these dimensions
+    love.window.setMode(luis.baseWidth, luis.baseHeight, { resizable=true })
 end
 
 function love.update(dt)
+    -- Update scaling (handles window resizing)
     luis.updateScale()
 
     luis.update(dt)
 end
 ```
+
+## Grid System
+
+LUIS uses a grid-based layout system where:
+
+- Grid positions start at (1,1), not (0,0)
+- Grid size should be set before creating any elements:
+
+```lua
+-- Set grid size (defaults to 20 if not set)
+luis.setGridSize(32)  
+
+-- Create elements using grid coordinates
+local button = luis.newButton("Click me", 4, 2, onClick, onRelease, 1, 1)
+-- Width: 4 grid units
+-- Height: 2 grid units
+-- Position: Row 1, Column 1
+```
+
+**Important**: While grid size can be changed later, existing elements will retain their original grid size. Only new elements will use the updated size.
 
 ## Widget System
 
@@ -534,6 +553,87 @@ function love.keypressed(key)
         luis.keypressed(key)
     end
 end
+```
+
+## Decorator System
+
+LUIS implements the Decorator pattern to allow dynamic modification of widget appearance. The decorator system enables you to add visual effects to widgets without modifying their core functionality.
+
+### Using Decorators
+
+Every widget in LUIS supports decorators through these methods:
+
+```lua
+-- Set a decorator
+widget:setDecorator(decoratorType, ...)
+
+-- Remove a decorator (widget returns to default appearance)
+widget:setDecorator(nil)
+```
+
+### Available Decorators
+
+#### GlowDecorator
+
+Adds a customizable glow effect around the widget.
+
+```lua
+widget:setDecorator("GlowDecorator", glowColor, glowSize)
+```
+
+Parameters:
+- `glowColor`: Table containing RGBA values (e.g., {1, 0, 0, 0.5} for semi-transparent red)
+- `glowSize`: Number specifying the size of the glow effect in pixels
+
+Example:
+```lua
+local button = LUIS.newButton("Glowing", 10, 3, onClick, onRelease, 5, 2)
+button:setDecorator("GlowDecorator", {1, 0.5, 0, 0.5}, 15)  -- Orange glow
+```
+
+#### Slice9Decorator
+
+Implements 9-slice scaling for widgets with borders or complex backgrounds.
+
+```lua
+widget:setDecorator("Slice9Decorator", image, left, right, top, bottom)
+```
+
+Parameters:
+- `image`: LÖVE Image object containing the border/background
+- `left`: Width of the left border in pixels
+- `right`: Width of the right border in pixels
+- `top`: Height of the top border in pixels
+- `bottom`: Height of the bottom border in pixels
+
+Example:
+```lua
+local borderImage = love.graphics.newImage("border.png")
+local button = LUIS.newButton("Bordered", 10, 3, onClick, onRelease, 5, 2)
+button:setDecorator("Slice9Decorator", borderImage, 10, 10, 10, 10)
+```
+
+### Creating Custom Decorators
+
+You can create custom decorators by extending the BaseDecorator:
+
+```lua
+local CustomDecorator = setmetatable({}, {__index = BaseDecorator})
+CustomDecorator.__index = CustomDecorator
+
+function CustomDecorator.new(widget, ...additional_params)
+    local self = setmetatable(BaseDecorator.new(widget), CustomDecorator)
+    -- Initialize additional parameters
+    return self
+end
+
+function CustomDecorator:draw()
+    -- Add custom drawing logic here
+    -- Call the widget's default draw method when needed:
+    self.widget:defaultDraw()
+end
+
+decorators.CustomDecorator = CustomDecorator
 ```
 
 ## Debugging
