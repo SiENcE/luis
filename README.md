@@ -1,8 +1,8 @@
 # LUIS: Love UI System
 
 <p align="center">
- <a href="https://github.com/SiENcE/luis/blob/main/examples/complex_ui/assets/images/logo_small.png">
-  <img border="0" src="https://github.com/SiENcE/luis/blob/main/examples/complex_ui/assets/images/logo_small.png">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/logo_small.png">
+  <img border="0" src="https://github.com/SiENcE/luis/blob/main/assets/logo_small.png">
  </a>
 </p>
 
@@ -21,6 +21,12 @@
 | State Management | Tracks and persists element states to save and load configurations |
 | Extensibility | Modular design allowing easy addition of new widgets or removing unneeded widgets |
 | Debug Mode | Toggle grid and element outlines for easy development |
+
+<p align="center">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17 145134.png">
+  <img border="0" style="width: 600px; height: 479px; src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17 145134.png">
+ </a>
+</p>
 
 ## Widget Types
 
