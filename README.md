@@ -24,7 +24,7 @@
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
-  <img border="0" style="width: 600px; height: 479px; src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
+  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
  </a>
 </p>
 
