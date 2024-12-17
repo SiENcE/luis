@@ -1,5 +1,11 @@
 # LUIS: Love UI System
 
+<p align="center">
+ <a href="https://raw.githubusercontent.com/SiENcE/luis/master/logo_small.png">
+  <img border="0" src="https://raw.githubusercontent.com/SiENcE/luis/master/logo_small.png">
+ </a>
+</p>
+
 **LUIS** (Love User Interface System) is a flexible graphical user interface (GUI) framework built on top of the [Löve2D](https://love2d.org/) game framework. LUIS provides developers with the tools to create dynamic, grid-centric, layered user interfaces for games and applications.
 
 ## Features
