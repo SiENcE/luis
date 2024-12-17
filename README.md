@@ -27,6 +27,18 @@
   <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
  </a>
 </p>
+<p align="center">
+ <em>Flexible Layout using FlexContainer</em>
+</p>
+
+<p align="center">
+ <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.59.55.gif">
+  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.59.55.gif">
+ </a>
+</p>
+<p align="center">
+ <em>You see different layers a custom widget in a Flexcontainer, theming and all possible widgets.</em>
+</p>
 
 ## Widget Types
 
