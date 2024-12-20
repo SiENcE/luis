@@ -15,12 +15,14 @@
 | Flexible Layout | Uses a grid-based system and FlexContainers for easy UI layout |
 | Layer Management | Support for multiple UI layers with show/hide functionality |
 | Customizable Theming | Easily change the look and feel of your UI elements |
-| Widget Library | Includes a variety of pre-built widgets (see Widget Types section) |
+| Widget API | Core system for loading and managing widgets (widgets themselves are optional and loaded dynamically) |
 | Event Handling | Built-in support for mouse, touch, keyboard, and gamepad interactions |
 | Responsive Design | Automatically scales UI elements and interaction based on screen dimensions |
 | State Management | Tracks and persists element states to save and load configurations |
-| Extensibility | Modular design allowing easy addition of new widgets or removing unneeded widgets |
+| Extensibility | Modular design allowing easy addition of new widgets or removing unneeded widgets (see Widget Types section) |
 | Debug Mode | Toggle grid and element outlines for easy development |
+
+**Note**: These features are all part of the LUIS core library (`core.lua`), which has **zero dependencies**! You can use the core library on its own and implement your own widgets for a lightweight UI system for [Löve2D](https://love2d.org/) without any additional dependencies.
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
@@ -70,7 +72,7 @@
 
 ## Widget Types
 
-LUIS provides a variety of built-in widgets to create rich user interfaces:
+LUIS comes with a variety of pre-built widgets to create rich user interfaces. While the following widgets are included, they are **completely optional** and are only loaded when you specify a widget folder during initialization. This modular approach allows you to use only the widgets you need or create your own custom widgets:
 
 1. **Button**: Interactive clickable elements
 2. **Slider**: Adjustable value selector
