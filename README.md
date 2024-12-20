@@ -33,7 +33,7 @@
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.59.55.gif">
-  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.59.55.gif">
+  <img border="0" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.59.55.gif" style="width: 100%; height: auto;>
  </a>
 </p>
 <p align="center">
