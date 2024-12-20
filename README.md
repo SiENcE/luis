@@ -24,7 +24,7 @@
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
-  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
+  <img border="0" style="max-width:100%; height:auto;" src="https://github.com/SiENcE/luis/blob/main/assets/screenshots/Screenshot_2024-12-17.jpg">
  </a>
 </p>
 <p align="center">
@@ -42,7 +42,7 @@
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.49.44.gif">
-  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.49.44.gif">
+  <img border="0" style="max-width:100%; height:auto;" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.49.44.gif">
  </a>
 </p>
 <p align="center">
@@ -51,7 +51,7 @@
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
-  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
+  <img border="0" style="max-width:100%; height:auto;" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
  </a>
 </p>
 <p align="center">
@@ -60,7 +60,7 @@
 
 <p align="center">
  <a href="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.53.47.gif">
-  <img border="0" width="600" height="479" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.53.47.gif">
+  <img border="0" style="max-width:100%; height:auto;" src="https://github.com/SiENcE/luis/blob/main/assets/recordings/Recording_2024-12-17_14.53.47.gif">
  </a>
 </p>
 <p align="center">
