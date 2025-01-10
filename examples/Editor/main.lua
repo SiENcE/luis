@@ -38,21 +38,32 @@ local function saveLayout(filename)
             -- Save additional properties based on widget type
             properties = {}
         }
-        
+		print(widgetData.x,widgetData.y)
+			
         -- Save type-specific properties
         if widget.type == "Button" or widget.type == "Label" then
             widgetData.properties.text = widget.text
+        elseif widget.type == "Icon" then
+			-- nothing
         elseif widget.type == "Slider" then
             widgetData.properties.min = widget.min
             widgetData.properties.max = widget.max
             widgetData.properties.value = widget.value
         elseif widget.type == "Switch" or widget.type == "CheckBox" then
             widgetData.properties.value = widget.value
+		elseif widget.type == "RadioButton" then
+			widgetData.properties.value = widget.value
         elseif widget.type == "DropDown" then
             widgetData.properties.items = widget.items
             widgetData.properties.selectedIndex = widget.selectedIndex
-		elseif widget.type == "FlexContainer" then
-			widgetData.properties.children = widget.children
+		elseif widget.type == "TextInput" then
+			widgetData.properties.text = widget.text
+		elseif widget.type == "TextInputMultiLine" then
+			widgetData.properties.lines = widget.lines
+		elseif widget.type == "ProgressBar" then
+			widgetData.properties.value = widget.value
+		--elseif widget.type == "FlexContainer" then
+		--	widgetData.properties.children = widget.children
 		end
         
         table.insert(layout.widgets, widgetData)
@@ -92,39 +103,42 @@ local function loadLayout(filename)
     -- Create new widgets from layout
     for _, widgetData in ipairs(layout.widgets) do
         local widget
-        local x, y = widgetData.x, widgetData.y
-        local width, height = widgetData.width, widgetData.height
+		print(widgetData.type, widgetData.x,widgetData.y)
+        local x = widgetData.x / luis.gridSize + 1
+		local y = widgetData.y / luis.gridSize + 1
+        local width, height = widgetData.width/luis.gridSize, widgetData.height/luis.gridSize
         local props = widgetData.properties
 		
-        if widgetData.type == "FlexContainer" then
+        --if widgetData.type == "FlexContainer" then
 			-- (width, height, row, col, customTheme, containerName)
-            widget = luis.createElement(editor.currentLayer, "FlexContainer", width /luis.gridSize, height /luis.gridSize, x /luis.gridSize+1, y /luis.gridSize+1, nil, "FlexContainer" + love.math.random(1,1000) )
-        elseif widgetData.type == "Button" then
+        --    widget = luis.createElement(editor.currentLayer, "FlexContainer", width, height, y, x, nil, "FlexContainer" + love.math.random(1,1000) )
+        --else
+		if widgetData.type == "Button" then
             widget = luis.createElement(editor.currentLayer, "Button", props.text or "Button", 
-                width /luis.gridSize, height /luis.gridSize, function() end, function() end, x /luis.gridSize+1, y /luis.gridSize+1)
+                width, height, function() end, function() end, y, x)
         elseif widgetData.type == "Label" then
             widget = luis.createElement(editor.currentLayer, "Label", props.text or "Label", 
-                width /luis.gridSize, height/luis.gridSize, x/luis.gridSize+1, y/luis.gridSize+1, "left")
+                width, height, y, x, "left")
 		elseif widgetData.type == "Icon" then
-			widget = luis.createElement(editor.currentLayer, "Icon", "examples/complex_ui/assets/images/icon.png", width / luis.gridSize, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "Icon", "examples/complex_ui/assets/images/icon.png", width, y, x)
         elseif widgetData.type == "Slider" then
             widget = luis.createElement(editor.currentLayer, "Slider", 
                 props.min or 0, props.max or 100, props.value or 50,
-                width/luis.gridSize, height/luis.gridSize, function() end, x/luis.gridSize+1, y/luis.gridSize+1)
+                width, height, function() end, y, x)
 		elseif widgetData.type == "Switch" then
-			widget = luis.createElement(editor.currentLayer, "Switch", false, width/luis.gridSize, height/luis.gridSize, function(state) end, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "Switch", false, width, height, function(state) end, y, x)
 		elseif widgetData.type == "CheckBox" then
-			widget = luis.createElement(editor.currentLayer, "CheckBox", false, width / luis.gridSize, function(state) end, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "CheckBox", false, width, function(state) end, y, x)
 		elseif widgetData.type == "RadioButton" then
-			widget = luis.createElement(editor.currentLayer, "RadioButton", "group1", false, width / luis.gridSize, function(state) end, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "RadioButton", "group1",  props.value or false, width, function(state) end, y, x)
 		elseif widgetData.type == "DropDown" then
-			widget = luis.createElement(editor.currentLayer, "DropDown", {"Option 1", "Option 2", "Option 3"}, 1, width / luis.gridSize+3, height / luis.gridSize, function(selectedItem) end, x / luis.gridSize + 1, y / luis.gridSize + 1, 2)
+			widget = luis.createElement(editor.currentLayer, "DropDown", {"Option 1", "Option 2", "Option 3"}, 1, width, height, function(selectedItem) end, y, x, 2)
 		elseif widgetData.type == "TextInput" then
-			widget = luis.createElement(editor.currentLayer, "TextInput", width/luis.gridSize, height/luis.gridSize, "Input text", function(text) end, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "TextInput", width, height, props.text or "Input text", function(text) end, y, x)
 		elseif widgetData.type == "TextInputMultiLine" then
-			widget = luis.createElement(editor.currentLayer, "TextInputMultiLine", width/luis.gridSize, height/luis.gridSize, "Input multiline text", function(text) end, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "TextInputMultiLine", width, height, props.text or "Input multiline text", function(text) end, y, x)
 		elseif widgetData.type == "ProgressBar" then
-			widget = luis.createElement(editor.currentLayer, "ProgressBar", 0.75, width/luis.gridSize, height/luis.gridSize, x / luis.gridSize + 1, y / luis.gridSize + 1)
+			widget = luis.createElement(editor.currentLayer, "ProgressBar", props.value or 0.75, width, height, y, x)
         end
         
         if widget then
