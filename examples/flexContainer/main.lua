@@ -34,7 +34,7 @@ function love.load()
 	luis.newLayer("main")
 
 	-- second create a FlexContainer and add it to the "main" Layer
-	local container = luis.createElement("main", "FlexContainer", 62, 60, 3, 2, nil, "Main Container" )
+	local container = luis.createElement("main", "FlexContainer", 62, 48, 3, 2, nil, "Main Container" )
 
 	-- Create sub-containers (header, nav, main, aside, footer)
 	local header = luis.newFlexContainer( 60, 4, 1,1, nil, "header")
@@ -42,10 +42,6 @@ function love.load()
 	local body = luis.newFlexContainer( 45,38, 12,8, nil, "body")
 	local aside = luis.newFlexContainer( 6,38,58,8, nil, "aside")
 	local footer = luis.newFlexContainer( 60,5,2,47, nil, "footer")
-
-	-- if you don't want to resize the container manually, disable click & release
-	--body.release = function() end
-	--body.click = function() end
 
 	-- Add sub-containers to the main container
 	container:addChild(header)
@@ -58,22 +54,25 @@ function love.load()
 	nav:addChild(luis.createElement("main", "Button", "Menu Item 1", 7, 2, function() print('Menu Item 1 - click') end, function() print('Menu Item 1 - release') end, 1, 1))
 	nav:addChild(luis.createElement("main", "Button", "Menu Item 2", 7, 2, function() print('Menu Item 2 - click') end, function() print('Menu Item 2 - release') end, 1, 1))
 
-    local node1 = luis.createElement("gameplay", "Node", "My Node 0", 8, 8, 10, 10)
+	-----------------------------------------------------------------------------------------
+	-- add to BODY and use FIXED POSITIONS disabling automatic layout of the flexContainer!
+	-----------------------------------------------------------------------------------------
+    local node1 = luis.createElement("gameplay", "Node", "My Node 1", 8, 8, 14, 26)
     node1:addOutput("Output 1")
     node1:addOutput("Output 2")
 
-    local node2 = luis.createElement("gameplay", "Node", "My Node 1", 8, 8, 5, 19)
+    local node2 = luis.createElement("gameplay", "Node", "My Node 2", 8, 8, 25, 19)
     node2:addInput("Input 1")
     node2:addOutput("Output 1")
 
-    local node3 = luis.createElement("gameplay", "Node", "My Node 2", 8, 8, 14, 19)
+    local node3 = luis.createElement("gameplay", "Node", "My Node 3", 8, 8, 34, 28)
     node3:addInput("Input 1")
     node3:addInput("Input 2")
 
     node1:connect(1, node2, 1)
     node1:connect(2, node3, 1)
     node2:connect(1, node3, 2)
-
+	
 	body:addChild(node1)
 	body:addChild(node2)
 	body:addChild(node3)
@@ -81,7 +80,7 @@ function love.load()
 	-- CustomView can be used to render gameplay
     plasmaBuffer = love.image.newImageData(body.width, body.height)
     colorPalette = createColorPalette(256)
-	local customView = luis.createElement("main", "Custom", function(self)
+	local customView = luis.createElement("gameplay", "Custom", function(self)
 		love.graphics.setColor(1, 0, 0)
 		love.graphics.rectangle("line", 0, 0, self.width, self.height)
 		for y = 0, self.height - 1, 2 do
@@ -99,11 +98,39 @@ function love.load()
 		end
 		local plasmaImage = love.graphics.newImage(plasmaBuffer)
 		love.graphics.draw(plasmaImage, 0, 0)
-	end, 10, 10, 0, 0)
+	end, 10, 10, 26, 6)
 	body:addChild(customView)
+
+	-- overwrite the automatic layout and set widgets to fixed positions ion the flexContainer
+	body.arrangeChildren = function(self)
+		-- Using grid coordinates (multiply by luis.gridSize)
+		customView.position.x = self.position.x + (26 * luis.gridSize)
+		customView.position.y = self.position.y + (6 * luis.gridSize)
+
+		node1.position.x = self.position.x + (14 * luis.gridSize)
+		node1.position.y = self.position.y + (26 * luis.gridSize)
+		
+		node2.position.x = self.position.x + (25 * luis.gridSize)
+		node2.position.y = self.position.y + (19 * luis.gridSize)
+
+		node3.position.x = self.position.x + (34 * luis.gridSize)
+		node3.position.y = self.position.y + (28 * luis.gridSize)
+	end
+	body.arrangeChildren(body)
+
+	-- if you want to disable user interaction with the flexContainer, maybe just use it for rendering, disable IO
+	--body.release = function() end
+	--body.click = function() end
+
+	-----------------------------------------------------------------------------------------
+	-----------------------------------------------------------------------------------------
 	
 	local sideBarBtn = luis.createElement("main", "Button", "Sidebar Item", 6, 2, function() print('Sidebar Item - click') end, function() print('Sidebar Item - release') end, 1, 1)
 	aside:addChild(sideBarBtn)
+
+	-- add a TextInputMultiLine
+	local textInputMultiLine = luis.createElement("main", "TextInputMultiLine", 4, aside.height/luis.gridSize-sideBarBtn.height/luis.gridSize, "Enter MultiLine text here...", function(text) print(text) end, 1, 1)
+	aside:addChild(textInputMultiLine)
 
 	-- Create a Menu
 	local editItems = {"Revert", "Insert", "Copy", "Paste", "Comment", "Block", "Reset"}
@@ -126,10 +153,6 @@ function love.load()
 	-- add a TextInput
 	local textInput = luis.createElement("main", "TextInput", footer.width/luis.gridSize, 4, "Enter text here...", function(text) print(text) end, 1, 1)
 	footer:addChild(textInput)
-
-	-- add a TextInputMultiLine
-	local textInputMultiLine = luis.createElement("main", "TextInputMultiLine", 4, aside.height/luis.gridSize-sideBarBtn.height/luis.gridSize, "Enter MultiLine text here...", function(text) print(text) end, 1, 1)
-	aside:addChild(textInputMultiLine)
 
 	love.keyboard.setKeyRepeat(true)
 
