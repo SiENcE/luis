@@ -74,7 +74,9 @@ local gameSettings = {
     fsaa = 1,  -- 1 corresponds to "Off" in the dropdown
     resizable = true,
     pixelPerfect = false,
-    highDpi = false
+    highDpi = false,
+	width = luis.baseWidth,
+	height = luis.baseWidth
 }
 
 local currentTheme = "Custom"
@@ -222,7 +224,7 @@ local function createVideoMenu()
     luis.createElement("video", "Label", "Fullscreen", 10, 3, 10, 40)
     luis.createElement("video", "Switch", gameSettings.fullscreen, 5, 3, function(value) 
         gameSettings.fullscreen = value
-        love.window.setFullscreen(value)
+		--love.window.setFullscreen(value, "desktop")
     end, 10, 50)
 
     -- Show FPS
@@ -235,7 +237,7 @@ local function createVideoMenu()
     luis.createElement("video", "Label", "VSync", 10, 3, 20, 40)
     luis.createElement("video", "Switch", gameSettings.vsync, 5, 3, function(value)
         gameSettings.vsync = value
-        love.window.setVSync(value and 1 or 0)
+        --love.window.setVSync(value and 1 or 0)
     end, 20, 50)
 
 	-- Resolution
@@ -246,21 +248,28 @@ local function createVideoMenu()
 	end
 	luis.createElement("video", "DropDown", resolutionNames, getCurrentResolutionIndex(), 15, 3, function(item, index)
 		local newRes = resolutions[index]
-		love.window.updateMode(newRes.width, newRes.height, {
+		gameSettings.width = newRes.width
+		gameSettings.height = newRes.height
+		-- when chainging the resolution, we have to always tell this luis!
+		luis.baseWidth = gameSettings.width
+		luis.baseHeight = gameSettings.height
+		-- apply new mode seetings
+		love.window.updateMode(luis.baseWidth, luis.baseHeight, {
+			minwidth=800,
+			minheight=600,
 			fullscreen = gameSettings.fullscreen,
 			vsync = gameSettings.vsync and 1 or 0,
 			msaa = gameSettings.fsaa == 1 and 0 or (2 ^ (gameSettings.fsaa - 1)),
 			resizable = gameSettings.resizable,
 			highdpi = gameSettings.highDpi
 		})
-		luis.updateScale()
 	end, 25, 50, 6)
 
     -- Resizable
     luis.createElement("video", "Label", "Resizable", 10, 3, 30, 40)
     luis.createElement("video", "CheckBox", gameSettings.resizable, 3, function(value)
         gameSettings.resizable = value
-        love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {resizable = value})
+        --love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {resizable = value})
     end, 30, 50)
 
 	-- FSAA (Full-Screen Anti-Aliasing)
@@ -268,17 +277,32 @@ local function createVideoMenu()
 	luis.createElement("video", "DropDown", {"Off", "2x", "4x", "8x"}, gameSettings.fsaa, 10, 3, function(item, index)
 		gameSettings.fsaa = index
 		local fsaaValue = {0, 2, 4, 8}
-		love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {msaa = fsaaValue[index]})
+		--love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {msaa = fsaaValue[index]})
 	end, 35, 50)
 
     -- High DPI
     luis.createElement("video", "Label", "High DPI", 10, 3, 40, 40)
     luis.createElement("video", "CheckBox", gameSettings.highDpi, 3, function(value)
         gameSettings.highDpi = value
-        love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {highdpi = value})
+        --love.window.updateMode(love.graphics.getWidth(), love.graphics.getHeight(), {highdpi = value})
     end, 40, 50)
 
-    luis.createElement("video", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
+    luis.createElement("video", "Button", "Back", 15, 3, function()
+			-- apply new mode seetings
+			love.window.updateMode(luis.baseWidth, luis.baseHeight, {
+				minwidth=800,
+				minheight=600,
+				fullscreen = gameSettings.fullscreen,
+				vsync = gameSettings.vsync and 1 or 0,
+				msaa = gameSettings.fsaa == 1 and 0 or (2 ^ (gameSettings.fsaa - 1)),
+				resizable = gameSettings.resizable,
+				highdpi = gameSettings.highDpi
+			})
+
+			-- and we call popMenu
+			popMenu()
+		end,
+		function() end, 45, 41)
 end
 
 local function createAudioMenu()
@@ -290,11 +314,11 @@ local function createAudioMenu()
         -- Update actual music volume here
     end, 20, 45)
     
-    luis.createElement("audio", "Label", "SFX Volume", 10, 3, 30, 30)
+    luis.createElement("audio", "Label", "SFX Volume", 10, 3, 28, 30)
     luis.createElement("audio", "Slider", 0, 100, gameSettings.sfxVolume, 20, 3, function(value) 
         gameSettings.sfxVolume = value
         -- Update actual SFX volume here
-    end, 30, 45)
+    end, 28, 45)
     
     luis.createElement("audio", "Button", "Back", 15, 3, popMenu, function() end, 45, 41)
 end
@@ -448,17 +472,6 @@ local function createControlsMenu()
 end
 
 function love.load()
-    love.window.setMode(luis.baseWidth, luis.baseHeight, {
-        fullscreen = gameSettings.fullscreen,
-        vsync = gameSettings.vsync and 1 or 0,
-        msaa = gameSettings.fsaa == 1 and 0 or (2 ^ (gameSettings.fsaa - 1)),
-        resizable = gameSettings.resizable,
-        highdpi = gameSettings.highDpi
-    })
-	love.graphics.setDefaultFilter('nearest', 'nearest')
-
-    love.keyboard.setKeyRepeat(true)
-
     -- Create layers for different menus
     luis.newLayer("main", 96, 54)
     luis.newLayer("settings", 96, 54)
@@ -478,15 +491,30 @@ function love.load()
     createControlsMenu()
 
 	-- load last widget state
---    if love.filesystem.getInfo('config.json') then
---        local jsonString = love.filesystem.read('config.json')
---		local config = json.decode(jsonString)
---		luis.setConfig(config)
---    end
+    if love.filesystem.getInfo('config.json') then
+        local jsonString = love.filesystem.read('config.json')
+		local config = json.decode(jsonString)
+		luis.setConfig(config)
+    end
 
 	luis.setTheme(customTheme)
 
 	luis.enableLayer("custom")
+
+print('love.load - resolution:',luis.baseWidth, luis.baseHeight)
+
+    love.window.setMode(luis.baseWidth, luis.baseHeight, {
+		minwidth=800,
+		minheight=600,
+        fullscreen = gameSettings.fullscreen,
+        vsync = gameSettings.vsync and 1 or 0,
+        msaa = gameSettings.fsaa == 1 and 0 or (2 ^ (gameSettings.fsaa - 1)),
+        resizable = gameSettings.resizable,
+        highdpi = gameSettings.highDpi
+    })
+	love.graphics.setDefaultFilter('nearest', 'nearest')
+	love.keyboard.setKeyRepeat(true)
+
     pushMenu("main")
 end
 
@@ -500,14 +528,14 @@ function love.update(dt)
         accumulator = 0
     end
 
-    luis.updateScale()
-
     -- Check for joystick button presses for focus navigation
     if luis.joystickJustPressed(1, 'dpdown') then
         luis.moveFocus("next")
     elseif luis.joystickJustPressed(1, 'dpup') then
         luis.moveFocus("previous")
     end
+
+    luis.updateScale()
 
     luis.update(dt)
 
@@ -577,9 +605,9 @@ function handleSettingsMenuSelection(selected)
         pushMenu("controls")
     elseif selected == "Back" then
 		-- save last widget state
---		local config = luis.getConfig()
---		local jsonString = json.encode(config)
---		love.filesystem.write('config.json', jsonString)
+		local config = luis.getConfig()
+		local jsonString = json.encode(config)
+		love.filesystem.write('config.json', jsonString)
 
 		luis.enableLayer("custom")
         popMenu()
