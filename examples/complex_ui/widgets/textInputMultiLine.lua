@@ -18,7 +18,7 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
     local textInputTheme = customTheme or luis.theme.textinput
     local input = {
         type = "TextInputMultiLine",
-        lines = {""},
+        value = {""},
         placeholder = placeholder or "",
         width = width * luis.gridSize,
         height = height * luis.gridSize,
@@ -55,19 +55,19 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
             love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height)
 
             love.graphics.setColor(textInputTheme.textColor)
-            local displayLines = self.lines
-            if #displayLines == 1 and #displayLines[1] == 0 and not self.active then
+            local displayvalue = self.value
+            if #displayvalue == 1 and #displayvalue[1] == 0 and not self.active then
                 love.graphics.setColor(0.5, 0.5, 0.5)
-                displayLines = {self.placeholder}
+                displayvalue = {self.placeholder}
             end
 
             love.graphics.setScissor(self.position.x, self.position.y, self.width, self.height)
-            for i, line in ipairs(displayLines) do
+            for i, line in ipairs(displayvalue) do
                 love.graphics.printf(line, self.position.x + textInputTheme.padding, self.position.y + (i - 1 - self.scrollY) * luis.theme.text.font:getHeight() + textInputTheme.padding, self.width - textInputTheme.padding * 2, "left")
             end
 
             if self.active and self.showCursor then
-                local cursorX = self.position.x + textInputTheme.padding + luis.theme.text.font:getWidth(utf8_sub(self.lines[self.cursorY], 1, self.cursorX))
+                local cursorX = self.position.x + textInputTheme.padding + luis.theme.text.font:getWidth(utf8_sub(self.value[self.cursorY], 1, self.cursorX))
                 local cursorY = self.position.y + (self.cursorY - 1 - self.scrollY) * luis.theme.text.font:getHeight() + textInputTheme.padding
                 love.graphics.setColor(textInputTheme.cursorColor)
                 love.graphics.line(cursorX, cursorY, cursorX, cursorY + luis.theme.text.font:getHeight())
@@ -80,7 +80,7 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
                 love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, textInputTheme.cornerRadius)
             end
 			
-			if luis.showElementOutlines then
+			if luis.showElementOutvalue then
 				love.graphics.print("Active: " .. tostring(self.active), self.position.x, self.position.y-luis.gridSize/2)
 			end
         end,
@@ -102,11 +102,11 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
                 local clickY = math.floor((y - self.position.y - textInputTheme.padding) / luis.theme.text.font:getHeight()) + 1 + self.scrollY
-                self.cursorY = math.min(math.max(clickY, 1), #self.lines)
+                self.cursorY = math.min(math.max(clickY, 1), #self.value)
                 local clickX = x - self.position.x - textInputTheme.padding
-                self.cursorX = utf8.len(self.lines[self.cursorY])
-                for i = 1, utf8.len(self.lines[self.cursorY]) do
-                    if luis.theme.text.font:getWidth(utf8_sub(self.lines[self.cursorY], 1, i)) > clickX then
+                self.cursorX = utf8.len(self.value[self.cursorY])
+                for i = 1, utf8.len(self.value[self.cursorY]) do
+                    if luis.theme.text.font:getWidth(utf8_sub(self.value[self.cursorY], 1, i)) > clickX then
                         self.cursorX = i - 1
                         break
                     end
@@ -120,9 +120,9 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
 
         textinput = function(self, text)
             if self.active then
-                local currentLine = self.lines[self.cursorY]
+                local currentLine = self.value[self.cursorY]
                 local newLine = utf8_sub(currentLine, 1, self.cursorX) .. text .. utf8_sub(currentLine, self.cursorX + 1)
-                self.lines[self.cursorY] = newLine
+                self.value[self.cursorY] = newLine
                 self.cursorX = self.cursorX + utf8.len(text)
             end
         end,
@@ -132,58 +132,58 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
             if self.active then
 				print('textInputMultiLine.keypressed press', key)
                 if key == "return" or key == "kpenter" then
-                    local currentLine = self.lines[self.cursorY]
+                    local currentLine = self.value[self.cursorY]
                     local newLine = utf8_sub(currentLine, self.cursorX + 1)
-                    self.lines[self.cursorY] = utf8_sub(currentLine, 1, self.cursorX)
-                    table.insert(self.lines, self.cursorY + 1, newLine)
+                    self.value[self.cursorY] = utf8_sub(currentLine, 1, self.cursorX)
+                    table.insert(self.value, self.cursorY + 1, newLine)
                     self.cursorY = self.cursorY + 1
                     self.cursorX = 0
                 elseif key == "backspace" then
                     if self.cursorX > 0 then
-                        local currentLine = self.lines[self.cursorY]
-                        self.lines[self.cursorY] = utf8_sub(currentLine, 1, self.cursorX - 1) .. utf8_sub(currentLine, self.cursorX + 1)
+                        local currentLine = self.value[self.cursorY]
+                        self.value[self.cursorY] = utf8_sub(currentLine, 1, self.cursorX - 1) .. utf8_sub(currentLine, self.cursorX + 1)
                         self.cursorX = self.cursorX - 1
                     elseif self.cursorY > 1 then
-                        local currentLine = self.lines[self.cursorY]
-                        local prevLine = self.lines[self.cursorY - 1]
+                        local currentLine = self.value[self.cursorY]
+                        local prevLine = self.value[self.cursorY - 1]
                         self.cursorX = utf8.len(prevLine)
-                        self.lines[self.cursorY - 1] = prevLine .. currentLine
-                        table.remove(self.lines, self.cursorY)
+                        self.value[self.cursorY - 1] = prevLine .. currentLine
+                        table.remove(self.value, self.cursorY)
                         self.cursorY = self.cursorY - 1
                     end
                 elseif key == "delete" then
-                    local currentLine = self.lines[self.cursorY]
+                    local currentLine = self.value[self.cursorY]
                     if self.cursorX < utf8.len(currentLine) then
-                        self.lines[self.cursorY] = utf8_sub(currentLine, 1, self.cursorX) .. utf8_sub(currentLine, self.cursorX + 2)
-                    elseif self.cursorY < #self.lines then
-                        local nextLine = self.lines[self.cursorY + 1]
-                        self.lines[self.cursorY] = currentLine .. nextLine
-                        table.remove(self.lines, self.cursorY + 1)
+                        self.value[self.cursorY] = utf8_sub(currentLine, 1, self.cursorX) .. utf8_sub(currentLine, self.cursorX + 2)
+                    elseif self.cursorY < #self.value then
+                        local nextLine = self.value[self.cursorY + 1]
+                        self.value[self.cursorY] = currentLine .. nextLine
+                        table.remove(self.value, self.cursorY + 1)
                     end
                 elseif key == "left" then
                     if self.cursorX > 0 then
                         self.cursorX = self.cursorX - 1
                     elseif self.cursorY > 1 then
                         self.cursorY = self.cursorY - 1
-                        self.cursorX = utf8.len(self.lines[self.cursorY])
+                        self.cursorX = utf8.len(self.value[self.cursorY])
                     end
                 elseif key == "right" then
-                    local currentLine = self.lines[self.cursorY]
+                    local currentLine = self.value[self.cursorY]
                     if self.cursorX < utf8.len(currentLine) then
                         self.cursorX = self.cursorX + 1
-                    elseif self.cursorY < #self.lines then
+                    elseif self.cursorY < #self.value then
                         self.cursorY = self.cursorY + 1
                         self.cursorX = 0
                     end
                 elseif key == "up" then
                     if self.cursorY > 1 then
                         self.cursorY = self.cursorY - 1
-                        self.cursorX = math.min(self.cursorX, utf8.len(self.lines[self.cursorY]))
+                        self.cursorX = math.min(self.cursorX, utf8.len(self.value[self.cursorY]))
                     end
                 elseif key == "down" then
-                    if self.cursorY < #self.lines then
+                    if self.cursorY < #self.value then
                         self.cursorY = self.cursorY + 1
-                        self.cursorX = math.min(self.cursorX, utf8.len(self.lines[self.cursorY]))
+                        self.cursorX = math.min(self.cursorX, utf8.len(self.value[self.cursorY]))
                     end
                 end
                 self.blinkTimer = 0
@@ -193,26 +193,26 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
         end,
 
         setText = function(self, newText)
-            self.lines = {}
+            self.value = {}
             for line in newText:gmatch("[^\r\n]+") do
-                table.insert(self.lines, line)
+                table.insert(self.value, line)
             end
-            if #self.lines == 0 then
-                self.lines = {""}
+            if #self.value == 0 then
+                self.value = {""}
             end
-            self.cursorY = #self.lines
-            self.cursorX = utf8.len(self.lines[self.cursorY])
+            self.cursorY = #self.value
+            self.cursorX = utf8.len(self.value[self.cursorY])
             self:updateScroll()
         end,
         
         getText = function(self)
-            return table.concat(self.lines, "\n")
+            return table.concat(self.value, "\n")
         end,
 
         updateScroll = function(self)
-            local visibleLines = math.floor((self.height - 2 * textInputTheme.padding) / luis.theme.text.font:getHeight())
-            if self.cursorY - self.scrollY > visibleLines then
-                self.scrollY = self.cursorY - visibleLines
+            local visiblevalue = math.floor((self.height - 2 * textInputTheme.padding) / luis.theme.text.font:getHeight())
+            if self.cursorY - self.scrollY > visiblevalue then
+                self.scrollY = self.cursorY - visiblevalue
             elseif self.cursorY - self.scrollY < 1 then
                 self.scrollY = self.cursorY - 1
             end
