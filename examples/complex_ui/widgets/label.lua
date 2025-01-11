@@ -16,11 +16,11 @@ local function applyThemeToText(customTheme)
 end
 
 -- Label
-function label.new(text, width, height, row, col, align, customTheme)
+function label.new(value, width, height, row, col, align, customTheme)
     local labelTheme = customTheme or luis.theme.text
     return {
         type = "Label",
-        text = text,
+        value = value,
         width = width * luis.gridSize,
         height = height * luis.gridSize,
 		position = Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
@@ -29,7 +29,7 @@ function label.new(text, width, height, row, col, align, customTheme)
         
         defaultDraw = function(self)
             local textTheme = applyThemeToText(self.theme or luis)
-            love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - textTheme.font:getHeight()) / 2, self.width, align or textTheme.align)
+            love.graphics.printf(self.value, self.position.x, self.position.y + (self.height - textTheme.font:getHeight()) / 2, self.width, align or textTheme.align)
         end,
 
 		-- Draw method that can use a decorator
@@ -47,7 +47,7 @@ function label.new(text, width, height, row, col, align, customTheme)
 		end,
 
         setText = function(self, newText)
-            self.text = newText
+            self.value = newText
         end
     }
 end

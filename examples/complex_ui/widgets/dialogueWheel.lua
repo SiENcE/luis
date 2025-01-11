@@ -77,7 +77,7 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
     return {
         type = "DialogueWheel",
         options = processedOptions,
-        selectedIndex = nil,
+        value = nil,	-- selected Index
         hoveredIndex = nil,
         width = width * luis.gridSize,
         height = height * luis.gridSize,
@@ -133,8 +133,8 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
             
             self.options = processedOptions
             -- Reset selection if it's no longer valid
-            if self.selectedIndex and self.selectedIndex > #processedOptions then
-                self.selectedIndex = nil
+            if self.value and self.value > #processedOptions then
+                self.value = nil
             end
             if self.hoveredIndex and self.hoveredIndex > #processedOptions then
                 self.hoveredIndex = nil
@@ -146,8 +146,8 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
             if self.options[index] then
                 self.options[index].enabled = enabled
                 -- Reset selection if disabled segment was selected
-                if not enabled and self.selectedIndex == index then
-                    self.selectedIndex = nil
+                if not enabled and self.value == index then
+                    self.value = nil
                 end
                 if not enabled and self.hoveredIndex == index then
                     self.hoveredIndex = nil
@@ -223,7 +223,7 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
                 -- Choose color based on state
                 if not option.enabled then
                     love.graphics.setColor(self.theme.disabledColor)
-                elseif i == self.selectedIndex then
+                elseif i == self.value then
                     love.graphics.setColor(self.theme.selectedColor)
                 elseif i == self.hoveredIndex then
                     love.graphics.setColor(self.theme.highlightColor)
@@ -281,7 +281,7 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
         click = function(self, x, y, button, istouch, presses)
             local selectedSegment = self:getSegmentAt(x, y)
             if selectedSegment and self.options[selectedSegment].enabled then
-                self.selectedIndex = selectedSegment
+                self.value = selectedSegment
                 if self.onChange then
                     self.onChange(self.options[selectedSegment].text, selectedSegment)
                 end
@@ -290,12 +290,16 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
             return false
         end,
 
+        setValue = function(self, value)
+            self.value = value
+        end,
+
         -- Joystick-specific functions
         gamepadpressed = function(self, id, button)
             if not self.focused then return false end
             
             if button == 'a' and self.hoveredIndex and self.options[self.hoveredIndex].enabled then
-                self.selectedIndex = self.hoveredIndex
+                self.value = self.hoveredIndex
                 if self.onChange then
                     self.onChange(self.options[self.hoveredIndex].text, self.hoveredIndex)
                 end

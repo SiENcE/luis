@@ -18,7 +18,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
     local textInputTheme = customTheme or luis.theme.textinput
     local input = {
         type = "TextInput",
-        text = "",
+        value = "",
         placeholder = placeholder or "",
         width = width * luis.gridSize,
         height = height * luis.gridSize,
@@ -53,7 +53,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
             love.graphics.rectangle("line", self.position.x, self.position.y, self.width, self.height)
 
             love.graphics.setColor(textInputTheme.textColor)
-            local displayText = self.text
+            local displayText = self.value
             if #displayText == 0 and not self.active then
                 love.graphics.setColor(0.5, 0.5, 0.5)
                 displayText = self.placeholder
@@ -62,7 +62,7 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
             love.graphics.printf(displayText, self.position.x + textInputTheme.padding, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width - textInputTheme.padding * 2, "left")
 
             if self.active and self.showCursor then
-                local cursorX = self.position.x + textInputTheme.padding + luis.theme.text.font:getWidth(utf8_sub(self.text, 1, self.cursorPos))
+                local cursorX = self.position.x + textInputTheme.padding + luis.theme.text.font:getWidth(utf8_sub(self.value, 1, self.cursorPos))
                 love.graphics.setColor(textInputTheme.cursorColor)
                 love.graphics.line(cursorX, self.position.y + textInputTheme.padding, cursorX, self.position.y + self.height - textInputTheme.padding)
             end
@@ -97,9 +97,9 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
                 local clickX = x - self.position.x - textInputTheme.padding
-                self.cursorPos = utf8.len(self.text)
-                for i = 1, utf8.len(self.text) do
-                    if luis.theme.text.font:getWidth(utf8_sub(self.text, 1, i)) > clickX then
+                self.cursorPos = utf8.len(self.value)
+                for i = 1, utf8.len(self.value) do
+                    if luis.theme.text.font:getWidth(utf8_sub(self.value, 1, i)) > clickX then
                         self.cursorPos = i - 1
                         break
                     end
@@ -111,25 +111,25 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
             return false
         end,
 --[[
-        textinput = function(self, text)
-			--print("textinput.textinput = function", text )
+        textinput = function(self, value)
+			--print("textinput.textinput = function", value )
             if self.active then
-                local newText = utf8_sub(self.text, 1, self.cursorPos) .. text .. utf8_sub(self.text, self.cursorPos + 1)
+                local newText = utf8_sub(self.value, 1, self.cursorPos) .. value .. utf8_sub(self.value, self.cursorPos + 1)
                 if luis.theme.text.font:getWidth(newText) <= self.width - textInputTheme.padding * 2 then
-                    self.text = newText
-                    self.cursorPos = self.cursorPos + utf8.len(text)
+                    self.value = newText
+                    self.cursorPos = self.cursorPos + utf8.len(value)
                 end
             end
         end,
 ]]--
-		textinput = function(self, text)
+		textinput = function(self, value)
 			if self.active then
-				local before = utf8_sub(self.text, 1, self.cursorPos)
-				local after = utf8_sub(self.text, self.cursorPos + 1)
-				local newText = before .. text .. after
+				local before = utf8_sub(self.value, 1, self.cursorPos)
+				local after = utf8_sub(self.value, self.cursorPos + 1)
+				local newText = before .. value .. after
 				if luis.theme.text.font:getWidth(newText) <= self.width - textInputTheme.padding * 2 then
-					self.text = newText
-					self.cursorPos = self.cursorPos + utf8.len(text)
+					self.value = newText
+					self.cursorPos = self.cursorPos + utf8.len(value)
 				end
 			end
 		end,
@@ -139,28 +139,28 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
             if self.active then
 				if key == "return" or key == "kpenter" then
 					if self.onChange then
-						self.onChange(self.text)
+						self.onChange(self.value)
 					end
                 elseif key == "backspace" then
                     if self.cursorPos > 0 then
-                        local byteoffset = utf8.offset(self.text, -1, utf8.offset(self.text, self.cursorPos + 1))
-                        self.text = string.sub(self.text, 1, byteoffset - 1) .. string.sub(self.text, utf8.offset(self.text, self.cursorPos + 1))
+                        local byteoffset = utf8.offset(self.value, -1, utf8.offset(self.value, self.cursorPos + 1))
+                        self.value = string.sub(self.value, 1, byteoffset - 1) .. string.sub(self.value, utf8.offset(self.value, self.cursorPos + 1))
                         self.cursorPos = self.cursorPos - 1
                     end
                 elseif key == "delete" then
-                    if self.cursorPos < utf8.len(self.text) then
-                        local nextCharStart = utf8.offset(self.text, self.cursorPos + 1)
-                        local nextCharEnd = utf8.offset(self.text, self.cursorPos + 2)
+                    if self.cursorPos < utf8.len(self.value) then
+                        local nextCharStart = utf8.offset(self.value, self.cursorPos + 1)
+                        local nextCharEnd = utf8.offset(self.value, self.cursorPos + 2)
                         if nextCharEnd then
-                            self.text = string.sub(self.text, 1, nextCharStart - 1) .. string.sub(self.text, nextCharEnd)
+                            self.value = string.sub(self.value, 1, nextCharStart - 1) .. string.sub(self.value, nextCharEnd)
                         else
-                            self.text = string.sub(self.text, 1, nextCharStart - 1)
+                            self.value = string.sub(self.value, 1, nextCharStart - 1)
                         end
                     end
                 elseif key == "left" then
                     self.cursorPos = math.max(0, self.cursorPos - 1)
                 elseif key == "right" then
-                    self.cursorPos = math.min(utf8.len(self.text), self.cursorPos + 1)
+                    self.cursorPos = math.min(utf8.len(self.value), self.cursorPos + 1)
                 end
                 self.blinkTimer = 0
                 self.showCursor = true
@@ -173,13 +173,13 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
 
         setText = function(self, newText)
             if luis.theme.text.font:getWidth(newText) <= self.width - textInputTheme.padding * 2 then
-                self.text = newText
+                self.value = newText
                 self.cursorPos = utf8.len(newText)
             end
         end,
 		
 		getText = function(self)
-			return self.text
+			return self.value
 		end
     }
 
