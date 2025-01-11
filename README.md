@@ -280,8 +280,8 @@ For more detailed information on the LUIS API, including layer management, input
 
 - DropBox: Selection with the gamepad-analogstick works not for all choices
 - FlexContainer - dropdown select is not possible via gamepad-analogstick
-- Sliders, Checkboxes and RadioButtons are currently not being saved
-- In the complex_menu sample, some elements require double-clicking to activate
+- TextInput - when changing Theme, we have to adjust the fontsize in TextInput widgets
+- TextInputMultiLine not setConfig/getConfig
 
 ## License
 

@@ -313,34 +313,39 @@ function luis.createElement(layerName, widgetType, ...)
 
     table.insert(luis.elements[layerName], element)
     
-    -- Initialize state for stateful elements (unchanged)
+    -- Initialize state for stateful elements
     if widgetType == "Slider" or
        widgetType == "Switch" or
        widgetType == "CheckBox" or
+	   widgetType == "DialogueWheel" or
        widgetType == "RadioButton" or
        widgetType == "DropDown" or
-	   widgetType == "ProgressBar" or
        widgetType == "TextInput" or
-       widgetType == "TextInputMultiLine" then
+       widgetType == "TextInputMultiLine" or
+	   widgetType == "ProgressBar" then
         if not luis.elementStates[layerName] then
             luis.elementStates[layerName] = {}
         end
         luis.elementStates[layerName][#luis.elements[layerName]] = element.value
     end
+	print('createElement:', layerName, #luis.elements[layerName], widgetType)
     
     return element
 end
 
 function luis.setElementState(layerName, index, value)
-    if not luis.elementStates[layerName] then
-        luis.elementStates[layerName] = {}
-    end
-    luis.elementStates[layerName][index] = value
-    
     -- Update the actual element's value
     if luis.elements[layerName] and luis.elements[layerName][index] then
         luis.elements[layerName][index].value = value
-    end
+    else
+		if not luis.elements[layerName] then
+			print("ERROR: cannot setElementState - layername not found - ", layerName, index, value)
+		elseif not luis.elements[layerName][index] then
+			print("ERROR: cannot setElementState - widget index not found - ", layerName, index, value)
+		else
+			print("ERROR: cannot setElementState ", layerName, index, value)
+		end
+	end
 end
 
 function luis.getElementState(layerName, index)
@@ -467,10 +472,12 @@ function luis.update(dt)
                 if element.type == "Slider" or
                    element.type == "Switch" or
                    element.type == "CheckBox" or
+				   element.type == "DialogueWheel" or
                    element.type == "RadioButton" or
                    element.type == "DropDown" or
                    element.type == "TextInput" or
-                   element.type == "TextInputMultiLine" then
+                   element.type == "TextInputMultiLine" or
+				   element.type == "ProgressBar" then
                     luis.setElementState(layerName, i, element.value or element.text)
                 end
             end
@@ -1073,14 +1080,15 @@ function luis.getConfig()
             if element.type == "Slider" or
                element.type == "Switch" or
                element.type == "CheckBox" or
+			   element.type == "DialogueWheel" or
                element.type == "RadioButton" or
                element.type == "DropDown" or
                element.type == "TextInput" or
-               element.type == "TextInputMultiLine" or
+               --element.type == "TextInputMultiLine" or
                element.type == "ProgressBar" then  -- Added ProgressBar
                 config[layerName][i] = {
                     type = element.type,
-                    value = tostring(element.value or element.text or false)
+                    value = tostring(element.value or false),
                 }
             end
         end
@@ -1104,30 +1112,42 @@ function luis.setConfig(config)
 		if luis.elements[layerName] then
 			for i, elementConfig in pairs(elements) do
 				local element = luis.elements[layerName][tonumber(i)]
+				
 				if element and element.type == elementConfig.type then
-					if element.type == "Slider" then
-						element.value = elementConfig.value
-					elseif element.type == "Switch" or
-						element.type == "CheckBox" then
+					if element.type == "Slider" then					    -- works!
+						element.value = tonumber(elementConfig.value)
+						element:setValue(tonumber(elementConfig.value))
+					elseif element.type == "Switch" then					-- works!
 						element.value = toboolean(elementConfig.value)
+						element:setValue(toboolean(elementConfig.value))
+					elseif element.type == "CheckBox" then					-- works!
+						element.value = toboolean(elementConfig.value)
+						element:setValue(toboolean(elementConfig.value))
+					elseif element.type == "DialogueWheel" then				-- works!
+						element.value = tonumber(elementConfig.value)
+						element:setValue(tonumber(elementConfig.value))
 					elseif element.type == "RadioButton" then
 						element.value = toboolean(elementConfig.value)
-						-- Deselect other radio buttons in the same group
-						for _, otherElement in ipairs(luis.elements[layerName]) do
-							if otherElement.type == "RadioButton" and otherElement.group == element.group and otherElement ~= element then
-								otherElement.value = false
-							end
+						if element.value then
+							element:setValue(element.value)
 						end
-					elseif element.type == "DropDown" then
+					elseif element.type == "DropDown" then				    -- works!
+						element.value = tonumber(elementConfig.value)
 						element:setValue(tonumber(elementConfig.value))
-					elseif element.type == "ProgressBar" then
-						element:setValue(tonumber(elementConfig.value))
-					elseif (element.type == "TextInput" or element.type == "TextInputMultiLine") then
-						element:setText(tostring(elementConfig.value or elementConfig.text))
+					elseif element.type == "TextInput" then				    -- works!
+						element.value = tostring(elementConfig.value)
+						element:setText(tostring(elementConfig.value))
+					--elseif element.type == "TextInputMultiLine" then
+					--	element:setText(tostring(elementConfig.value))
+					elseif element.type == "ProgressBar" then				-- works!
+						element.value = tonumber(elementConfig.value)+0.0
+						element:setValue(tonumber(elementConfig.value)+0.0)
 					end
 					
 					-- Update element state
-					luis.setElementState(layerName, i, elementConfig.value)
+					if element.value then
+						luis.setElementState(layerName, tonumber(i), element.value)
+					end
 				end
 			end
 		end
