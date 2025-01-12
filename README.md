@@ -13,10 +13,11 @@
 | Feature | Description |
 |---------|-------------|
 | Flexible Layout | Uses a grid-based system and FlexContainers for easy UI layout |
-| Layer Management | Support for multiple UI layers with show/hide functionality |
+| Layer Management | Support for multiple UI layers with show/hide functionality & Z-indexing for element layering |
+| Theme Support | Global theme customization, Per-widget theme overrides, Animation of theme properties |
 | Customizable Theming | Easily change the look and feel of your UI elements |
 | Widget API | Core system for loading and managing widgets (widgets themselves are optional and loaded dynamically) |
-| Event Handling | Built-in support for mouse, touch, keyboard, and gamepad interactions |
+| Event Handling | Built-in support for mouse, touch, keyboard, and gamepad interactions & Focus management |
 | Responsive Design | Automatically scales UI elements and interaction based on screen dimensions |
 | State Management | Tracks and persists element states to save and load configurations |
 | Extensibility | Modular design allowing easy addition of new widgets or removing unneeded widgets (see Widget Types section) |
@@ -188,14 +189,14 @@ The FlexContainer is a powerful widget that allows for dynamic and responsive la
 Example usage:
 
 ```lua
-local container = LUIS.newFlexContainer(30, 30, 10, 10)
-local button1 = LUIS.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
-local button2 = LUIS.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
+local container = luis.newFlexContainer(30, 30, 10, 10)
+local button1 = luis.newButton("Button 1", 15, 3, function() print("Button 1 clicked!") end, function() print("Button 1 released!") end, 5, 2)
+local button2 = luis.newButton("Button 2", 15, 3, function() print("Button 2 clicked!") end, function() print("Button 2 released!") end, 5, 2)
 
 container:addChild(button1)
 container:addChild(button2)
 
-LUIS.createElement(LUIS.currentLayer, "FlexContainer", container)
+luis.createElement(luis.currentLayer, "FlexContainer", container)
 ```
 
 ## Custom Widgets
@@ -250,15 +251,15 @@ Example usage:
 
 ```lua
 -- Create a button with a glass morphism
-local button = LUIS.newButton("Glassmorphism Button", 15, 3, onClick, onRelease, 5, 2)
+local button = luis.newButton("Glassmorphism Button", 15, 3, onClick, onRelease, 5, 2)
 button:setDecorator("GlassmorphismDecorator", {1, 0.5, 0, 0.5}, 15)  -- Glass morphism with size 15
 
 -- Create a button with a glow effect
-local button = LUIS.newButton("Glowing Button", 15, 3, onClick, onRelease, 5, 2)
+local button = luis.newButton("Glowing Button", 15, 3, onClick, onRelease, 5, 2)
 button:setDecorator("GlowDecorator", {1, 0.5, 0, 0.5}, 15)  -- Orange glow with size 15
 
 -- Create a button with a 9-slice border
-local button2 = LUIS.newButton("Bordered Button", 15, 3, onClick, onRelease, 5, 2)
+local button2 = luis.newButton("Bordered Button", 15, 3, onClick, onRelease, 5, 2)
 button2:setDecorator("Slice9Decorator", borderImage, 10, 10, 10, 10)  -- 10px borders
 ```
 
