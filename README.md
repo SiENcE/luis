@@ -69,7 +69,7 @@
  </a>
 </p>
 <p align="center">
- <em>1-bit full adder node graph create with LUIS Node Widgets.</em>
+ <em>1-bit full adder node graph - created with LUIS Node Widgets.</em>
 </p>
 
 
