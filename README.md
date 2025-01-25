@@ -288,7 +288,8 @@ For more detailed information on the LUIS API, including layer management, input
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License with additional terms - see the [LICENSE](LICENSE) file for details.
+**Important:** Use of this software for training AI or machine learning models is strictly prohibited. See the LICENSE file for details.
 
 ## Contributing
 

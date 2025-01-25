@@ -1,4 +1,4 @@
-MIT License
+MIT License with Additional Terms
 
 Copyright (c) 2024 Florian Fischer
 
@@ -19,3 +19,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+Additional Terms:
+
+This software, or any derivative works thereof, may not be used, in whole or in part, for the purpose of training, fine-tuning, or improving machine learning models or artificial intelligence systems, including but not limited to large language models or neural networks.
+
+By using this software, you agree to these additional terms.
