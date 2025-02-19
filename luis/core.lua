@@ -308,26 +308,7 @@ function luis.createElement(layerName, widgetType, ...)
 		end
     end
 
-    -- Add default z-index
-    element.zIndex = element.zIndex or 1
-
-    table.insert(luis.elements[layerName], element)
-    
-    -- Initialize state for stateful elements
-    if widgetType == "Slider" or
-       widgetType == "Switch" or
-       widgetType == "CheckBox" or
-	   widgetType == "DialogueWheel" or
-       widgetType == "RadioButton" or
-       widgetType == "DropDown" or
-       widgetType == "TextInput" or
-       widgetType == "TextInputMultiLine" or
-	   widgetType == "ProgressBar" then
-        if not luis.elementStates[layerName] then
-            luis.elementStates[layerName] = {}
-        end
-        luis.elementStates[layerName][#luis.elements[layerName]] = element.value
-    end
+    luis.insertElement(layerName, element)
 	print('createElement:', layerName, #luis.elements[layerName], widgetType)
     
     return element
@@ -353,6 +334,33 @@ function luis.getElementState(layerName, index)
         return luis.elementStates[layerName][index]
     end
     return nil
+end
+
+function luis.insertElement(layerName, element)
+    if not luis.elements[layerName] then
+        luis.elements[layerName] = {}
+    end
+
+    -- Add default z-index
+    element.zIndex = element.zIndex or 1
+
+    table.insert(luis.elements[layerName], element)
+    
+    -- Initialize state for stateful elements
+    if widgetType == "Slider" or
+       widgetType == "Switch" or
+       widgetType == "CheckBox" or
+	   widgetType == "DialogueWheel" or
+       widgetType == "RadioButton" or
+       widgetType == "DropDown" or
+       widgetType == "TextInput" or
+       widgetType == "TextInputMultiLine" or
+	   widgetType == "ProgressBar" then
+        if not luis.elementStates[layerName] then
+            luis.elementStates[layerName] = {}
+        end
+        luis.elementStates[layerName][#luis.elements[layerName]] = element.value
+    end
 end
 
 function luis.removeElement(layerName, elementToRemove)
