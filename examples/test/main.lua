@@ -48,8 +48,15 @@ luis["newCustomButtonWidget"] = CustomButtonWidget.new
 function love.load()
     luis.newLayer("main")
     luis.enableLayer("main")
-    
-	luis.createElement("main", "CustomButtonWidget", 100, 200, 100, 50, "Click me!", function() print("Button clicked!") end)
+
+	-- You can create an add an new Widget to a Layer
+	luis.createElement("main", "CustomButtonWidget", 100, 200, 100, 50, "Click me 1!", function() print("Button clicked!") end)
+
+	-- or you can first create the widget (not useable or visible)
+	local button_widget  = luis.newCustomButtonWidget( 200, 200, 100, 50, "Click me 2!", function() print("Button clicked!") end)
+	
+	-- and than add it to a layer to make it work
+	luis.insertElement("main", button_widget)
 end
 
 function love.update(dt)
