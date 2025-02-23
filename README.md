@@ -277,7 +277,7 @@ For more detailed information on the LUIS API, including layer management, input
 ## Dependencies
 
 - Löve2D: The game framework used for rendering and managing game objects.
-- The **core** library has **zero dependencies**, so you write your own widgets to have a lightweight ui system (see [basic_ui_sample](/samples/basic_ui/) ).
+- The **core** library has **zero dependencies**, so you write your own widgets to have a lightweight ui system (see [basic_ui_sample](https://github.com/SiENcE/luis_samples/blob/main/samples/basic_ui) ).
 
 ## known Problems
 
