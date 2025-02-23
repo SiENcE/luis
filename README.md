@@ -8,6 +8,19 @@
 
 **LUIS** (Love User Interface System) is a flexible graphical user interface (GUI) framework built on top of the [Löve2D](https://love2d.org/) game framework. LUIS provides developers with the tools to create dynamic, grid-centric, layered user interfaces for games and applications.
 
+## LUIS: Samples
+
+Look at our [LUIS-Samples](https://github.com/SiENcE/luis_samples/)
+
+<p align="center">
+ <a href="https://github.com/SiENcE/luis_samples/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
+  <img border="0" style="max-width:100%; height:auto;" src="https://github.com/SiENcE/luis_samples/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
+ </a>
+</p>
+<p align="center">
+ <em>A LUIS UI-Editor made with LUIS.</em>
+</p>
+
 ## Features
 
 | Feature | Description |
@@ -24,19 +37,6 @@
 | Debug Mode | Toggle grid and element outlines for easy development |
 
 **Note**: These features are all part of the LUIS core library (`core.lua`), which has **zero dependencies**! You can use the core library on its own and implement your own widgets for a lightweight UI system for [Löve2D](https://love2d.org/) without any additional dependencies.
-
-## LUIS: Samples
-
-Look at our [LUIS-Samples](https://github.com/SiENcE/luis_samples/)
-
-<p align="center">
- <a href="https://github.com/SiENcE/luis_samples/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
-  <img border="0" style="max-width:100%; height:auto;" src="https://github.com/SiENcE/luis_samples/blob/main/assets/recordings/Recording_2024-11-12_00.58.43.gif">
- </a>
-</p>
-<p align="center">
- <em>A LUIS UI-Editor made with LUIS.</em>
-</p>
 
 ## Widget Types
 
