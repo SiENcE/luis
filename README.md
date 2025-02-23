@@ -107,7 +107,7 @@ LUIS comes with a variety of pre-built widgets to create rich user interfaces. W
     local initluis = require("luis.init")
     
     -- Direct this to your widgets folder.
-    local luis = initluis("examples/complex_ui/widgets")
+    local luis = initLuis("luis/widgets")
     ```
 
 4. **Create and Manage UI Elements**:
@@ -122,7 +122,7 @@ main.lua
 local initluis = require("luis.init")
 
 -- Direct this to your widgets folder.
-local luis = initluis("examples/complex_ui/widgets")
+local luis = initLuis("luis/widgets")
 
 function love.load()
     -- Create a FlexContainer
@@ -277,7 +277,7 @@ For more detailed information on the LUIS API, including layer management, input
 ## Dependencies
 
 - Löve2D: The game framework used for rendering and managing game objects.
-- The **core** library has **zero dependencies**, so you write your own widgets to have a lightweight ui system (see [basic_ui_sample](/examples/basic_ui/) ).
+- The **core** library has **zero dependencies**, so you write your own widgets to have a lightweight ui system (see [basic_ui_sample](/samples/basic_ui/) ).
 
 ## known Problems
 

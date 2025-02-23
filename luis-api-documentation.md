@@ -31,7 +31,7 @@ or
 
 ```lua
 -- Default initialization (looks for "widgets" directory)
-local luis = require("luis.init")("widgets")
+local luis = require("luis.init")("luis/widgets")
 ```
 
 or
@@ -41,7 +41,7 @@ or
 local initLuis = require("luis.init")
 
 -- Direct this to your widgets folder.
-local luis = initLuis("examples/complex_ui/widgets")
+local luis = initLuis("luis/widgets")
 ```
 
 Initialize LUIS by providing the path to the widget directory. If not specified, it defaults to "widgets".
