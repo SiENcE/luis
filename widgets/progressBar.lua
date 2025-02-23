@@ -1,5 +1,5 @@
-local Vector2D = require("examples.3rdparty.vector")
-local decorators = require("examples.3rdparty.decorators")
+local Vector2D = require("luis.3rdparty.vector")
+local decorators = require("luis.3rdparty.decorators")
 
 local progressBar = {}
 

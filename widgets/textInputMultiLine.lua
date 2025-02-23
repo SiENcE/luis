@@ -1,7 +1,7 @@
 local utf8 = require("utf8")
-local utils = require("examples.3rdparty.utils")
-local Vector2D = require("examples.3rdparty.vector")
-local decorators = require("examples.3rdparty.decorators")
+local utils = require("luis.3rdparty.utils")
+local Vector2D = require("luis.3rdparty.vector")
+local decorators = require("luis.3rdparty.decorators")
 
 local pointInRect = utils.pointInRect
 local utf8_sub = utils.utf8_sub

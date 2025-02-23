@@ -24,7 +24,7 @@ local customTheme = {
     },
     text = {
         color = colors.yellow,
-        font = love.graphics.newFont("examples/complex_ui/assets/fonts/DungeonFont.ttf", 46),
+        font = love.graphics.newFont("luis/themes/fonts/DungeonFont.ttf", 46),
         align = "left",
     },
     button = {

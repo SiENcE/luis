@@ -3,7 +3,7 @@ local function initLuis(widgetPath)
     local lfs = love.filesystem
 
     -- Set default widget path if not provided
-    widgetPath = widgetPath or "widgets"
+    widgetPath = widgetPath or "luis/widgets"
 
     -- Ensure the widget path exists
     if not lfs.getInfo(widgetPath, "directory") then

@@ -4,7 +4,7 @@ local materialTheme = {
     },
     text = {
         color = {0.1, 0.1, 0.1}, -- Dark text for contrast
-        font = love.graphics.newFont("examples/complex_ui/assets/fonts/Roboto-Regular.ttf", 32),
+        font = love.graphics.newFont("luis/themes/fonts/Roboto-Regular.ttf", 32),
         align = "left",
     },
     button = {

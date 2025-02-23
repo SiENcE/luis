@@ -24,7 +24,7 @@ local alternativeTheme = {
     },
     text = {
         color = altColors.beige,
-        font = love.graphics.newFont("examples/complex_ui/assets/fonts/Monocraft.ttf", 28),
+        font = love.graphics.newFont("luis/themes/fonts/Monocraft.ttf", 28),
         align = "left",
     },
     button = {
