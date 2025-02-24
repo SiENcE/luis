@@ -345,8 +345,9 @@ function luis.insertElement(layerName, element)
     element.zIndex = element.zIndex or 1
 
     table.insert(luis.elements[layerName], element)
-    
+
     -- Initialize state for stateful elements
+    local widgetType = element.type
     if widgetType == "Slider" or
        widgetType == "Switch" or
        widgetType == "CheckBox" or
