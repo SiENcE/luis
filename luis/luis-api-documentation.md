@@ -107,10 +107,11 @@ Note: An element is an instance of a widget.
 ### Removing an Element
 
 ```lua
-luis.removeElement(layerName, elementToRemove)
+luis.insertElement(layerName, element)
+luis.removeElement(layerName, element)
 ```
 - `layerName`: string - The name of the layer containing the element
-- `elementToRemove`: table - The element object to remove
+- `element`: table - The element object to insert or remove
 
 Removes the specified element from the given layer.
 
