@@ -794,10 +794,44 @@ function luis.mousepressed(x, y, button, istouch, presses)
     return false
 end
 ]]--
+--[[
 function luis.mousepressed(x, y, button, istouch, presses)
     x, y = x / luis.scale, y / luis.scale
     if luis.clickCooldown > 0 then return false end
     
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, x, y, "click", button, istouch, presses) then
+            luis.clickCooldown = 0.2  -- 200ms cooldown
+            return true
+        end
+    end
+    return false
+end
+]]--
+
+-- Note: It's a common problem in UI frameworks where elements like text inputs and dropdowns need to deactivate when clicking elsewhere.
+-- Thanks why you need to implement this 'onGlobalClick' function in your dropDown or textInput widgets!
+function luis.handleGlobalClick(x, y, button, istouch, presses)
+    -- Notify all elements across all enabled layers that a click occurred
+    for layerName, enabled in pairs(luis.enabledLayers) do
+        if enabled and luis.elements[layerName] then
+            for _, element in ipairs(luis.elements[layerName]) do
+                if element.onGlobalClick then
+                    element:onGlobalClick(x, y, button, istouch, presses)
+                end
+            end
+        end
+    end
+end
+
+function luis.mousepressed(x, y, button, istouch, presses)
+    x, y = x / luis.scale, y / luis.scale
+    if luis.clickCooldown > 0 then return false end
+    
+    -- First, allow all elements to respond to the global click event
+    luis.handleGlobalClick(x, y, button, istouch, presses)
+    
+    -- Then process regular click handling with z-index priority preserved
     for layerName, _ in pairs(luis.enabledLayers) do
         if handleLayerInput(layerName, x, y, "click", button, istouch, presses) then
             luis.clickCooldown = 0.2  -- 200ms cooldown

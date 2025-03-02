@@ -98,6 +98,14 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
             self.decorator = decorators[decoratorType].new(self, ...)
         end,
 
+		onGlobalClick = function(self, x, y, button, istouch, presses)
+			if not utils.pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
+				self.active = false
+			end
+		end,
+
+		-- Note: It's a common problem in UI frameworks where elements like text inputs and dropdowns need to deactivate when clicking elsewhere.
+		-- Implement this if you want that your widgets succeed to deactivate properly.
         click = function(self, x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
@@ -128,9 +136,7 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
         end,
 
         keypressed = function(self, key)
-			print('textInputMultiLine.keypressed',key, self.active)
             if self.active then
-				print('textInputMultiLine.keypressed press', key)
                 if key == "return" or key == "kpenter" then
                     local currentLine = self.value[self.cursorY]
                     local newLine = utf8_sub(currentLine, self.cursorX + 1)

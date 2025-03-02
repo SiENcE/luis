@@ -92,8 +92,15 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
 			self.decorator = decorators[decoratorType].new(self, ...)
 		end,
 
+		-- Note: It's a common problem in UI frameworks where elements like text inputs and dropdowns need to deactivate when clicking elsewhere.
+		-- Implement this if you want that your widgets succeed to deactivate properly.
+		onGlobalClick = function(self, x, y, button, istouch, presses)
+			if not utils.pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
+				self.active = false
+			end
+		end,
+
         click = function(self, x, y, button, istouch, presses)
-			--print("textinput.click = function", x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.active = true
                 local clickX = x - self.position.x - textInputTheme.padding
@@ -135,7 +142,6 @@ function textInput.new(width, height, placeholder, onChange, row, col, customThe
 		end,
 
         keypressed = function(self, key, scancode, isrepeat )
-			--print("textinput.keypressed = function", key, scancode, isrepeat )
             if self.active then
 				if key == "return" or key == "kpenter" then
 					if self.onChange then

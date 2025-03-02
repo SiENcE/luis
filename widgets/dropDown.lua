@@ -122,6 +122,15 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             self.decorator = decorators[decoratorType].new(self, ...)
         end,
 
+		-- Note: It's a common problem in UI frameworks where elements like text inputs and dropdowns need to deactivate when clicking elsewhere.
+		-- Implement this if you want that your widgets succeed to deactivate properly.
+		onGlobalClick = function(self, x, y, button, istouch, presses)
+			if self.isOpen and not utils.pointInRect(x, y, self.position.x, self.position.y, self.width, 
+													self.height + math.min(#self.items, maxVisibleItems) * self.height) then
+				self.isOpen = false
+			end
+		end,
+
         click = function(self, x, y, button, istouch, presses)
             if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
                 self.isOpen = not self.isOpen
