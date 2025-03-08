@@ -104,7 +104,7 @@ Creates a new Element (Instance) of the specified Widget type in the given layer
 
 Note: An element is an instance of a widget.
 
-### Removing an Element
+### Inserting and Removing an Element
 
 ```lua
 luis.insertElement(layerName, element)
@@ -113,7 +113,15 @@ luis.removeElement(layerName, element)
 - `layerName`: string - The name of the layer containing the element
 - `element`: table - The element object to insert or remove
 
-Removes the specified element from the given layer.
+Inserts or removes the specified element from the given layer.
+
+### Checking if an Element already exists within a layer
+```lua
+luis.elementExists(layerName, element)
+```
+- `layerName`: string - The name of the layer containing the element
+- `element`: table - The element object to insert or remove
+- Returns: boolean - Whether the layer already contains element
 
 ### Getting/Setting Element State
 

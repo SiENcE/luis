@@ -397,6 +397,18 @@ function luis.removeElement(layerName, elementToRemove)
     return false
 end
 
+function luis.elementExists(layerName, element)
+    if not luis.elements[layerName] then
+        return false
+    end
+    for _, e in ipairs(luis.elements[layerName]) do
+        if e == element then
+            return true
+        end
+    end
+    return false
+end
+
 --==============================================
 -- Theme handling
 --==============================================
