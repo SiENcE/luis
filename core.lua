@@ -397,12 +397,21 @@ function luis.removeElement(layerName, elementToRemove)
     return false
 end
 
+-- Function to check if an element exists in a layer
 function luis.elementExists(layerName, element)
+	-- Check if the layer exists
     if not luis.elements[layerName] then
         return false
     end
-    for _, e in ipairs(luis.elements[layerName]) do
-        if e == element then
+
+    -- If element is nil, return false
+    if not element then
+        return false
+    end
+
+	-- Check for direct reference match
+    for _, existingElement in ipairs(luis.elements[layerName]) do
+        if existingElement == element then
             return true
         end
     end
