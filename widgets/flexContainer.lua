@@ -14,7 +14,7 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
     local containerTheme = customTheme or luis.theme.flexContainer
     local container = {
         type = "FlexContainer",
-		name = containerName or "FlexContainer", -- optional, makes it better when handling multiple flexcontainers
+        name = containerName or "FlexContainer", -- optional, makes it better when handling multiple flexcontainers
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         position = Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
@@ -27,9 +27,10 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         focusable = true,  -- Make the button focusable
         focusableChildren = {},
         currentFocusIndex = 0,
-		internalFocusActive = false,
-		theme = containerTheme,
-		decorator = nil,
+        internalFocusActive = false,
+        theme = containerTheme,
+        decorator = nil,
+        visible = true, -- New visibility property, default is visible
         
         -- Check if a child already exists in the container
         hasChild = function(self, child)
@@ -183,6 +184,9 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         end,
 
         update = function(self, mx, my, dt)
+            -- Skip update if container is not visible
+            if not self.visible then return end
+            
             if self.focused and not self.internalFocusActive then
                 self:activateInternalFocus()
             elseif not self.focused and self.internalFocusActive then
@@ -209,6 +213,9 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         end,
         
         defaultDraw = function(self)
+            -- Skip drawing if container is not visible
+            if not self.visible then return end
+            
             -- Draw container background
             love.graphics.setColor(containerTheme.backgroundColor)
             love.graphics.rectangle("fill", self.position.x, self.position.y, self.width, self.height, containerTheme.cornerRadius)
@@ -223,29 +230,29 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
             love.graphics.rectangle("fill", self.position.x + self.width - containerTheme.handleSize, self.position.y + self.height - containerTheme.handleSize, containerTheme.handleSize, containerTheme.handleSize, containerTheme.cornerRadius)
             
             -- Draw children
-			-- TODO: z-sort children before draw
+            -- TODO: z-sort children before draw
             for _, child in ipairs(self.children) do
                 child:draw()
 
                 if luis.showElementOutlines then
                     luis.drawElementOutline(child)
 
-					local font_backup = love.graphics.getFont()
-					love.graphics.setColor(1, 1, 1, 0.7)
-					love.graphics.setFont(luis.theme.system.font)
-					love.graphics.print(child.type,child.position.x+child.width/2-string.len(child.type)*2, child.position.y)
-					love.graphics.setFont(font_backup)
+                    local font_backup = love.graphics.getFont()
+                    love.graphics.setColor(1, 1, 1, 0.7)
+                    love.graphics.setFont(luis.theme.system.font)
+                    love.graphics.print(child.type,child.position.x+child.width/2-string.len(child.type)*2, child.position.y)
+                    love.graphics.setFont(font_backup)
                 end
             end
 
             if luis.showElementOutlines then
                 luis.drawElementOutline(self)
 
-				local font_backup = love.graphics.getFont()
-				love.graphics.setColor(1, 1, 1, 0.7)
-				love.graphics.setFont(luis.theme.system.font)
+                local font_backup = love.graphics.getFont()
+                love.graphics.setColor(1, 1, 1, 0.7)
+                love.graphics.setFont(luis.theme.system.font)
                 love.graphics.print(self.name,self.position.x+self.width/2-string.len(self.name)*2, self.position.y+love.graphics.getFont():getHeight())
-				love.graphics.setFont(font_backup)
+                love.graphics.setFont(font_backup)
             end
 
             -- Draw focus indicator
@@ -257,26 +264,32 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
             -- Draw focus indicator for the currently focused child
             if self.internalFocusActive and self.currentChildFocusIndex and self.currentChildFocusIndex > 0 then
                 local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
-                love.graphics.setColor(0.7, 0.7, 0.7, 0.5)  -- darker hild focus
+                love.graphics.setColor(0.7, 0.7, 0.7, 0.5)  -- darker child focus
                 love.graphics.rectangle("line", focusedChild.position.x - 2, focusedChild.position.y - 2, focusedChild.width + 4, focusedChild.height + 4, containerTheme.cornerRadius)
             end
         end,
 
-		-- Draw method that can use a decorator
-		draw = function(self)
-			if self.decorator then
-				self.decorator:draw()
-			else
-				self:defaultDraw()
-			end
-		end,
+        -- Draw method that can use a decorator
+        draw = function(self)
+            -- Skip drawing if container is not visible
+            if not self.visible then return end
+            
+            if self.decorator then
+                self.decorator:draw()
+            else
+                self:defaultDraw()
+            end
+        end,
 
-		-- Method to set a decorator
-		setDecorator = function(self, decoratorType, ...)
-			self.decorator = decorators[decoratorType].new(self, ...)
-		end,
+        -- Method to set a decorator
+        setDecorator = function(self, decoratorType, ...)
+            self.decorator = decorators[decoratorType].new(self, ...)
+        end,
 
         click = function(self, x, y, button, istouch)
+            -- Skip interaction if container is not visible
+            if not self.visible then return false end
+            
             if self:isInResizeHandle(x, y) then
                 self.isResizing = true
                 return true
@@ -295,6 +308,9 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         end,
         
         release = function(self, x, y, button, istouch)
+            -- Skip interaction if container is not visible
+            if not self.visible then return false end
+            
             self.isDragging = false
             self.isResizing = false
             for _, child in ipairs(self.children) do
@@ -302,56 +318,24 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
                     child:release(x, y, button, istouch)
                 end
             end
+            return false
         end,
 
         wheelmoved = function(self, x, y)
+            -- Skip interaction if container is not visible
+            if not self.visible then return false end
+            
             for _, child in ipairs(self.children) do
                 if child.wheelmoved then
                     child:wheelmoved(x,y)
-                    return
+                    return true
                 end
             end
-		end,
---[[
-		-- not needed, as text and key input is pushed via core to all widgets!
-
-        textinput = function(self, text)
-            self.isDragging = false
-            self.isResizing = false
-            for _, child in ipairs(self.children) do
-                if child.textinput then
-					child.active = true
-                    child:textinput(text)
-					child.active = false
-                    return
-                end
-            end
+            return false
         end,
 
-        keypressed = function(self, key)
-            self.isDragging = false
-            self.isResizing = false
-            for _, child in ipairs(self.children) do
-                if child.keypressed then
-                    child:keypressed(key)
-                    return
-                end
-            end
-        end,
-
-        keyreleased = function(self, key)
-            self.isDragging = false
-            self.isResizing = false
-            for _, child in ipairs(self.children) do
-                if child.keyreleased then
-                    child:keyreleased(key)
-                    return
-                end
-            end
-		end,
-]]--
         setText = function(self, newText)
-           self.isDragging = false
+            self.isDragging = false
             self.isResizing = false
             for _, child in ipairs(self.children) do
                 if child.setText then
@@ -373,7 +357,9 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         end,
 
         gamepadpressed = function(self, id, button)
-			--print("checkbox.gamepadpressed = function", id, button, self.focused, self.value )
+            -- Skip interaction if container is not visible
+            if not self.visible then return false end
+            
             if not self.internalFocusActive then return false end
 
             if button == "dpdown" or button == "dpright" then
@@ -386,7 +372,7 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
                 -- Activate the currently focused child
                 local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
                 if focusedChild and focusedChild.gamepadpressed then
-					local rtn = focusedChild:gamepadpressed(id, button)
+                    local rtn = focusedChild:gamepadpressed(id, button)
                     return rtn
                 end
             end
@@ -394,16 +380,44 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         end,
 
         gamepadreleased = function(self, id, button)
-			--print("checkbox.gamepadreleased = function", id, button, self.focused )
+            -- Skip interaction if container is not visible
+            if not self.visible then return false end
+            
             -- Activate the currently focused child
-			local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
-			if focusedChild and focusedChild.gamepadreleased then
-					local rtn = focusedChild:gamepadreleased(id, button)
-                    return rtn
-			end
-			return false
+            local focusedChild = self.focusableChildren[self.currentChildFocusIndex]
+            if focusedChild and focusedChild.gamepadreleased then
+                local rtn = focusedChild:gamepadreleased(id, button)
+                return rtn
+            end
+            return false
         end,
-
+        
+        -- New methods for visibility control
+        
+        -- Hide the container and all children
+        hide = function(self)
+            self.visible = false
+        end,
+        
+        -- Show the container and all children
+        show = function(self)
+            self.visible = true
+        end,
+        
+        -- Toggle visibility
+        toggleVisibility = function(self)
+            self.visible = not self.visible
+        end,
+        
+        -- Set visibility with a boolean value
+        setVisible = function(self, isVisible)
+            self.visible = isVisible
+        end,
+        
+        -- Get current visibility state
+        isVisible = function(self)
+            return self.visible
+        end
     }
     
     container:updateMinimumSize()

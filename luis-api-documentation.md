@@ -14,9 +14,11 @@ LUIS (Love User Interface System) is a flexible GUI framework for LÖVE (Love2D)
 8. [Scaling and Grid](#scaling-and-grid)
 9. [Joystick and Gamepad Support](#joystick-and-gamepad-support)
 10. [Widget System](#widget-system)
-11. [Debugging](#debugging)
-12. [Usage Example](#usage-example)
-13. [Advanced Techniques with Layers and Grid-Based Layout](#advanced-techniques-with-layers-and-grid-based-layout)
+11. [FlexContainers](#flex-container)
+12. [Decorator System](#decorator-system)
+13. [Debugging](#debugging)
+14. [Usage Example](#usage-example)
+15. [Advanced Techniques with Layers and Grid-Based Layout](#advanced-techniques-with-layers-and-grid-based-layout)
 
 ## Initialization
 
@@ -558,6 +560,167 @@ function love.keypressed(key)
     luis.keypressed(key)
 end
 ```
+
+## FlexContainers
+
+The FlexContainer is a powerful widget that allows for creating dynamic, flexible layouts. It acts as a container for other widgets, automatically arranging them in a flow layout and providing features like dragging, resizing, and visibility control.
+
+### Creating a FlexContainer
+
+```lua
+-- Basic creation
+local container = luis.newFlexContainer(width, height, row, col)
+
+-- With custom theme
+local container = luis.newFlexContainer(width, height, row, col, customTheme)
+
+-- With name (useful for debugging and managing multiple containers)
+local container = luis.newFlexContainer(width, height, row, col, customTheme, "MainMenu")
+```
+
+- `width` and `height`: Dimensions specified in `gridSize`.
+- `row` and `col`: Position of the container on the grid, anchored at the top-left corner.
+- `customTheme`: Optional custom theme values for this container.
+- `containerName`: Optional name for the container element.
+
+### Adding and Managing Child Elements
+
+```lua
+-- Add child elements
+local button = luis.newButton("Click me", 10, 3, onClick, onRelease, 1, 1)
+local slider = luis.newSlider(0, 100, 50, 15, 2, onValueChange, 1, 1)
+container:addChild(button)
+container:addChild(slider)
+
+-- Remove child elements
+container:removeChild(button)
+
+-- Check if a child exists in the container
+local exists = container:hasChild(button)
+```
+
+Child elements are automatically positioned within the container, reflowing as needed.
+
+### Container Layout and Sizing
+
+```lua
+-- Manually resize the container
+container:resize(newWidth, newHeight)
+
+-- Container automatically calculates minimum size based on children
+local minWidth = container.minWidth
+local minHeight = container.minHeight
+```
+
+The FlexContainer automatically arranges its children in a left-to-right, top-to-bottom flow layout, wrapping elements to new rows when they would exceed the container's width.
+
+### Dragging and Resizing
+
+FlexContainers can be dragged and resized at runtime by default:
+
+- To drag a container, click and drag on any empty area within the container.
+- To resize a container, click and drag the resize handle in the bottom-right corner.
+
+### Visibility Control
+
+FlexContainers include built-in visibility control that allows you to hide and show containers without removing them from the UI structure:
+
+```lua
+-- Hide a container
+container:hide()
+
+-- Show a container
+container:show()
+
+-- Toggle visibility
+container:toggleVisibility()
+
+-- Set visibility directly
+container:setVisible(true)  -- Show
+container:setVisible(false) -- Hide
+
+-- Check if container is visible
+if container:isVisible() then
+    -- Container is visible
+end
+```
+
+When a container is hidden:
+- It won't be drawn on screen
+- It won't respond to user interactions
+- It maintains its state and all of its children
+- It remains in memory and in the UI hierarchy
+
+This is ideal for UI screens or panels that need to be temporarily hidden and then shown again later.
+
+### Focus Management
+
+FlexContainers support gamepad/keyboard focus navigation between focusable child elements:
+
+```lua
+-- Activate internal focus (focus on first child element)
+container:activateInternalFocus()
+
+-- Deactivate internal focus
+container:deactivateInternalFocus()
+
+-- Move focus between child elements
+container:moveFocus("next")     -- Focus next child
+container:moveFocus("previous") -- Focus previous child
+```
+
+### Applying Decorators
+
+Like other widgets, FlexContainers support decorators for visual styling:
+
+```lua
+-- Apply a glow effect
+container:setDecorator("GlowDecorator", {1, 0.5, 0, 0.5}, 15)
+
+-- Apply a glassmorphism effect
+container:setDecorator("GlassmorphismDecorator", {
+    opacity = 0.6,
+    blur = 15,
+    borderRadius = 12,
+    backgroundColor = {1, 1, 1, 0.15}
+})
+```
+
+### Example
+
+Here's a complete example of creating and using a FlexContainer:
+
+```lua
+-- Create a FlexContainer
+local container = luis.newFlexContainer(20, 15, 5, 5)
+
+-- Add child elements
+local title = luis.newLabel("Settings", 18, 2, 1, 1)
+local button1 = luis.newButton("Audio", 10, 3, onAudioClick, nil, 1, 1)
+local button2 = luis.newButton("Video", 10, 3, onVideoClick, nil, 1, 1)
+local button3 = luis.newButton("Controls", 10, 3, onControlsClick, nil, 1, 1)
+local slider = luis.newSlider(0, 100, 50, 15, 2, onVolumeChange, 1, 1)
+
+container:addChild(title)
+container:addChild(button1)
+container:addChild(button2)
+container:addChild(button3)
+container:addChild(slider)
+
+-- Add the container to a layer
+luis.createElement("menu", "FlexContainer", container)
+
+-- Show/hide based on game state
+function showSettings()
+    container:show()
+end
+
+function hideSettings()
+    container:hide()
+end
+```
+
+This creates a settings menu container with a title, three buttons, and a slider, which can be shown or hidden as needed.
 
 ## Decorator System
 
