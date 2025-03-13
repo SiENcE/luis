@@ -415,6 +415,7 @@ function luis.elementExists(layerName, element)
             return true
         end
     end
+
     return false
 end
 
