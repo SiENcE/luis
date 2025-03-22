@@ -61,7 +61,7 @@ LUIS comes with a variety of pre-built widgets to create rich user interfaces. W
 
 ## Getting Started
 
-1. **Install Löve2D**: You can download Löve2D from [here](https://love2d.org/).
+1. **Install Löve2D** (11.5): You can download Löve2D from [here](https://love2d.org/).
 2. **Clone the LUIS Library into your project**:
     ```bash
     git clone https://github.com/SiENCE/LUIS.git
