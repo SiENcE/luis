@@ -220,6 +220,13 @@ function luis.enableLayer(layerName)
         return false
     end
     luis.enabledLayers[layerName] = true
+
+    for _, element in ipairs(luis.elements[layerName]) do
+        if element.onEnableLayer then
+            element:onEnableLayer(layerName)
+        end
+    end
+
     --print("Layer '" .. layerName .. "' enabled.")
     return true
 end
@@ -231,6 +238,11 @@ function luis.disableLayer(layerName)
     end
     luis.updateLastFocusedWidget(layerName)
     luis.enabledLayers[layerName] = false
+    for _, element in ipairs(luis.elements[layerName]) do
+        if element.onDisableLayer then
+            element:onDisableLayer(layerName)
+        end
+    end
     --print("Layer '" .. layerName .. "' disabled.")
     return true
 end
@@ -643,6 +655,9 @@ local function handleLayerInput(layerName, x, y, inputFunction, ...)
 			elseif (inputFunction == "keypressed" or inputFunction == "keyreleased") and
 			   element[inputFunction] and element[inputFunction](element, ...) then
 				return true  -- Stop propagation if an element handled the input
+			elseif (inputFunction == "touchpressed" or inputFunction == "touchreleased") and
+			   element[inputFunction] and element[inputFunction](element, ...) then
+				return true  -- Stop propagation if an element handled the input
 			else
 				--print("ERROR: unhandled Input", layerName, x, y, inputFunction)
 			end
@@ -802,6 +817,28 @@ function luis.mousereleased(x, y, button, istouch, presses)
     x, y = x / luis.scale, y / luis.scale
     for layerName, _ in pairs(luis.enabledLayers) do
         if handleLayerInput(layerName, x, y, "release", button, istouch, presses) then
+            return true
+        end
+    end
+    return false
+end
+
+function luis.touchpressed(id, x, y, dx, dy, pressure)
+    x, y = x / luis.scale, y / luis.scale
+    -- Then process regular click handling with z-index priority preserved
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, nil, nil, "touchpressed", id, x, y, dx, dy, pressure) then
+            return true
+        end
+    end
+    return false
+end
+
+function luis.touchreleased(id, x, y, dx, dy, pressure)
+    x, y = x / luis.scale, y / luis.scale
+    -- Then process regular click handling with z-index priority preserved
+    for layerName, _ in pairs(luis.enabledLayers) do
+        if handleLayerInput(layerName, nil, nil, "touchreleased", id, x, y, dx, dy, pressure) then
             return true
         end
     end
