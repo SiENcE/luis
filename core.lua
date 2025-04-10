@@ -177,9 +177,16 @@ function luis.newLayer(layerName)
     return true
 end
 
-function luis.setCurrentLayer(layerName)
+function luis.layerExists(layerName)
     if not luis.layers[layerName] then
         print("Error: Layer '" .. layerName .. "' does not exist.")
+        return false
+    end
+    return true
+end
+
+function luis.setCurrentLayer(layerName)
+    if not luis.layerExists(layerName) then
         return false
     end
     luis.updateLastFocusedWidget(luis.currentLayer)
@@ -215,25 +222,21 @@ function luis.popLayer()
 end
 
 function luis.enableLayer(layerName)
-    if not luis.layers[layerName] then
-        print("Error: Layer '" .. layerName .. "' does not exist.")
+    if not luis.layerExists(layerName) then
         return false
     end
     luis.enabledLayers[layerName] = true
-
     for _, element in ipairs(luis.elements[layerName]) do
         if element.onEnableLayer then
             element:onEnableLayer(layerName)
         end
     end
-
     --print("Layer '" .. layerName .. "' enabled.")
     return true
 end
 
 function luis.disableLayer(layerName)
-    if not luis.layers[layerName] then
-        print("Error: Layer '" .. layerName .. "' does not exist.")
+    if not luis.layerExists(layerName) then
         return false
     end
     luis.updateLastFocusedWidget(layerName)
@@ -248,27 +251,28 @@ function luis.disableLayer(layerName)
 end
 
 function luis.toggleLayer(layerName)
-    if not luis.layers[layerName] then
-        print("Error: Layer '" .. layerName .. "' does not exist.")
+    if not luis.layerExists(layerName) then
         return false
     end
-    luis.enabledLayers[layerName] = not luis.enabledLayers[layerName]
+    if luis.enabledLayers[layerName] then
+        luis.disableLayer(layerName)
+    else
+        luis.enableLayer(layerName)
+    end
     --local status = luis.enabledLayers[layerName] and "enabled" or "disabled"
     --print("Layer '" .. layerName .. "' " .. status .. ".")
     return true
 end
 
 function luis.isLayerEnabled(layerName)
-    if not luis.layers[layerName] then
-        print("Error: Layer '" .. layerName .. "' does not exist.")
+    if not luis.layerExists(layerName) then
         return false
     end
     return luis.enabledLayers[layerName] == true
 end
 
 function luis.removeLayer(layerName)
-    if not luis.layers[layerName] then
-        print("Error: Layer '" .. layerName .. "' does not exist.")
+    if not luis.layerExists(layerName) then
         return false
     end
 
