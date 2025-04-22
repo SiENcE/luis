@@ -79,6 +79,29 @@ luis.isLayerEnabled(layerName)
 - `layerName`: string - The name of the layer to check
 - Returns: boolean - Whether the layer is enabled
 
+### Layer State Change Callbacks
+
+Elements can implement callbacks that are triggered when their containing layer is enabled or disabled:
+
+```lua
+-- Creating an element with layer callbacks
+local button = luis.newButton("Click me", 4, 2, onClick, onRelease, 1, 1)
+
+-- Add enable/disable layer callbacks
+function button:onEnableLayer(layerName)
+    -- Code to execute when the layer is enabled
+    self.text = "Layer Activated!"
+end
+
+function button:onDisableLayer(layerName)
+    -- Code to execute when the layer is disabled
+    -- layerName parameter provides context about which layer changed
+    print("Button disabled with layer: " .. layerName)
+end
+
+luis.createElement("mainMenu", "Button", button)
+```
+
 ### Working with the LayerStack
 
 ```lua
@@ -150,6 +173,31 @@ luis.textinput(text)
 ```
 
 These functions should be called from the corresponding LÖVE callbacks to handle input events.
+
+### Touch Input Support
+
+LUIS provides touch input handling for mobile devices and touch screens:
+
+```lua
+luis.touchpressed(id, x, y, dx, dy, pressure)
+luis.touchreleased(id, x, y, dx, dy, pressure)
+```
+
+These functions should be called from the corresponding LÖVE callbacks to handle touch events. Unlike mouse events, touch events support multiple simultaneous touches with unique IDs.
+
+Custom widgets can implement touch handling with these methods:
+
+```lua
+function myWidget:touchpressed(id, x, y, dx, dy, pressure)
+    -- Handle touch press
+    return true -- Return true if the touch was handled
+end
+
+function myWidget:touchreleased(id, x, y, dx, dy, pressure)
+    -- Handle touch release
+    return true -- Return true if the touch was handled
+end
+```
 
 ### Joystick and Gamepad Support
 
