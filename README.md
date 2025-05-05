@@ -58,6 +58,7 @@ LUIS comes with a variety of pre-built widgets to create rich user interfaces. W
 14. **DialogueWheel**: Circular interface that presents selectable options in a radial format
 15. **Custom**: Add your own drawing function
 16. **FlexContainer**: Special container for flexible layouts
+17. **DialogueBox**: Animated dialogue box with a gradual text reveal effect
 
 ## Getting Started
 

@@ -476,6 +476,10 @@ LUIS supports various widget types, including:
 
 `dialogueWheel.new(options, width, height, onChange, row, col, customTheme)`
 
+- DialogueBox
+
+`dialogueBox.new(text, speakerName, width, height, row, col, customTheme)`
+
 
 Each element (widget) type has specific properties and methods.
 
@@ -486,6 +490,7 @@ Each element (widget) type has specific properties and methods.
 - `onClick`: Function that is executed when the button is pressed.
 - `onRelease`: Function that is executed when the button is released.
 - `text`: Text displayed on the element (widget), applicable to buttons and labels.
+- `speakerName`: String for the name of the speaker (displayed in a name tag) for dialogueBox widget
 - `align`: Alignment of the displayed text.
 - `value`: Initial value for the element (widget).
 - `group`: Group name for a radio button group.
