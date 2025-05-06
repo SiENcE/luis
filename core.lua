@@ -34,6 +34,15 @@ luis.joystickButtonStates = {}
 -- mouse
 luis.clickCooldown = 0
 
+-- metrics
+luis.stats = {
+			"FPS: " .. 0,
+			"Elements: " .. 0,
+			"Memory (KB): " .. 0,
+			"Active Layers: " .. 0,
+			"Draw Calls: " .. 0
+		}
+
 --[[
 love.graphics.newFont(fontsize, hinting mode)
 
@@ -655,33 +664,34 @@ function luis.draw()
 		love.graphics.setColor(0.5, 0.5, 0.5)
 		love.graphics.setFont(luis.theme.system.font)
 		
-		local stats = {
-			"FPS: " .. love.timer.getFPS(),
-			"Elements: " .. luis.getTotalElementCount(),
-			"Memory (KB): " .. math.floor(collectgarbage("count")),
-			"Active Layers: " .. luis.getActiveLayerCount(),
-			"Draw Calls: " .. love.graphics.getStats().drawcalls
-		}
-		
 		-- Background for better readability
 		local maxWidth = 0
-		for _, stat in ipairs(stats) do
+		for _, stat in ipairs(luis.stats) do
 			maxWidth = math.max(maxWidth, luis.theme.system.font:getWidth(stat))
 		end
 		
 		love.graphics.setColor(0, 0, 0, 0.7)
-		love.graphics.rectangle("fill", 5, luis.baseHeight - (#stats * 20) - 15, maxWidth + 10, (#stats * 20) + 10)
+		love.graphics.rectangle("fill", 5, luis.baseHeight - (#luis.stats * 20) - 15, maxWidth + 10, (#luis.stats * 20) + 10)
 		
 		-- Draw the metrics
 		love.graphics.setColor(0.8, 0.8, 0.8)
-		for i, stat in ipairs(stats) do
-			love.graphics.print(stat, 10, luis.baseHeight - (#stats * 20) + ((i-1) * 20) - 10)
+		for i, stat in ipairs(luis.stats) do
+			love.graphics.print(stat, 10, luis.baseHeight - (#luis.stats * 20) + ((i-1) * 20) - 10)
 		end
 		
 		love.graphics.setFont(font_backup)
 	end
 
     love.graphics.pop()
+
+	luis.stats = {
+		"LUIS Metrics:",
+		"FPS: " .. love.timer.getFPS(),
+		"Elements: " .. luis.getTotalElementCount(),
+		"Memory (KB): " .. math.floor(collectgarbage("count")),
+		"Active Layers: " .. luis.getActiveLayerCount(),
+		"Draw Calls: " .. love.graphics.getStats().drawcalls
+	}
 end
 
 --==============================================
