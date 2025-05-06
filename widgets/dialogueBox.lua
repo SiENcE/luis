@@ -145,12 +145,9 @@ function dialogueBox.new(text, speakerName, width, height, row, col, customTheme
             end
         end,
         
-        -- Draw the dialogue box
+        -- The default draw method that will be used when no decorator is applied
         defaultDraw = function(self)
             if not self.active then return end
-            
-            -- Set opacity for fading
-            local origColors = {love.graphics.getColor()}
             
             -- Calculate nameTag width based on text
             love.graphics.setFont(self.theme.nameFont)
@@ -229,16 +226,15 @@ function dialogueBox.new(text, speakerName, width, height, row, col, customTheme
                     indicatorX + 15, indicatorY + 7.5 + bounce, 
                     indicatorX, indicatorY + 15 + bounce
                 )
-                love.graphics.setColor(origColors)
             end
         end,
         
-        -- Draw method that can use a decorator
+        -- Proper draw method that supports the decorator pattern
         draw = function(self)
             if not self.active then return end
             
             if self.decorator then
-                self.decorator:draw()
+                self.decorator:draw(self)
             else
                 self:defaultDraw()
             end
