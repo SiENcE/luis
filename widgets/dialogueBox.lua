@@ -219,12 +219,15 @@ function dialogueBox.new(text, speakerName, width, height, row, col, customTheme
                 local indicatorX = self.position.x + self.width - self.theme.padding - 15
                 local indicatorY = self.position.y + self.height - self.theme.padding - 15
                 
+                -- Animate the indicator with a subtle bounce
+                local bounce = math.sin(love.timer.getTime() * 5) * 2
+                
                 -- Draw a simple triangle indicator
                 love.graphics.polygon(
                     "fill", 
-                    indicatorX, indicatorY, 
-                    indicatorX + 15, indicatorY + 7.5, 
-                    indicatorX, indicatorY + 15
+                    indicatorX, indicatorY + bounce, 
+                    indicatorX + 15, indicatorY + 7.5 + bounce, 
+                    indicatorX, indicatorY + 15 + bounce
                 )
                 love.graphics.setColor(origColors)
             end
