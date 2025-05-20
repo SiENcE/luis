@@ -248,7 +248,7 @@ Available decorators:
 
 ## Documentation
 
-For more detailed information on the LUIS API, including layer management, input handling, theming, and state management, please refer to the [LUIS core documentation](/luis/luis-api-documentation.md).
+For more detailed information on the LUIS API, including layer management, input handling, theming, and state management, please refer to the [LUIS core documentation](luis-api-documentation.md).
 
 ## Dependencies
 
