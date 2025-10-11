@@ -270,3 +270,7 @@ This project is licensed under the MIT License with additional terms - see the [
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+## Author
+
+Florian Fischer
