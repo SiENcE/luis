@@ -323,21 +323,32 @@ function luis.createElement(layerName, widgetType, ...)
     end
 
     local element
-    if widgetType == "FlexContainer" and type((...)) == "table" and (...).type == "FlexContainer" then
-        -- If it's a pre-existing FlexContainer, use it directly
-        element = (...)
-	else
-		if luis["new" .. widgetType] then
-			-- Otherwise, create a new element as before
-			element = luis["new" .. widgetType](...)
-		else
-			print("ERROR: no widgetType with the following name registered:", widgetType)
-			return false
-		end
+    local args = {...}
+    
+    -- Check if the first argument is already a widget object
+    if type(args[1]) == "table" and args[1].type then
+        -- If it's a pre-created widget object, use it directly
+        element = args[1]
+        
+        -- Verify the widget type matches (if specified)
+        if widgetType ~= element.type then
+            print("Warning: createElement widgetType '" .. widgetType .. "' doesn't match widget object type '" .. element.type .. "'")
+        end
+    elseif widgetType == "FlexContainer" and type(args[1]) == "table" and args[1].type == "FlexContainer" then
+        -- Legacy support: If it's a pre-existing FlexContainer, use it directly
+        element = args[1]
+    else
+        -- Otherwise, create a new element using the widget constructor
+        if luis["new" .. widgetType] then
+            element = luis["new" .. widgetType](...)
+        else
+            print("ERROR: no widgetType with the following name registered:", widgetType)
+            return false
+        end
     end
 
     luis.insertElement(layerName, element)
-	print('createElement:', layerName, #luis.elements[layerName], widgetType)
+    print('createElement:', layerName, #luis.elements[layerName], widgetType)
     
     return element
 end

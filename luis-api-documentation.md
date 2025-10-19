@@ -129,6 +129,31 @@ Creates a new Element (Instance) of the specified Widget type in the given layer
 
 Note: An element is an instance of a widget.
 
+#### Method 2: Pre-created Widget Objects
+Create a widget object first using `luis.newWidgetType()`, then pass it to `createElement`:
+
+```lua
+-- Create the widget object first
+local button = luis.newButton("Click Me", 15, 3, 
+    function() print("Clicked!") end, 
+    function() print("Released!") end, 
+    5, 2)
+
+-- Customize the widget before adding to layer
+button.customProperty = "myValue"
+button:setDecorator("GlowDecorator", {1, 0.5, 0, 0.5}, 15)
+
+-- Add the pre-created widget to the layer
+luis.createElement("mainMenu", "Button", button)
+```
+
+**Parameters:**
+- `layerName`: string - The name of the layer to add the element to
+- `widgetType`: string - The widget type (should match the object's type for clarity)
+- First argument in `...`: table - A pre-created widget object with a `type` property
+
+**Note:** When using a pre-created widget object, the `widgetType` parameter should match the widget's `type` property. If they don't match, LUIS will display a warning but still use the widget object.
+
 ### Inserting and Removing an Element
 
 ```lua
@@ -142,6 +167,25 @@ Inserts or removes the specified element from the given layer.
 
 ### Checking if an Element already exists within a layer
 ```lua
+
+#### Method 2: Pre-created Widget Objects (New!)
+Create a widget object first using `luis.newWidgetType()`, then pass it to `createElement`:
+
+```lua
+-- Create the widget object first
+local button = luis.newButton("Click Me", 15, 3, 
+    function() print("Clicked!") end, 
+    function() print("Released!") end, 
+    5, 2)
+
+-- Customize the widget before adding to layer
+button.customProperty = "myValue"
+button:setDecorator("GlowDecorator", {1, 0.5, 0, 0.5}, 15)
+
+-- Add the pre-created widget to the layer
+luis.createElement("mainMenu", "Button", button)
+```
+
 luis.elementExists(layerName, element)
 ```
 - `layerName`: string - The name of the layer containing the element
