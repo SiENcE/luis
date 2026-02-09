@@ -49,7 +49,7 @@ local function safeSubstring(str, startPos, endPos)
     if type(str) ~= "string" then
         return ""
     end
-    return string.sub(str, startPos, endPos)
+    return utils.utf8_sub(str, startPos, endPos)
 end
 
 -- DialogueBox widget
