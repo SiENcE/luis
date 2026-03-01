@@ -62,6 +62,11 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         end,
         
         addChild = function(self, child)
+			-- Prevent the container from adding itself
+			if self == child then
+				return false
+			end
+			
             -- Check if child already exists before adding
             if not self:hasChild(child) then
                 table.insert(self.children, child)
