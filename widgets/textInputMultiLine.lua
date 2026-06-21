@@ -80,7 +80,7 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
                 love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, textInputTheme.cornerRadius)
             end
 			
-			if luis.showElementOutvalue then
+			if luis.showElementOutlines then
 				love.graphics.print("Active: " .. tostring(self.active), self.position.x, self.position.y-luis.gridSize/2)
 			end
         end,
@@ -200,8 +200,17 @@ function textInputMultiLine.new(width, height, placeholder, onChange, row, col, 
 
         setText = function(self, newText)
             self.value = {}
-            for line in newText:gmatch("[^\r\n]+") do
-                table.insert(self.value, line)
+            -- Split on newlines while preserving empty (blank) lines.
+            newText = tostring(newText or ""):gsub("\r\n", "\n"):gsub("\r", "\n")
+            local start = 1
+            while true do
+                local nl = newText:find("\n", start, true)
+                if not nl then
+                    table.insert(self.value, newText:sub(start))
+                    break
+                end
+                table.insert(self.value, newText:sub(start, nl - 1))
+                start = nl + 1
             end
             if #self.value == 0 then
                 self.value = {""}

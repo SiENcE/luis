@@ -107,6 +107,12 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 		end,
 
         click = function(self, x, y, button, istouch, presses)
+            -- Test the actual click position. Relying on self.hover is unreliable:
+            -- love.mousepressed runs before love.update in the same frame, so self.hover
+            -- can still be stale (false) on the first click after the cursor lands here.
+            if x and y then
+                self.hover = pointInRect(x, y, self.position.x, self.position.y, self.width, self.height)
+            end
             if (self.hover or self.focused) and not self.pressed then
                 self.pressed = true
                 luis.flux.to(self, buttonTheme.transitionDuration, {

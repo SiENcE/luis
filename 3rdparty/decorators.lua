@@ -65,13 +65,21 @@ function Slice9Decorator.new(widget, image, left, right, top, bottom)
 end
 
 function Slice9Decorator:draw(this)
+    -- Accept the widget either via the `this` argument (legacy call style) or,
+    -- when invoked uniformly as `decorator:draw()`, fall back to self.widget.
+    this = this or self.widget
     local x, y = self.widget.position.x, self.widget.position.y
     local w, h = self.widget.width, self.widget.height
     local iw, ih = self.image:getDimensions()
-    
+
     -- Center width and height
     local cw = iw - self.left - self.right
     local ch = ih - self.top - self.bottom
+
+    -- Guard against degenerate slice insets (would produce inf/nan scaling)
+    if cw <= 0 or ch <= 0 then
+        love.graphics.draw(self.image, x, y, 0, w / iw, h / ih)
+    else
     
     -- Draw corners
     love.graphics.draw(self.image, love.graphics.newQuad(0, 0, self.left, self.top, iw, ih), x, y)
@@ -87,9 +95,10 @@ function Slice9Decorator:draw(this)
     
     -- Draw center
     love.graphics.draw(self.image, love.graphics.newQuad(self.left, self.top, cw, ch, iw, ih), x + self.left, y + self.top, 0, (w - self.left - self.right) / cw, (h - self.top - self.bottom) / ch)
+    end
 
 	-- Draw text
-	if this.text then
+	if this and this.text then
 		love.graphics.setColor(this.theme.textColor)
 		local font_backup = love.graphics.getFont()
 		love.graphics.printf(this.text, this.position.x, this.position.y + (this.height - font_backup:getHeight()) / 2, this.width, this.theme.align)
@@ -107,7 +116,10 @@ GlassmorphismDecorator.__index = GlassmorphismDecorator
 
 function GlassmorphismDecorator.new(widget, options)
     local self = setmetatable(BaseDecorator.new(widget), GlassmorphismDecorator)
-    
+
+    -- Tolerate a missing options table (every other decorator does)
+    options = options or {}
+
     -- Default options
     self.options = {
         opacity = options.opacity or 0.5,

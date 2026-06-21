@@ -86,7 +86,6 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
 
         -- Joystick-specific functions
         gamepadpressed = function(self, id, button)
-			print("checkbox.gamepadpressed = function", id, button, self.focused, self.value )
             if button == 'a' and self.focused then
                 self.value = not self.value
                 luis.flux.to(self, 0.2, { checkScale = self.value and 1 or 0 })

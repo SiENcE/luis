@@ -265,7 +265,8 @@ function dialogueBox.new(text, speakerName, width, height, row, col, customTheme
         
         -- Method to set new dialogue text
         setText = function(self, text, speakerName)
-            self.fullText = ensureString(text) or self.fullText
+            -- Keep current text when called with nil (ensureString returns "" for nil)
+            if text ~= nil then self.fullText = ensureString(text) end
             if speakerName then self.speakerName = ensureString(speakerName) end
             self.charIndex = 0
             self.isComplete = false

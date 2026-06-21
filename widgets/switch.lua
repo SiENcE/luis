@@ -78,7 +78,6 @@ function switch.new(value, width, height, onChange, row, col, customTheme)
 
         -- Joystick-specific functions
         gamepadpressed = function(self, id, button)
-			print("switch.gamepadpressed = function", id, button, self.focused)
             if button == 'a' and self.focused then
                 self.value = not self.value
                 if self.onChange then

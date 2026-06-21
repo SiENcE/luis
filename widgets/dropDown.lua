@@ -168,7 +168,12 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         setItems = function(self, newItems)
             self.items = newItems
             self.maxScrollOffset = math.max(0, #newItems - maxVisibleItems)
-            self.value = math.min(self.value, #newItems)
+            -- Keep value in range; clamp to at least 1 unless the list is empty
+            if #newItems == 0 then
+                self.value = 0
+            else
+                self.value = math.max(1, math.min(self.value, #newItems))
+            end
         end,
         
         setValue = function(self, newIndex)

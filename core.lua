@@ -104,7 +104,7 @@ luis.theme = {
     },
     progressbar = {
         backgroundColor = {0.2, 0.2, 0.2, 1},
-        fillColor = {0.15, 0.15, 0.15, 1},
+        fillColor = {0.3, 0.6, 0.9, 1},
         borderColor = {0.25, 0.25, 0.25, 1},
     },
     icon = {
@@ -348,8 +348,7 @@ function luis.createElement(layerName, widgetType, ...)
     end
 
     luis.insertElement(layerName, element)
-    print('createElement:', layerName, #luis.elements[layerName], widgetType)
-    
+
     return element
 end
 
@@ -479,10 +478,13 @@ end
 -- Set a new theme
 function luis.setTheme(newTheme)
     for category, styles in pairs(newTheme) do
-        if luis.theme[category] then
-            for property, value in pairs(styles) do
-                luis.theme[category][property] = value
-            end
+        -- Create the category if the base theme doesn't have it yet, so widgets
+        -- like node/colorpicker/dialogueBox/dialogueWheel can be themed too.
+        if not luis.theme[category] then
+            luis.theme[category] = {}
+        end
+        for property, value in pairs(styles) do
+            luis.theme[category][property] = value
         end
     end
 	luis.updateElementTheme(newTheme)
@@ -1020,6 +1022,12 @@ end
 
 -- Update the setCurrentFocus function
 function luis.setCurrentFocus(element)
+    -- Focus/navigation is a controller concept (physical joystick or the keyboard
+    -- "virtual gamepad"). Don't activate a focus highlight when none is available;
+    -- clearing focus (element == nil) is always allowed.
+    if element ~= nil and #luis.activeJoysticks == 0 then
+        element = nil
+    end
     if luis.currentFocus then
         if luis.currentFocus.type == "FlexContainer" then
             luis.currentFocus:deactivateInternalFocus()
@@ -1126,7 +1134,6 @@ function luis.getJoystickAxis(id, axis)
 end
 
 function luis.gamepadpressed(joystick, button)
-print('luis.gamepadpressed',joystick, button)
     for id, activeJoystick in pairs(luis.activeJoysticks) do
         if joystick == activeJoystick then
 			-- First, check if the current focus is a FlexContainer

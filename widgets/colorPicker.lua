@@ -35,6 +35,10 @@ end
 -- Helper function to convert RGB to CMYK
 local function RGBtoCMYK(r, g, b)
     local k = 1 - math.max(r, g, b)
+    -- Pure black (k == 1) would divide by zero -> NaN
+    if k >= 1 then
+        return 0, 0, 0, 1
+    end
     local c = (1 - r - k) / (1 - k)
     local m = (1 - g - k) / (1 - k)
     local y = (1 - b - k) / (1 - k)
@@ -77,6 +81,8 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
         onChange = onChange or function() end,
         focusable = true,
         focused = false,
+        dragging = false,   -- true while a slider knob is grabbed
+        dragRegion = nil,   -- which slider ("hue"/"saturation"/"value") is being dragged
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         position = Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),
@@ -120,28 +126,45 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
         end
     end
 
+    -- Set the given slider's value from an absolute x coordinate (clamped to the track)
+    function self:applyRegionValue(region, x)
+        local relX = math.max(0, math.min(x - self.position.x, self.width))
+        local t = relX / self.width
+
+        if region == "hue" then
+            self.hue = t
+        elseif region == "saturation" then
+            self.saturation = t
+        elseif region == "value" then
+            self.value = t
+        end
+
+        self:updateColor()
+    end
+
     function self:click(x, y, button)
         if not self:isInBounds(x, y) then return false end
-        
+
         if button == 1 then
-            local relX = x - self.position.x
             local region = self:getSliderRegion(y)
-            
             if region then
-                -- Limit relX to the slider width
-                relX = math.max(0, math.min(relX, self.width))
-                
-                if region == "hue" then
-                    self.hue = relX / self.width
-                elseif region == "saturation" then
-                    self.saturation = relX / self.width
-                elseif region == "value" then
-                    self.value = relX / self.width
-                end
-                
-                self:updateColor()
+                -- Grab this slider so it keeps tracking the mouse until release
+                self.dragging = true
+                self.dragRegion = region
+                self:applyRegionValue(region, x)
                 return true
             end
+        end
+        return false
+    end
+
+    function self:release(x, y, button)
+        if self.dragging and button == 1 then
+            -- Final update so the value snaps to the release position
+            self:applyRegionValue(self.dragRegion, x)
+            self.dragging = false
+            self.dragRegion = nil
+            return true
         end
         return false
     end
@@ -172,7 +195,17 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
     end
 
     function self:update(mx, my, dt)
-        -- Add any update logic here if needed
+        -- Continue tracking the grabbed slider while the mouse button is held,
+        -- even if the cursor leaves the slider band vertically (real colorpicker feel).
+        if self.dragging then
+            if love.mouse.isDown(1) then
+                self:applyRegionValue(self.dragRegion, mx)
+            else
+                -- Button was released outside the widget; stop dragging
+                self.dragging = false
+                self.dragRegion = nil
+            end
+        end
     end
 
     function self:defaultDraw()
@@ -211,11 +244,18 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
             love.graphics.line(self.position.x + i, self.position.y + self.height * 2/3, self.position.x + i, self.position.y + self.height)
         end
         
-        -- Draw sliders
-        love.graphics.setColor(1, 1, 1)
-        love.graphics.circle("fill", self.position.x + self.hue * self.width, self.position.y + self.height / 6, 5)
-        love.graphics.circle("fill", self.position.x + self.saturation * self.width, self.position.y + self.height / 2, 5)
-        love.graphics.circle("fill", self.position.x + self.value * self.width, self.position.y + self.height * 5/6, 5)
+        -- Draw slider knobs (the grabbed one is drawn larger for feedback)
+        local function drawKnob(region, kx, ky)
+            local radius = (self.dragging and self.dragRegion == region) and 8 or 5
+            -- subtle outline so the knob stays visible over any color
+            love.graphics.setColor(0, 0, 0, 0.5)
+            love.graphics.circle("line", kx, ky, radius)
+            love.graphics.setColor(1, 1, 1)
+            love.graphics.circle("fill", kx, ky, radius)
+        end
+        drawKnob("hue",        self.position.x + self.hue * self.width,        self.position.y + self.height / 6)
+        drawKnob("saturation", self.position.x + self.saturation * self.width, self.position.y + self.height / 2)
+        drawKnob("value",      self.position.x + self.value * self.width,      self.position.y + self.height * 5/6)
         
         -- Draw selected color
         love.graphics.setColor(self.color)
@@ -229,7 +269,7 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
 
         -- Print color values
         love.graphics.setColor(1, 1, 1)
-        local r, g, b = unpack(self.color)
+        local r, g, b = (unpack or table.unpack)(self.color)
         local hex = string.format("#%02X%02X%02X", r * 255, g * 255, b * 255)
         local rgb = string.format("RGB: %d, %d, %d", r * 255, g * 255, b * 255)
         local c, m, y, k = RGBtoCMYK(r, g, b)

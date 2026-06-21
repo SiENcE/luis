@@ -9,7 +9,8 @@ end
 -- UTF8 helper function
 function utils.utf8_sub(str, start_pos, end_pos)
     if not end_pos then end_pos = -1 end
-    local start_byte = utf8.offset(str, start_pos)
+    -- utf8.offset returns nil for out-of-range indices; fall back to safe bounds
+    local start_byte = utf8.offset(str, start_pos) or (#str + 1)
     local end_byte = utf8.offset(str, end_pos + 1)
     if end_byte then end_byte = end_byte - 1 end
     return string.sub(str, start_byte, end_byte)

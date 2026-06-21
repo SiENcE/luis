@@ -26,7 +26,7 @@ function flexContainer.new(width, height, row, col, customTheme, containerName)
         focused = false,
         focusable = true,  -- Make the button focusable
         focusableChildren = {},
-        currentFocusIndex = 0,
+        currentChildFocusIndex = 0,
         internalFocusActive = false,
         theme = containerTheme,
         decorator = nil,

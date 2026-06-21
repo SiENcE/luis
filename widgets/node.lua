@@ -70,8 +70,11 @@ function node.new(title, width, height, row, col, func, customTheme)
         disconnect = function(self, connectionIndex)
             local connection = self.connections[connectionIndex]
             if connection then
-                -- Clear the input value of the target node
-                connection.to.inputs[connection.toPort].value = nil
+                -- Clear the input value of the target node (guard against removed ports)
+                local toInput = connection.to.inputs[connection.toPort]
+                if toInput then
+                    toInput.value = nil
+                end
                 -- Remove the connection
                 table.remove(self.connections, connectionIndex)
                 -- Re-execute the target node to update its state
@@ -87,17 +90,21 @@ function node.new(title, width, height, row, col, func, customTheme)
             end
 
             -- Execute the node's function
-            local results = self.func(unpack(inputValues))
+            local results = self.func((unpack or table.unpack)(inputValues)) or {}
 
             -- Update output values
             for i, output in ipairs(self.outputs) do
                 output.value = results[i]
             end
 
-            -- Propagate results to connected nodes
+            -- Propagate results to connected nodes (guard against removed ports)
             for _, connection in ipairs(self.connections) do
-                connection.to.inputs[connection.toPort].value = self.outputs[connection.fromPort].value
-                connection.to:execute()  -- Execute the connected node
+                local toInput = connection.to.inputs[connection.toPort]
+                local fromOutput = self.outputs[connection.fromPort]
+                if toInput and fromOutput then
+                    toInput.value = fromOutput.value
+                    connection.to:execute()  -- Execute the connected node
+                end
             end
         end,
 
@@ -149,7 +156,8 @@ function node.new(title, width, height, row, col, func, customTheme)
                 love.graphics.setColor(self.theme.connectingColor)
                 local startX = self.position.x + self.outputs[self.connectingFrom].position.x
                 local startY = self.position.y + self.outputs[self.connectingFrom].position.y
-                love.graphics.line(startX, startY, love.mouse.getX(), love.mouse.getY())
+                -- Mouse coords are in screen space; convert to LUIS (scaled) space
+                love.graphics.line(startX, startY, love.mouse.getX() / luis.scale, love.mouse.getY() / luis.scale)
             end
 
             -- Draw input and output values

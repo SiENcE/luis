@@ -45,7 +45,7 @@ local defaultTheme = {
     },
     progressbar = {
         backgroundColor = {0.2, 0.2, 0.2, 1},
-        fillColor = {0.15, 0.15, 0.15, 1},
+        fillColor = {0.3, 0.6, 0.9, 1},
         borderColor = {0.25, 0.25, 0.25, 1},
     },
     icon = {

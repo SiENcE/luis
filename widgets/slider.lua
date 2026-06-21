@@ -39,9 +39,13 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
             local wasHovered = self.hover
             self.hover = pointInRect(mx, my, self.position.x, self.position.y, self.width, self.height)
             
-			-- Handle mouse input
-            if love.mouse.isDown(1) and self.hover then
+			-- Handle mouse input: only drag the slider that was actually grabbed
+			-- (gating on hover alone snaps the value when the mouse passes over it)
+            if self.pressed and love.mouse.isDown(1) then
                 self:setValue(self:getValueFromPosition(mx - self.position.x))
+            elseif self.pressed and not love.mouse.isDown(1) then
+                -- Safety: button released outside the widget
+                self.pressed = false
             end
 
             -- Handle joystick/gamepad input when focused
@@ -94,6 +98,11 @@ function slider.new(min, max, value, width, height, onChange, row, col, customTh
 		end,
 
         click = function(self, x, y, button, istouch, presses)
+            -- Test the actual click position rather than the cached self.hover, which is
+            -- stale on the first click (love.mousepressed runs before love.update).
+            if x and y then
+                self.hover = pointInRect(x, y, self.position.x, self.position.y, self.width, self.height)
+            end
             if self.hover and button == 1 then
                 self.pressed = true
                 self:setValue(self:getValueFromPosition(x - self.position.x))
