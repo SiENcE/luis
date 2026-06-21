@@ -15,6 +15,7 @@ function icon.new(iconPath, size, row, col, customTheme)
     return {
         type = "Icon",
         icon = icon,
+        iconPath = iconPath,  -- keep the source path so the icon can be serialized
         width = size * luis.gridSize,
         height = size * luis.gridSize,
         position = Vector2D.new((col - 1) * luis.gridSize, (row - 1) * luis.gridSize),

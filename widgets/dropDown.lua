@@ -21,6 +21,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         title = title,
         items = items,
         value = value or 1,
+        maxVisibleItems = maxVisibleItems,  -- exposed so the dropdown can be serialized
         width = width * luis.gridSize,
         height = height * luis.gridSize,
         onChange = onChange,
