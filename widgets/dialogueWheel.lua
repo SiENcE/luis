@@ -2,6 +2,9 @@ local utils = require("luis.3rdparty.utils")
 local Vector2D = require("luis.3rdparty.vector")
 local decorators = require("luis.3rdparty.decorators")
 
+-- math.atan2 was removed in Lua 5.3 (math.atan accepts two args there); this works on both.
+local atan2 = math.atan2 or math.atan
+
 local dialogueWheel = {}
 
 local luis  -- This will store the reference to the core library
@@ -17,7 +20,7 @@ local function pointInSector(px, py, cx, cy, radius, startAngle, endAngle)
     
     if distance > radius then return false end
     
-    local angle = math.atan2(dy, dx)
+    local angle = atan2(dy, dx)
     if angle < 0 then angle = angle + 2 * math.pi end
     
     if startAngle > endAngle then
@@ -193,7 +196,7 @@ function dialogueWheel.new(options, width, height, onChange, row, col, customThe
                     local y = luis.getJoystickAxis(1, "lefty")
                     
                     if math.abs(x) > 0.3 or math.abs(y) > 0.3 then
-                        local angle = math.atan2(y, x)
+                        local angle = atan2(y, x)
                         if angle < 0 then angle = angle + 2 * math.pi end
                         local totalSegments = #self.options
                         local rawIndex = math.floor((angle + math.pi/totalSegments) / (2*math.pi/totalSegments)) % totalSegments + 1

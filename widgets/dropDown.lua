@@ -39,11 +39,15 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
             if self.isOpen then
                 local listHeight = math.min(#self.items, maxVisibleItems) * self.height
                 self.hoverIndex = nil
-                for i = 1, math.min(#self.items, maxVisibleItems) do
-                    local itemY = self.position.y + self.height * i
-                    if pointInRect(mx, my, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
-                        self.hoverIndex = i + math.floor(self.scrollOffset)
-                        break
+                -- Use the same row geometry as defaultDraw (absolute index + scrollOffset
+                -- shift) so the highlighted row always matches the row under the cursor.
+                for i = 1, #self.items do
+                    local itemY = self.position.y + self.height * i - self.scrollOffset * self.height
+                    if itemY >= self.position.y + self.height and itemY <= self.position.y + self.height + listHeight then
+                        if pointInRect(mx, my, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
+                            self.hoverIndex = i
+                            break
+                        end
                     end
                 end
             end
@@ -137,15 +141,18 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
                 return true
             elseif self.isOpen then
                 local listHeight = math.min(#self.items, maxVisibleItems) * self.height
-                for i = 1, math.min(#self.items, maxVisibleItems) do
-                    local itemY = self.position.y + self.height * i
-                    if pointInRect(x, y, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
-                        self.value = i + math.floor(self.scrollOffset)
-                        self.isOpen = false
-                        if self.onChange then
-                            self.onChange(self.items[self.value], self.value)
+                -- Same row geometry as update/defaultDraw so clicks hit the visible row.
+                for i = 1, #self.items do
+                    local itemY = self.position.y + self.height * i - self.scrollOffset * self.height
+                    if itemY >= self.position.y + self.height and itemY <= self.position.y + self.height + listHeight then
+                        if pointInRect(x, y, self.position.x, itemY, self.width - dropdownTheme.scrollBarWidth, self.height) then
+                            self.value = i
+                            self.isOpen = false
+                            if self.onChange then
+                                self.onChange(self.items[self.value], self.value)
+                            end
+                            return true
                         end
-                        return true
                     end
                 end
                 self.isOpen = false

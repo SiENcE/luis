@@ -35,6 +35,7 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         onClick = onClick,
         onRelease = onRelease,
         hover = false,
+        wasFocused = false,
         pressed = false,
         focused = false,
         focusable = true,  -- Make the button focusable
@@ -58,37 +59,44 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
 --                self:release()
 --            end
 
-            if (self.hover and not wasHovered) or (self.focused and not self.hover) then
-                luis.flux.to(self, buttonTheme.transitionDuration, {
-                    elevation = buttonTheme.elevationHover,
-                    colorR = buttonTheme.hoverColor[1],
-                    colorG = buttonTheme.hoverColor[2],
-                    colorB = buttonTheme.hoverColor[3],
-                    colorA = buttonTheme.hoverColor[4]
+            -- Edge-trigger the hover/focus transition so the tween is issued once when
+            -- the button becomes (or stops being) hovered/focused, not every frame.
+            local active = self.hover or self.focused
+            local wasActive = wasHovered or self.wasFocused
+            local theme = self.theme
+            if active and not wasActive then
+                luis.flux.to(self, theme.transitionDuration, {
+                    elevation = theme.elevationHover,
+                    colorR = theme.hoverColor[1],
+                    colorG = theme.hoverColor[2],
+                    colorB = theme.hoverColor[3],
+                    colorA = theme.hoverColor[4]
                 })
-            elseif (not self.hover and wasHovered) and not self.focused then
-                luis.flux.to(self, buttonTheme.transitionDuration, {
-                    elevation = buttonTheme.elevation,
-                    colorR = buttonTheme.color[1],
-                    colorG = buttonTheme.color[2],
-                    colorB = buttonTheme.color[3],
-                    colorA = buttonTheme.color[4]
+            elseif not active and wasActive then
+                luis.flux.to(self, theme.transitionDuration, {
+                    elevation = theme.elevation,
+                    colorR = theme.color[1],
+                    colorG = theme.color[2],
+                    colorB = theme.color[3],
+                    colorA = theme.color[4]
                 })
             end
+            self.wasFocused = self.focused
         end,
 
         defaultDraw = function(self)
-            drawElevatedRectangle(self.position.x, self.position.y, self.width, self.height, {self.colorR, self.colorG, self.colorB, self.colorA}, self.elevation, buttonTheme.cornerRadius)
+            local theme = self.theme
+            drawElevatedRectangle(self.position.x, self.position.y, self.width, self.height, {self.colorR, self.colorG, self.colorB, self.colorA}, self.elevation, theme.cornerRadius)
 
             -- Draw text
-            love.graphics.setColor(buttonTheme.textColor)
+            love.graphics.setColor(theme.textColor)
 			love.graphics.setFont(luis.theme.text.font)
-            love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width, buttonTheme.align)
-            
+            love.graphics.printf(self.text, self.position.x, self.position.y + (self.height - luis.theme.text.font:getHeight()) / 2, self.width, theme.align)
+
             -- Draw focus indicator
             if self.focused then
                 love.graphics.setColor(1, 1, 1, 0.5)
-                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, buttonTheme.cornerRadius + 2)
+                love.graphics.rectangle("line", self.position.x - 2, self.position.y - 2, self.width + 4, self.height + 4, theme.cornerRadius + 2)
             end
         end,
 
@@ -114,13 +122,14 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
                 self.hover = pointInRect(x, y, self.position.x, self.position.y, self.width, self.height)
             end
             if (self.hover or self.focused) and not self.pressed then
+                local theme = self.theme
                 self.pressed = true
-                luis.flux.to(self, buttonTheme.transitionDuration, {
-                    elevation = buttonTheme.elevationPressed,
-                    colorR = buttonTheme.pressedColor[1],
-                    colorG = buttonTheme.pressedColor[2],
-                    colorB = buttonTheme.pressedColor[3],
-                    colorA = buttonTheme.pressedColor[4]
+                luis.flux.to(self, theme.transitionDuration, {
+                    elevation = theme.elevationPressed,
+                    colorR = theme.pressedColor[1],
+                    colorG = theme.pressedColor[2],
+                    colorB = theme.pressedColor[3],
+                    colorA = theme.pressedColor[4]
                 })
                 
                 if self.onClick then
@@ -133,10 +142,11 @@ function button.new(text, width, height, onClick, onRelease, row, col, customThe
         
         release = function(self, x, y, button, istouch, presses)
             if self.pressed then
+                local theme = self.theme
                 self.pressed = false
-                local targetColor = (self.hover or self.focused) and buttonTheme.hoverColor or buttonTheme.color
-                luis.flux.to(self, buttonTheme.transitionDuration, {
-                    elevation = (self.hover or self.focused) and buttonTheme.elevationHover or buttonTheme.elevation,
+                local targetColor = (self.hover or self.focused) and theme.hoverColor or theme.color
+                luis.flux.to(self, theme.transitionDuration, {
+                    elevation = (self.hover or self.focused) and theme.elevationHover or theme.elevation,
                     colorR = targetColor[1],
                     colorG = targetColor[2],
                     colorB = targetColor[3],

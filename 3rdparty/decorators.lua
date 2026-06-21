@@ -44,6 +44,9 @@ function GlowDecorator:draw()
 			)
     end
     
+    -- Reset color so the widget's defaultDraw doesn't inherit the glow color.
+    love.graphics.setColor(1, 1, 1, 1)
+
     -- Call the base draw method (which calls the widget's defaultDraw)
     BaseDecorator.draw(self)
 end
@@ -61,6 +64,28 @@ function Slice9Decorator.new(widget, image, left, right, top, bottom)
     self.right = right
     self.top = top
     self.bottom = bottom
+
+    -- The source rectangles depend only on the image and the insets, so build the
+    -- nine quads once here instead of allocating them every frame in :draw.
+    local iw, ih = image:getDimensions()
+    self.iw, self.ih = iw, ih
+    local cw = iw - left - right
+    local ch = ih - top - bottom
+    self.cw, self.ch = cw, ch
+
+    if cw > 0 and ch > 0 then
+        self.quads = {
+            tl     = love.graphics.newQuad(0,         0,          left,  top,    iw, ih),
+            tr     = love.graphics.newQuad(iw - right, 0,         right, top,    iw, ih),
+            bl     = love.graphics.newQuad(0,         ih - bottom, left,  bottom, iw, ih),
+            br     = love.graphics.newQuad(iw - right, ih - bottom, right, bottom, iw, ih),
+            top    = love.graphics.newQuad(left,      0,          cw,    top,    iw, ih),
+            bottom = love.graphics.newQuad(left,      ih - bottom, cw,    bottom, iw, ih),
+            left   = love.graphics.newQuad(0,         top,        left,  ch,     iw, ih),
+            right  = love.graphics.newQuad(iw - right, top,       right, ch,     iw, ih),
+            center = love.graphics.newQuad(left,      top,        cw,    ch,     iw, ih),
+        }
+    end
     return self
 end
 
@@ -70,31 +95,33 @@ function Slice9Decorator:draw(this)
     this = this or self.widget
     local x, y = self.widget.position.x, self.widget.position.y
     local w, h = self.widget.width, self.widget.height
-    local iw, ih = self.image:getDimensions()
+    local iw, ih = self.iw, self.ih
 
-    -- Center width and height
-    local cw = iw - self.left - self.right
-    local ch = ih - self.top - self.bottom
+    -- Draw the image untinted (don't inherit a previous setColor).
+    love.graphics.setColor(1, 1, 1, 1)
 
-    -- Guard against degenerate slice insets (would produce inf/nan scaling)
-    if cw <= 0 or ch <= 0 then
+    if not self.quads then
+        -- Degenerate slice insets: fall back to a plain stretched draw.
         love.graphics.draw(self.image, x, y, 0, w / iw, h / ih)
     else
-    
-    -- Draw corners
-    love.graphics.draw(self.image, love.graphics.newQuad(0, 0, self.left, self.top, iw, ih), x, y)
-    love.graphics.draw(self.image, love.graphics.newQuad(iw - self.right, 0, self.right, self.top, iw, ih), x + w - self.right, y)
-    love.graphics.draw(self.image, love.graphics.newQuad(0, ih - self.bottom, self.left, self.bottom, iw, ih), x, y + h - self.bottom)
-    love.graphics.draw(self.image, love.graphics.newQuad(iw - self.right, ih - self.bottom, self.right, self.bottom, iw, ih), x + w - self.right, y + h - self.bottom)
-    
-    -- Draw edges
-    love.graphics.draw(self.image, love.graphics.newQuad(self.left, 0, cw, self.top, iw, ih), x + self.left, y, 0, (w - self.left - self.right) / cw, 1)
-    love.graphics.draw(self.image, love.graphics.newQuad(self.left, ih - self.bottom, cw, self.bottom, iw, ih), x + self.left, y + h - self.bottom, 0, (w - self.left - self.right) / cw, 1)
-    love.graphics.draw(self.image, love.graphics.newQuad(0, self.top, self.left, ch, iw, ih), x, y + self.top, 0, 1, (h - self.top - self.bottom) / ch)
-    love.graphics.draw(self.image, love.graphics.newQuad(iw - self.right, self.top, self.right, ch, iw, ih), x + w - self.right, y + self.top, 0, 1, (h - self.top - self.bottom) / ch)
-    
-    -- Draw center
-    love.graphics.draw(self.image, love.graphics.newQuad(self.left, self.top, cw, ch, iw, ih), x + self.left, y + self.top, 0, (w - self.left - self.right) / cw, (h - self.top - self.bottom) / ch)
+        local q = self.quads
+        local sx = (w - self.left - self.right) / self.cw
+        local sy = (h - self.top - self.bottom) / self.ch
+
+        -- Corners
+        love.graphics.draw(self.image, q.tl, x, y)
+        love.graphics.draw(self.image, q.tr, x + w - self.right, y)
+        love.graphics.draw(self.image, q.bl, x, y + h - self.bottom)
+        love.graphics.draw(self.image, q.br, x + w - self.right, y + h - self.bottom)
+
+        -- Edges
+        love.graphics.draw(self.image, q.top,    x + self.left, y,                  0, sx, 1)
+        love.graphics.draw(self.image, q.bottom, x + self.left, y + h - self.bottom, 0, sx, 1)
+        love.graphics.draw(self.image, q.left,   x,             y + self.top,        0, 1, sy)
+        love.graphics.draw(self.image, q.right,  x + w - self.right, y + self.top,   0, 1, sy)
+
+        -- Center
+        love.graphics.draw(self.image, q.center, x + self.left, y + self.top, 0, sx, sy)
     end
 
 	-- Draw text
@@ -103,9 +130,6 @@ function Slice9Decorator:draw(this)
 		local font_backup = love.graphics.getFont()
 		love.graphics.printf(this.text, this.position.x, this.position.y + (this.height - font_backup:getHeight()) / 2, this.width, this.theme.align)
 	end
-
-    -- Call the base draw method (which calls the widget's defaultDraw)
-    --BaseDecorator.draw(self)
 end
 
 decorators.Slice9Decorator = Slice9Decorator
@@ -176,7 +200,11 @@ function GlassmorphismDecorator:draw()
         x, y + opt.borderRadius,      -- Go up to top-left
         x + opt.borderRadius, y       -- Turn right to top
     )
-    
+
+    -- Reset color/line width so the widget's defaultDraw starts from a clean state.
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.setLineWidth(1)
+
     -- Call the widget's default draw method
     BaseDecorator.draw(self)
 end

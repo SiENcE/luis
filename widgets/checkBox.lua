@@ -65,7 +65,9 @@ function checkBox.new(value, size, onChange, row, col, customTheme)
 		end,
 
         click = function(self, x, y, button, istouch, presses)
-            if pointInRect(x, y, self.position.x, self.position.y, self.width, self.height) then
+            -- Activate on a hit, or when focused (gamepad path passes no x/y),
+            -- consistent with button/switch/radioButton.
+            if self.focused or (x and y and pointInRect(x, y, self.position.x, self.position.y, self.width, self.height)) then
                 self.value = not self.value
                 luis.flux.to(self, 0.2, { checkScale = self.value and 1 or 0 })
                 if self.onChange then

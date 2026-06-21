@@ -10,7 +10,7 @@ end
 
 -- Icon
 function icon.new(iconPath, size, row, col, customTheme)
-    local iconTheme = customTheme or luis.theme.icon
+    local iconTheme = customTheme or luis.theme.icon or {}
     local icon = love.graphics.newImage(iconPath)
     return {
         type = "Icon",
@@ -22,7 +22,7 @@ function icon.new(iconPath, size, row, col, customTheme)
 		decorator = nil,
         
         defaultDraw = function(self)
-            love.graphics.setColor(iconTheme.color)
+            love.graphics.setColor(self.theme.color or {1, 1, 1, 1})
             love.graphics.draw(self.icon, self.position.x, self.position.y, 0, self.width / self.icon:getWidth(), self.height / self.icon:getHeight())
         end,
 
