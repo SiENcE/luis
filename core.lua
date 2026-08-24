@@ -33,6 +33,12 @@ luis.joystickButtonStates = {}
 
 -- mouse
 luis.clickCooldown = 0
+-- Optional custom mouse position provider, for setups where the rendered game
+-- area does not match the window coordinates (canvas, letterboxing, virtual
+-- resolution). It must return the cursor position in the same coordinate space
+-- that is handed to luis.mousepressed()/luis.mousereleased(), i.e. before
+-- luis.scale is applied.
+luis.mousePositionProvider = nil
 
 -- metrics
 luis.stats = {
@@ -507,12 +513,41 @@ function luis.updateScale()
     luis.scale = math.min(w / luis.baseWidth, h / luis.baseHeight)
 end
 
-function luis.update(dt)
+-- Register a function returning the current cursor position, replacing
+-- love.mouse.getPosition(). Pass nil to restore the default.
+-- The provider translates window coordinates into whatever space the UI is
+-- drawn in, so LUIS stays agnostic about how that translation is done.
+function luis.setMousePositionProvider(provider)
+    luis.mousePositionProvider = provider
+end
+
+-- Current cursor position, before luis.scale is applied.
+-- A provider may return nil while the cursor is outside the rendered game area,
+-- so fall back to (-1, -1) which never hits a widget.
+function luis.getMousePosition()
+    local x, y
+    if luis.mousePositionProvider then
+        x, y = luis.mousePositionProvider()
+    else
+        x, y = love.mouse.getPosition()
+    end
+    return x or -1, y or -1
+end
+
+-- x and y are optional and override the mouse position for this frame, for
+-- callers that would rather pass coordinates in per frame than register a
+-- provider via luis.setMousePositionProvider().
+function luis.update(dt, x, y)
     if luis.clickCooldown > 0 then
         luis.clickCooldown = math.max(0, luis.clickCooldown - dt)
     end
 
-    local mx, my = love.mouse.getPosition()
+    local mx, my
+    if x and y then
+        mx, my = x, y
+    else
+        mx, my = luis.getMousePosition()
+    end
     mx, my = mx / luis.scale, my / luis.scale
 
     -- Joystick navigation
@@ -874,6 +909,7 @@ function luis.handleGlobalClick(x, y, button, istouch, presses)
 end
 
 function luis.mousepressed(x, y, button, istouch, presses)
+    if not x or not y then return false end
     x, y = x / luis.scale, y / luis.scale
     if luis.clickCooldown > 0 then return false end
     
@@ -891,6 +927,7 @@ function luis.mousepressed(x, y, button, istouch, presses)
 end
 
 function luis.mousereleased(x, y, button, istouch, presses)
+    if not x or not y then return false end
     x, y = x / luis.scale, y / luis.scale
     for layerName, _ in pairs(luis.enabledLayers) do
         if handleLayerInput(layerName, x, y, "release", button, istouch, presses) then
@@ -901,6 +938,7 @@ function luis.mousereleased(x, y, button, istouch, presses)
 end
 
 function luis.touchpressed(id, x, y, dx, dy, pressure)
+    if not x or not y then return false end
     x, y = x / luis.scale, y / luis.scale
     -- Then process regular click handling with z-index priority preserved
     for layerName, _ in pairs(luis.enabledLayers) do
@@ -912,6 +950,7 @@ function luis.touchpressed(id, x, y, dx, dy, pressure)
 end
 
 function luis.touchreleased(id, x, y, dx, dy, pressure)
+    if not x or not y then return false end
     x, y = x / luis.scale, y / luis.scale
     -- Then process regular click handling with z-index priority preserved
     for layerName, _ in pairs(luis.enabledLayers) do

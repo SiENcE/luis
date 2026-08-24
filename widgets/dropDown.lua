@@ -155,7 +155,7 @@ function dropDown.new(items, value, width, height, onChange, row, col, maxVisibl
         
         wheelmoved = function(self, x, y)
             if self.isOpen then
-                local mx, my = love.mouse.getPosition()
+                local mx, my = luis.getMousePosition()
                 mx, my = mx / luis.scale, my / luis.scale
                 if pointInRect(mx, my, self.position.x, self.position.y + self.height, self.width, math.min(#self.items, maxVisibleItems) * self.height) then
                     self.scrollOffset = math.max(0, math.min(self.maxScrollOffset, self.scrollOffset - y))

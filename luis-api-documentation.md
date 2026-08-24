@@ -218,6 +218,9 @@ luis.textinput(text)
 
 These functions should be called from the corresponding LÖVE callbacks to handle input events.
 
+Hover state is read from `love.mouse.getPosition()` inside `luis.update(dt)`. If your game
+does not render directly to the window, see [Custom Mouse Coordinates](#custom-mouse-coordinates).
+
 ### Touch Input Support
 
 LUIS provides touch input handling for mobile devices and touch screens:
@@ -426,6 +429,53 @@ function love.update(dt)
 
     luis.update(dt)
 end
+```
+
+### Custom Mouse Coordinates
+
+LUIS reads the cursor with `love.mouse.getPosition()`, which returns **window** coordinates.
+If you draw the UI somewhere other than directly onto the window — a canvas, a letterboxed
+game area, a virtual resolution wrapper — those coordinates no longer match where the widgets
+appear, and hover and clicks land at the wrong place.
+
+LUIS does not depend on any particular scaling library. Instead you supply the translation
+yourself, as a function from window coordinates to UI coordinates:
+
+```lua
+luis.setMousePositionProvider(function()
+    local x, y = love.mouse.getPosition()
+    return toGameCoords(x, y)  -- your own translation
+end)
+```
+
+Pass `nil` to go back to the default. Alternatively, hand the position to `luis.update()`
+per frame instead of registering a provider:
+
+```lua
+function love.update(dt)
+    luis.update(dt, toGameCoords(love.mouse.getPosition()))
+end
+```
+
+Mouse and touch callbacks get their coordinates from LÖVE, so translate those as well:
+
+```lua
+function love.mousepressed(x, y, button, istouch)
+    luis.mousepressed(toGameCoords(x, y))
+end
+```
+
+A translation function may return `nil` when the cursor is outside the rendered area.
+LUIS treats that as "no position": the input callbacks return `false` and no widget is hit.
+
+If the external system already applies its own scaling, leave `luis.scale` at `1`
+(do not call `luis.updateScale()`), otherwise the coordinates are scaled twice.
+
+Related functions:
+
+```lua
+luis.setMousePositionProvider(provider)  -- provider() -> x, y (nil restores love.mouse.getPosition)
+luis.getMousePosition()                  -- current cursor position, before luis.scale is applied
 ```
 
 ## Grid System

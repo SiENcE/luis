@@ -147,7 +147,7 @@ function colorPicker.new(width, height, row, col, onChange, customTheme)
     end
 
     function self:wheelmoved(x, y)
-        local mx, my = love.mouse.getPosition()
+        local mx, my = luis.getMousePosition()
         mx, my = mx / luis.scale, my / luis.scale
         
         if not self:isInBounds(mx, my) then
